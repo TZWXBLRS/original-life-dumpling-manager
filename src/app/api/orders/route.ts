@@ -11,6 +11,8 @@ import {
   getNextDeliveryWindow,
 } from "@/lib/frozen-check";
 import { queryDeliveryETA } from "@/lib/delivery";
+import { availableStock, INVENTORY_LOG_TYPE } from "@/lib/inventory";
+import { cleanupExpiredOrders, PENDING_PAYMENT_TIMEOUT_MS } from "@/lib/order-cleanup";
 
 /**
  * 创建订单 API
@@ -88,10 +90,13 @@ export async function POST(req: NextRequest) {
     }
 
     // ============== 库存校验 & 定价计算 ==============
+    // 先清理超时未支付订单，释放被占用的锁定库存（惰性清理）
+    await cleanupExpiredOrders();
+
     const productIds = items.map((i) => i.productId);
     const products = await prisma.product.findMany({
       where: { id: { in: productIds } },
-      select: { id: true, stock: true, lastFrozenAt: true, name: true, unitPrice: true, category: true },
+      select: { id: true, stock: true, lockedStock: true, lastFrozenAt: true, name: true, unitPrice: true, category: true },
     });
 
     const productMap = new Map(products.map((p) => [p.id, p]));
@@ -103,10 +108,12 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-      if (p.stock < it.quantity) {
+      // 可售库存 = 实际库存 - 锁定库存
+      const avail = availableStock(p.stock, p.lockedStock);
+      if (avail < it.quantity) {
         return NextResponse.json(
           {
-            error: `「${it.productName}」库存不足，只剩 ${p.stock} 盒（你选了 ${it.quantity} 盒）`,
+            error: `「${it.productName}」库存不足，只剩 ${avail} 盒（你选了 ${it.quantity} 盒）`,
           },
           { status: 400 }
         );
@@ -120,7 +127,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 每日销量上限校验
+    // 每日销量上限校验：未取消订单（含待支付锁定）都占用当日额度
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const todayOrders = await prisma.order.aggregate({
@@ -148,10 +155,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 计算定价（和前台展示一致）
+    // 计算定价：泡沫箱单价/容量从 SystemConfig 读取，缺省用默认值
+    const foamBoxPriceCfg = Number(
+      (await prisma.systemConfig.findUnique({ where: { key: "FOAM_BOX_PRICE" } }))
+        ?.value ?? "0"
+    );
+    const foamBoxCapCfg = Number(
+      (await prisma.systemConfig.findUnique({ where: { key: "FOAM_BOX_CAPACITY" } }))
+        ?.value ?? "0"
+    );
     const pricing = calculatePrice(
       items as CartItem[],
-      deliveryType as "PICKUP" | "DELIVERY" | "EXPRESS"
+      deliveryType as "PICKUP" | "DELIVERY" | "EXPRESS",
+      {
+        unitPrice: foamBoxPriceCfg > 0 ? foamBoxPriceCfg : undefined,
+        capacity: foamBoxCapCfg > 0 ? foamBoxCapCfg : undefined,
+      }
     );
 
     // ============== 快递冷冻与时效校验 ==============
@@ -216,41 +235,45 @@ export async function POST(req: NextRequest) {
         : null;
 
     const result = await prisma.$transaction(async (tx) => {
-      // 1. 扣减库存
+      // 1. 锁定库存（不下单即扣，待支付仅占用 lockedStock）
       for (const it of items) {
-        const beforeStock = productMap.get(it.productId)!.stock;
+        const p = productMap.get(it.productId)!;
+        // 乐观锁：可售不足则回滚
         const updated = await tx.product.updateMany({
           where: {
             id: it.productId,
-            stock: { gte: it.quantity },
+            // stock - lockedStock >= quantity 等价于 lockedStock <= stock - quantity
+            lockedStock: { lte: p.stock - it.quantity },
           },
-          data: { stock: { decrement: it.quantity } },
+          data: { lockedStock: { increment: it.quantity } },
         });
         if (updated.count === 0) {
           throw new Error(`「${it.productName}」库存不足，请刷新重试`);
         }
 
-        // 2. 写库存变动日志
+        // 2. 写库存变动日志（锁定，不动实际库存）
         await tx.inventoryLog.create({
           data: {
             productId: it.productId,
-            type: "DECREASE",
-            quantity: -it.quantity,
-            beforeStock,
-            afterStock: beforeStock - it.quantity,
-            remark: "顾客下单",
+            type: INVENTORY_LOG_TYPE.ORDER_LOCK,
+            quantity: it.quantity,
+            beforeStock: p.stock,
+            afterStock: p.stock, // 锁定不影响实际库存
+            remark: "顾客下单锁定库存",
             operatorId: session!.user!.id,
           },
         });
       }
 
-      // 3. 创建订单
+      // 3. 创建订单（设置待支付超时时间）
+      const expiresAt = new Date(Date.now() + PENDING_PAYMENT_TIMEOUT_MS);
       const order = await tx.order.create({
         data: {
           orderNo,
           userId: session!.user!.id,
           deliveryType,
           status: "PENDING_PAYMENT", // 待支付
+          expiresAt,
           totalAmount: pricing.totalAmount,
           goodsAmount: pricing.totalAmount - pricing.foamBoxAmount,
           totalBoxes,

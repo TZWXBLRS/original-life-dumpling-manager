@@ -2,32 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+import { INVENTORY_LOG_TYPE, ORDER_STATUS } from "@/lib/inventory";
+import { isInDeliveryWindow } from "@/lib/frozen-check";
 
-// 合法的订单状态流转
+// 合法的订单状态（与 schema 注释一致）
 const VALID_STATUSES = [
-  "PENDING_PAYMENT",
-  "PAID",
-  "PREPARING",
-  "READY",
-  "READY_FOR_PICKUP",
-  "SHIPPED",
-  "COMPLETED",
-  "CANCELLED",
+  ORDER_STATUS.PENDING_PAYMENT,
+  ORDER_STATUS.PAID,
+  ORDER_STATUS.PREPARING,
+  ORDER_STATUS.READY,
+  ORDER_STATUS.READY_FOR_PICKUP,
+  ORDER_STATUS.SHIPPED,
+  ORDER_STATUS.COMPLETED,
+  ORDER_STATUS.CANCELLED,
 ] as const;
 
 type OrderStatus = (typeof VALID_STATUSES)[number];
 
-// 状态流转规则：从当前状态可以转到哪些状态
-const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  PENDING_PAYMENT: ["PAID", "CANCELLED"],
-  PAID: ["PREPARING", "CANCELLED"],
-  PREPARING: ["READY", "READY_FOR_PICKUP", "CANCELLED"],
-  READY: ["SHIPPED", "COMPLETED", "CANCELLED"],
-  READY_FOR_PICKUP: ["COMPLETED", "CANCELLED"],
-  SHIPPED: ["COMPLETED"],
-  COMPLETED: [],
-  CANCELLED: [],
-};
+// 说明：状态流转合法性由下方 ACTION_TO_STATUS 唯一约束（旧 STATUS_TRANSITIONS
+// 表与实际逻辑不一致且从未被引用，已移除，避免误导）。
 
 export type StatusAction =
   | "PAY" // 支付（顾客）
@@ -118,14 +111,16 @@ export async function PATCH(
     const isStaff = isAdmin || isKitchen;
     const isOwner = order.userId === session.user.id;
 
-    // 不同角色允许的操作：Key 为 Action，Value 为允许执行的角色列表
+    // 不同角色允许的操作：Key 为 Action，Value 为允许执行的角色列表。
+    // 注意：CANCEL 列出 CUSTOMER 仅表示顾客"可发起取消"，但顾客仅限
+    // 待支付状态（见下方「顾客取消订单：仅限待支付状态」校验）；其余状态取消需 ADMIN。
     const roleActions: Record<StatusAction, string[]> = {
       PAY: ["CUSTOMER", "ADMIN"], // 顾客或管理员可标记支付
       START_PREPARE: ["ADMIN", "KITCHEN"],
       MARK_READY: ["ADMIN", "KITCHEN"],
       SHIP: ["ADMIN"],
       COMPLETE: ["ADMIN", "KITCHEN"],
-      CANCEL: ["CUSTOMER", "ADMIN"], // 顾客待支付可取消；管理员随时可取消
+      CANCEL: ["CUSTOMER", "ADMIN"],
     };
 
     const allowedRoles = roleActions[action];
@@ -161,8 +156,17 @@ export async function PATCH(
       );
     }
 
-    // 4. 快递发货时：冷冻确认检查
+    // 4. 快递发货时：时间窗口 + 冷冻确认检查
     if (action === "SHIP" && order.deliveryType === "DELIVERY") {
+      // 发货时间窗口校验（PRD 4.4：每天 18:00 - 20:00）
+      if (!isInDeliveryWindow()) {
+        return NextResponse.json(
+          {
+            error: "快递发货时间仅限每天 18:00 - 20:00，请在发货窗口内操作",
+          },
+          { status: 400 }
+        );
+      }
       if (order.frozenConfirmRequired && !frozenConfirm) {
         return NextResponse.json(
           {
@@ -186,6 +190,7 @@ export async function PATCH(
       case "PAID":
         updateData.paidAt = now;
         updateData.paymentMethod = paymentMethod || "MANUAL";
+        updateData.expiresAt = null; // 已支付，清除待支付超时
         break;
       case "PREPARING":
         updateData.preparingAt = now;
@@ -211,28 +216,78 @@ export async function PATCH(
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      // 6. 取消订单：返还库存
-      if (nextStatus === "CANCELLED" && order.status !== "PENDING_PAYMENT") {
-        // 已扣库存的订单，需要把库存加回去
+      // 6. 支付成功：锁定库存转为实际扣减（lockedStock 释放 + stock 扣减）
+      if (nextStatus === "PAID" && order.status === "PENDING_PAYMENT") {
         for (const item of order.items) {
           const product = await tx.product.findUnique({
             where: { id: item.productId },
-            select: { stock: true },
+            select: { stock: true, lockedStock: true },
           });
-          if (product) {
-            const beforeStock = product.stock;
+          if (!product) continue;
+          // 扣减实际库存、释放等量锁定库存
+          const newStock = product.stock - item.quantity;
+          const newLocked = Math.max(0, product.lockedStock - item.quantity);
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stock: newStock, lockedStock: newLocked },
+          });
+          await tx.inventoryLog.create({
+            data: {
+              productId: item.productId,
+              type: INVENTORY_LOG_TYPE.ORDER_DEDUCT,
+              quantity: item.quantity,
+              beforeStock: product.stock,
+              afterStock: newStock,
+              remark: "订单支付，扣减实际库存",
+              operatorId: session!.user!.id,
+              orderId: order.id,
+            },
+          });
+        }
+      }
+
+      // 7. 取消订单：按原状态释放库存
+      if (nextStatus === "CANCELLED") {
+        for (const item of order.items) {
+          const product = await tx.product.findUnique({
+            where: { id: item.productId },
+            select: { stock: true, lockedStock: true },
+          });
+          if (!product) continue;
+          if (order.status === "PENDING_PAYMENT") {
+            // 待支付：只锁定未扣减，释放锁定库存
+            const newLocked = Math.max(0, product.lockedStock - item.quantity);
             await tx.product.update({
               where: { id: item.productId },
-              data: { stock: { increment: item.quantity } },
+              data: { lockedStock: newLocked },
             });
             await tx.inventoryLog.create({
               data: {
                 productId: item.productId,
-                type: "ORDER_RELEASE",
+                type: INVENTORY_LOG_TYPE.ORDER_RELEASE,
                 quantity: item.quantity,
-                beforeStock,
-                afterStock: beforeStock + item.quantity,
-                remark: `订单取消释放库存`,
+                beforeStock: product.stock,
+                afterStock: product.stock, // 释放锁定不影响实际库存
+                remark: "待支付订单取消，释放锁定库存",
+                operatorId: session!.user!.id,
+                orderId: order.id,
+              },
+            });
+          } else {
+            // 已支付/备餐等：实际库存已扣减，需归还实际库存
+            const newStock = product.stock + item.quantity;
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: newStock },
+            });
+            await tx.inventoryLog.create({
+              data: {
+                productId: item.productId,
+                type: INVENTORY_LOG_TYPE.ORDER_RELEASE,
+                quantity: item.quantity,
+                beforeStock: product.stock,
+                afterStock: newStock,
+                remark: "已支付订单取消，归还实际库存",
                 operatorId: session!.user!.id,
                 orderId: order.id,
               },
@@ -241,7 +296,7 @@ export async function PATCH(
         }
       }
 
-      // 7. 更新订单状态
+      // 8. 更新订单状态
       const updated = await tx.order.update({
         where: { id: order.id },
         data: updateData,

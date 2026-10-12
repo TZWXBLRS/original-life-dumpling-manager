@@ -64,6 +64,7 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
   const [ok, setOk] = useState(false);
   const [orderNo, setOrderNo] = useState("");
+  const [orderId, setOrderId] = useState("");
 
   // 读取 localStorage 里的购物车
   useEffect(() => {
@@ -144,6 +145,7 @@ export default function CheckoutPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setOrderNo(data.orderNo);
+      setOrderId(data.orderId);
       setOk(true);
       // 清空购物车
       localStorage.removeItem("cart");
@@ -154,10 +156,21 @@ export default function CheckoutPage() {
     }
   };
 
-  // 下单成功：模拟支付（实际上是点一下直接改订单状态）
+  // 下单成功：模拟支付——调用 status API 把订单推进到 PAID，再跳转订单列表
   const pay = async () => {
-    // 目前为模拟支付：显示下单成功，直接跳到订单列表
-    router.push("/orders?paid=1");
+    if (!orderId) return;
+    try {
+      const res = await fetch(`/api/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "PAY", paymentMethod: "MANUAL" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "支付失败");
+      router.push("/orders?paid=1");
+    } catch (err: any) {
+      setError(err.message || "支付失败");
+    }
   };
 
   if (!mounted) return null;
