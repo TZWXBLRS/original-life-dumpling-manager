@@ -35,8 +35,6 @@ type ItemRow = { productId: string; quantity: number };
 describe("cleanupExpiredOrders - 超时订单清理", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // 默认 $transaction 直接执行回调
-    (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(txMock));
   });
 
   it("无超时订单时返回 0 且不进入事务", async () => {

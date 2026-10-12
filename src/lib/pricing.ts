@@ -350,10 +350,10 @@ export function calculatePrice(
   const breakdown = aggregateBreakdown(result.choices);
 
   // 3. 泡沫箱费（仅快递）—— 单价/容量可由后台 SystemConfig 覆盖
-  const foamUnit =
-    foamBoxConfig.unitPrice ?? PRICE.FOAM_BOX_UNIT;
-  const foamCapacity =
-    foamBoxConfig.capacity ?? PRICE.FOAM_BOX_CAPACITY;
+  // 用 || 而非 ?? 兜底：0 / undefined / NaN 都视为"未配置"，退回默认常量
+  // （0 元不是合法的泡沫箱单价，仅出现在 SystemConfig 未配置或解析失败时）
+  const foamUnit = foamBoxConfig.unitPrice || PRICE.FOAM_BOX_UNIT;
+  const foamCapacity = foamBoxConfig.capacity || PRICE.FOAM_BOX_CAPACITY;
   let foamBoxCount = 0;
   let foamBoxAmount = 0;
   if (deliveryType === "DELIVERY") {

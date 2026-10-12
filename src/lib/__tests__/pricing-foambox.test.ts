@@ -89,13 +89,22 @@ describe("calculatePrice - foamBoxConfig 覆盖默认值", () => {
     expect(yuan(r.foamBoxAmount)).toBe(6);
   });
 
-  it("注入 unitPrice=0 时按 0 元计费（?? 不拦截 0，是合法配置）", () => {
-    // pricing.ts 用 `??` 兜底，0 不属于 null/undefined → 0 生效（免费泡沫箱）
+  it("注入 unitPrice=0 时按默认单价计费（0 视为未配置，退回默认常量）", () => {
+    // pricing.ts 用 `||` 兜底：0 不是合法单价，退回 PRICE.FOAM_BOX_UNIT
     const r = calculatePrice(makeClassicCart(6), "DELIVERY", {
       unitPrice: 0,
     });
     expect(r.foamBoxCount).toBe(2);
-    expect(r.foamBoxAmount).toBe(0);
+    expect(yuan(r.foamBoxAmount)).toBe(10); // 默认 5元 × 2箱
+  });
+
+  it("注入 capacity=0 时按默认容量计费（0 视为未配置）", () => {
+    // capacity=0 会触发除零风险，必须退回默认容量
+    const r = calculatePrice(makeClassicCart(6), "DELIVERY", {
+      capacity: 0,
+    });
+    expect(r.foamBoxCount).toBe(2); // 默认容量5 → ceil(6/5)=2
+    expect(yuan(r.foamBoxAmount)).toBe(10);
   });
 
   it("不传 foamBoxConfig 时退回默认常量", () => {

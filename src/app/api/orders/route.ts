@@ -155,7 +155,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 计算定价：泡沫箱单价/容量从 SystemConfig 读取，缺省用默认值
+    // 计算定价：泡沫箱单价/容量从 SystemConfig 读取，缺省/0 由 pricing.ts 统一兜底
     const foamBoxPriceCfg = Number(
       (await prisma.systemConfig.findUnique({ where: { key: "FOAM_BOX_PRICE" } }))
         ?.value ?? "0"
@@ -168,8 +168,8 @@ export async function POST(req: NextRequest) {
       items as CartItem[],
       deliveryType as "PICKUP" | "DELIVERY" | "EXPRESS",
       {
-        unitPrice: foamBoxPriceCfg > 0 ? foamBoxPriceCfg : undefined,
-        capacity: foamBoxCapCfg > 0 ? foamBoxCapCfg : undefined,
+        unitPrice: foamBoxPriceCfg,
+        capacity: foamBoxCapCfg,
       }
     );
 
