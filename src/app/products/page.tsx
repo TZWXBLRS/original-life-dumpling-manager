@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ShoppingCart, Plus, Home } from "lucide-react";
-import { useCart } from "@/components/CartProvider";
+import { useCart } from "@/components/shared/CartProvider";
 import type { CartItem, ProductCategory } from "@/lib/pricing";
 
 /**

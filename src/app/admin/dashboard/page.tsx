@@ -1,22 +1,17 @@
-import Link from "next/link";
 import {
-  LayoutDashboard,
   ShoppingBasket,
   Package,
-  Users,
-  Settings,
-  ChefHat,
-  LogOut,
   TrendingUp,
   AlertTriangle,
+  ChefHat,
 } from "lucide-react";
 
 /**
- * 后台管理布局（仪表盘、订单、库存、用户、配置）
- * 角色：后厨 / 管理员
+ * 后台仪表盘
+ * 鉴权与侧边栏由 admin/layout.tsx 统一处理
  */
 export default async function AdminDashboardPage() {
-  // TODO: 接入真实数据 & 权限校验（auth() 判断 role === ADMIN 或 KITCHEN）
+  // TODO: 接入真实数据（当前为占位，后续接 /api/admin/stats）
   const todayOrders = 23;
   const todaySales = 12850; // 分
   const todayBoxes = 47;
@@ -27,58 +22,13 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen flex bg-stone-100">
-      {/* 侧边栏 */}
-      <aside className="w-60 bg-stone-900 text-stone-200 flex flex-col">
-        <div className="p-5 border-b border-stone-800">
-          <Link href="/admin/dashboard" className="flex items-center gap-2">
-            <span className="text-2xl">🥟</span>
-            <div>
-              <div className="font-bold text-white">管理后台</div>
-              <div className="text-xs text-stone-400">原味生活</div>
-            </div>
-          </Link>
-        </div>
-        <nav className="flex-1 p-3 space-y-1 text-sm">
-          <NavItem icon={LayoutDashboard} label="仪表盘" href="/admin/dashboard" active />
-          <NavItem icon={ShoppingBasket} label="订单管理" href="/admin/orders" />
-          <NavItem icon={Package} label="库存管理" href="/admin/inventory" />
-          <NavItem
-            icon={ChefHat}
-            label="生产看板"
-            href="/admin/production"
-          />
-          {/* 仅管理员可见 */}
-          <div className="pt-3 mt-3 border-t border-stone-800 text-xs text-stone-500 px-3 pb-1">
-            管理员权限
-          </div>
-          <NavItem icon={Users} label="用户管理" href="/admin/users" />
-          <NavItem icon={Settings} label="系统配置" href="/admin/settings" />
-        </nav>
-        <div className="p-3 border-t border-stone-800 space-y-1">
-          <div className="px-3 py-2 text-xs text-stone-400">
-            当前登录：管理员
-          </div>
-          <button className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-stone-800 flex items-center gap-2 text-stone-300">
-            <LogOut className="w-4 h-4" /> 退出登录
-          </button>
-          <Link
-            href="/"
-            className="block px-3 py-2 rounded-lg text-sm hover:bg-stone-800 flex items-center gap-2 text-stone-300"
-          >
-            ← 返回顾客端
-          </Link>
-        </div>
-      </aside>
-
-      {/* 主内容区 */}
-      <main className="flex-1 p-8 overflow-auto">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold">仪表盘</h1>
-          <p className="text-stone-500 text-sm mt-1">
-            今日营业概览 · {new Date().toLocaleDateString("zh-CN")}
-          </p>
-        </div>
+    <>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold">仪表盘</h1>
+        <p className="text-stone-500 text-sm mt-1">
+          今日营业概览 · {new Date().toLocaleDateString("zh-CN")}
+        </p>
+      </div>
 
         {/* 数据卡片 */}
         <div className="grid md:grid-cols-4 gap-5 mb-8">
@@ -156,33 +106,7 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
-  );
-}
-
-function NavItem({
-  icon: Icon,
-  label,
-  href,
-  active,
-}: {
-  icon: any;
-  label: string;
-  href: string;
-  active?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-        active
-          ? "bg-primary-600 text-white shadow"
-          : "hover:bg-stone-800 text-stone-300"
-      }`}
-    >
-      <Icon className="w-4 h-4" /> {label}
-    </Link>
+    </>
   );
 }
 

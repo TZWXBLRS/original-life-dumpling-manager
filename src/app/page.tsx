@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { ShoppingCart, MapPin, Clock, Star } from "lucide-react";
+import { ShoppingCart, MapPin, Clock, Star, User } from "lucide-react";
+import { auth } from "@/lib/auth";
 
 /**
  * 顾客端页面 - 首页
  */
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth();
   return (
     <div className="min-h-screen flex flex-col">
       {/* 顶部导航 */}
@@ -27,9 +29,16 @@ export default function HomePage() {
               <ShoppingCart className="w-5 h-5 inline" />
               <span className="ml-1">购物车</span>
             </Link>
-            <Link href="/auth/login" className="btn-secondary !py-1.5 !px-3 text-sm">
-              登录
-            </Link>
+            {session?.user ? (
+              <Link href="/profile" className="text-stone-600 hover:text-primary-600 flex items-center gap-1">
+                <User className="w-5 h-5 inline" />
+                <span className="ml-0.5">我的</span>
+              </Link>
+            ) : (
+              <Link href="/auth/login" className="btn-secondary !py-1.5 !px-3 text-sm">
+                登录
+              </Link>
+            )}
           </nav>
         </div>
       </header>

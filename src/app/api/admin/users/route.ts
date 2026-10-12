@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 import * as bcrypt from "bcryptjs";
+import { isValidPhone } from "@/lib/utils";
 
 /**
  * GET /api/admin/users
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const schema = z.object({
       name: z.string().min(1, "姓名不能为空").max(50),
-      phone: z.string().regex(/^1[3-9]\d{9}$/, "请输入正确的手机号"),
+      phone: z.string().refine((v) => isValidPhone(v), "请输入正确的手机号"),
       role: z.enum(["ADMIN", "KITCHEN"]),
       password: z.string().min(6, "密码至少6位").max(50),
     });

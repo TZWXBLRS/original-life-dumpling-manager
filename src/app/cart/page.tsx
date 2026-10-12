@@ -7,7 +7,7 @@ import {
   formatYuan,
   type CartItem,
 } from "@/lib/pricing";
-import { useCart } from "@/components/CartProvider";
+import { useCart } from "@/components/shared/CartProvider";
 import {
   ShoppingCart,
   Trash2,

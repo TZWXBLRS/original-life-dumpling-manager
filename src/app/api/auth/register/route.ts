@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import * as bcrypt from "bcryptjs";
 import { z } from "zod";
+import { isValidPhone } from "@/lib/utils";
 
 /**
  * 顾客注册 API
@@ -13,7 +14,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     const schema = z.object({
-      phone: z.string().regex(/^1\d{10}$/, "请输入正确的11位手机号"),
+      phone: z
+        .string()
+        .refine((v) => isValidPhone(v), "请输入正确的11位手机号"),
       password: z
         .string()
         .min(6, "密码至少6位")

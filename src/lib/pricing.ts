@@ -260,14 +260,24 @@ function aggregateBreakdown(
 
 // ============ 对外接口 ============
 
+/** 泡沫箱计费配置（可由调用方从 SystemConfig 注入，缺省用内置常量） */
+export interface FoamBoxConfig {
+  /** 单个泡沫箱单价（分） */
+  unitPrice?: number;
+  /** 每个泡沫箱可装盒数 */
+  capacity?: number;
+}
+
 /**
  * 计算购物车的最优价格
  * @param items 购物车条目列表
  * @param deliveryType 配送方式：自取/快递/闪送（快递需要计算泡沫箱费）
+ * @param foamBoxConfig 泡沫箱计费配置（可选，后台 SystemConfig 可覆盖默认值）
  */
 export function calculatePrice(
   items: CartItem[],
-  deliveryType: "PICKUP" | "DELIVERY" | "EXPRESS" = "PICKUP"
+  deliveryType: "PICKUP" | "DELIVERY" | "EXPRESS" = "PICKUP",
+  foamBoxConfig: FoamBoxConfig = {}
 ): PricingResult {
   // 1. 统计经典 & 特色盒数
   let classicBoxes = 0;
@@ -339,12 +349,16 @@ export function calculatePrice(
   const goodsAmount = result.minPrice;
   const breakdown = aggregateBreakdown(result.choices);
 
-  // 3. 泡沫箱费（仅快递）
+  // 3. 泡沫箱费（仅快递）—— 单价/容量可由后台 SystemConfig 覆盖
+  // 用 || 而非 ?? 兜底：0 / undefined / NaN 都视为"未配置"，退回默认常量
+  // （0 元不是合法的泡沫箱单价，仅出现在 SystemConfig 未配置或解析失败时）
+  const foamUnit = foamBoxConfig.unitPrice || PRICE.FOAM_BOX_UNIT;
+  const foamCapacity = foamBoxConfig.capacity || PRICE.FOAM_BOX_CAPACITY;
   let foamBoxCount = 0;
   let foamBoxAmount = 0;
   if (deliveryType === "DELIVERY") {
-    foamBoxCount = Math.ceil(totalBoxes / PRICE.FOAM_BOX_CAPACITY);
-    foamBoxAmount = foamBoxCount * PRICE.FOAM_BOX_UNIT;
+    foamBoxCount = Math.ceil(totalBoxes / foamCapacity);
+    foamBoxAmount = foamBoxCount * foamUnit;
   }
 
   return {

@@ -16,8 +16,7 @@ RUN npm ci || npm install
 
 # 复制源码 & 构建
 COPY . .
-RUN DATABASE_URL="file:./prisma/data/dumpling.db" npm run build \
-  && DATABASE_URL="file:./prisma/data/dumpling.db" npm run db:seed 2>/dev/null || true
+RUN DATABASE_URL="file:./prisma/data/dumpling.db" npm run build
 
 # ---------- 运行时镜像 ----------
 FROM node:20-alpine AS runner
@@ -40,9 +39,14 @@ COPY --from=builder /app/node_modules ./node_modules
 VOLUME ["/app/prisma/data"]
 EXPOSE 3000
 
-# 启动：先确保 DB 迁移 + seed，再运行服务
+# 启动：先同步 schema + 首次 seed，再运行服务
+# - db push 保证表结构与 schema 一致（首次或升级时建表）
+#   TODO: 迁移 MySQL/PG 后改用 prisma migrate deploy 保留迁移历史（PRD 8.1）
+# - seed 幂等 upsert，首次部署注入初始账号/商品
+# - 优先 standalone 精简产物，回退 npm start
 CMD ["sh", "-c", "\
   DATABASE_URL=file:./prisma/data/dumpling.db npx prisma db push --skip-generate 2>/dev/null || true; \
+  DATABASE_URL=file:./prisma/data/dumpling.db npm run db:seed 2>/dev/null || true; \
   node .next/standalone/server.js 2>/dev/null || \
   ( DATABASE_URL=file:./prisma/data/dumpling.db npm run start ) \
 "]

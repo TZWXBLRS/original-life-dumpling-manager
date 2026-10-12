@@ -20,11 +20,10 @@ async function main() {
 
   // ========= 1. 创建/更新 管理员账号 =========
   // 注意：手机号必须唯一，一个手机号不能同时是两个角色。
-  // 管理员：15313659956 / sushenghuo107
-  // 后厨：18301576627 / sushenghuo105
-  const adminName = process.env.ADMIN_NAME || "素生活";
-  const adminPhone = process.env.ADMIN_PHONE || "15313659956";
-  const adminPassword = process.env.ADMIN_PASSWORD || "sushenghuo107";
+  // 真实手机号/密码通过环境变量注入，默认值仅为开发占位，不应入仓。
+  const adminName = process.env.ADMIN_NAME || "管理员";
+  const adminPhone = process.env.ADMIN_PHONE || "13800138000";
+  const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
   const adminHash = await bcrypt.hash(adminPassword, 10);
 
   await prisma.user.upsert({
@@ -45,10 +44,10 @@ async function main() {
   console.log(`  ✓ 管理员账号: ${adminPhone} / ${adminPassword} (${adminName})`);
 
   // ========= 2. 创建/更新 后厨账号 =========
-  const kitchenName = process.env.KITCHEN_NAME || "素生活后厨";
-  // 后厨：18301576627 / sushenghuo105（独立于管理员手机号）
-  const kitchenPhone = process.env.KITCHEN_PHONE || "18301576627";
-  const kitchenPassword = process.env.KITCHEN_PASSWORD || "sushenghuo105";
+  const kitchenName = process.env.KITCHEN_NAME || "后厨";
+  // 后厨账号独立于管理员，密码通过环境变量注入
+  const kitchenPhone = process.env.KITCHEN_PHONE || "13800138001";
+  const kitchenPassword = process.env.KITCHEN_PASSWORD || "kitchen123";
   const kitchenHash = await bcrypt.hash(kitchenPassword, 10);
 
   await prisma.user.upsert({
@@ -178,7 +177,7 @@ async function main() {
       ],
     });
   const dailyLimit = process.env.DAILY_LIMIT || "100";
-  const storePhone = process.env.STORE_PHONE || "18301576627";
+  const storePhone = process.env.STORE_PHONE || "010-12345678";
   const storeName = process.env.STORE_NAME || "素生活·原味生活饺子馆";
 
   const configs = [
