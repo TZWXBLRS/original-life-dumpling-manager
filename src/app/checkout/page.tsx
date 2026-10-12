@@ -8,6 +8,7 @@ import {
   formatYuan,
   type CartItem,
 } from "@/lib/pricing";
+import { isValidPhone } from "@/lib/utils";
 import {
   ArrowLeft,
   CreditCard,
@@ -114,7 +115,7 @@ export default function CheckoutPage() {
         setError("请填写完整的收货信息（省市区、详细地址、收件人、手机号）");
         return;
       }
-      if (!/^1\d{10}$/.test(receiverPhone)) {
+      if (!isValidPhone(receiverPhone)) {
         setError("手机号格式不正确");
         return;
       }

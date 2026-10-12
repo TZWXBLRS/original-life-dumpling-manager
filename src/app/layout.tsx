@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { CartProvider } from "@/components/CartProvider";
+import { CartProvider } from "@/components/shared/CartProvider";
 
 export const metadata: Metadata = {
   title: "原味生活饺子馆 - 手工冷冻饺子订购",

@@ -13,7 +13,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { formatYuan } from "@/lib/pricing";
-import OrderActionButtons from "@/components/OrderActionButtons";
+import OrderActionButtons from "@/components/customer/OrderActionButtons";
 
 const STATUS_STEPS = [
   { key: "PENDING_PAYMENT", label: "待支付", icon: Clock },

@@ -12,7 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { formatYuan } from "@/lib/pricing";
-import { ExportCSVButton } from "@/components/ExportCSVButton";
+import { ExportCSVButton } from "@/components/admin/ExportCSVButton";
 
 const STATUS_TEXT: Record<string, { label: string; cls: string }> = {
   PENDING_PAYMENT: { label: "待支付", cls: "bg-amber-100 text-amber-800" },

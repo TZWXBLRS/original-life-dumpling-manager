@@ -41,6 +41,7 @@ EXPOSE 3000
 
 # 启动：先同步 schema + 首次 seed，再运行服务
 # - db push 保证表结构与 schema 一致（首次或升级时建表）
+#   TODO: 迁移 MySQL/PG 后改用 prisma migrate deploy 保留迁移历史（PRD 8.1）
 # - seed 幂等 upsert，首次部署注入初始账号/商品
 # - 优先 standalone 精简产物，回退 npm start
 CMD ["sh", "-c", "\
