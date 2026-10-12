@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🥟 原味生活饺子馆 · 同事试用指南</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 50%, #ecfccb 100%);
+    margin: 0;
+    padding: 32px 16px;
+    color: #1c1917;
+    line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  h1 {
+    font-size: 32px;
+    margin: 0 0 8px;
+    text-align: center;
+    color: #92400e;
+  }
+  .subtitle { text-align: center; color: #78350f; margin-bottom: 32px; font-size: 15px; }
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(120,53,15,0.08);
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    border: 1px solid #fde68a;
+  }
+  .card h2 {
+    margin: 0 0 16px;
+    font-size: 20px;
+    color: #78350f;
+    border-left: 4px solid #f59e0b;
+    padding-left: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .account-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .account {
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    border: 1px solid #fcd34d;
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .account .role {
+    font-weight: 700;
+    font-size: 16px;
+    color: #92400e;
+    margin-bottom: 8px;
+  }
+  .account .kv { font-size: 14px; color: #44403c; }
+  .account .kv b { color: #1c1917; font-family: "SF Mono", Menlo, Consolas, monospace; }
+  ul.step { padding-left: 20px; }
+  ul.step li { margin-bottom: 8px; }
+  code {
+    background: #1c1917;
+    color: #fbbf24;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    word-break: break-all;
+    display: inline-block;
+  }
+  pre {
+    background: #1c1917;
+    color: #fde68a;
+    padding: 14px 18px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 6px;
+  }
+  .tag.customer { background: #dbeafe; color: #1e40af; }
+  .tag.kitchen { background: #e0e7ff; color: #3730a3; }
+  .tag.admin { background: #fef3c7; color: #92400e; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid #fef3c7;
+  }
+  th { background: #fffbeb; color: #92400e; font-weight: 600; }
+  tr:hover td { background: #fffbeb; }
+  .warn {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .tip {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .path {
+    background: #f0fdf4;
+    color: #166534;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🥟 原味生活饺子馆 · 同事试用指南</h1>
+  <p class="subtitle">欢迎试用，请大家多提建议！流程不顺、价格算错、页面难看都可以吐槽～</p>
+
+  <!-- 访问方式 -->
+  <div class="card">
+    <h2>🌐 一、访问地址</h2>
+    <ul class="step">
+      <li><b>本地访问：</b><code>http://localhost:3000</code>（仅在老板你的电脑上打开）</li>
+      <li><b>发给同事试用（公网地址）：</b>请老板先在本机执行以下<b>任意一条命令</b>，拿到 <code>https://xxx.xx</code> 的公开链接后再发到群里：</li>
+    </ul>
+    <pre>
+# 方案A：ngrok（推荐，最稳。官网 ngrok.com 免费注册拿 token）
+ngrok http 3000
+
+# 方案B：localtunnel（npm 自带一条命令，免注册）
+npx localtunnel --port 3000 --subdomain dumpling-sushenghuo
+
+# 方案C：Cloudflare Quick Tunnel（下载一次cloudflared，免注册）
+# macOS:  brew install cloudflared
+# Windows/Linux:  https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
+cloudflared tunnel --url http://localhost:3000</pre>
+    <div class="tip">✅ 方案 B 最快：<code>cd /workspace/original-life-dumpling-manager</code> 项目目录里直接跑那条 <code>npx localtunnel</code> 即可。</div>
+    <div class="warn">⚠️ 公网分享时，后台密码都在页面上写明了，试用完记得关隧道哦～</div>
+  </div>
+
+  <!-- 测试账号 -->
+  <div class="card">
+    <h2>🔑 二、测试账号一览</h2>
+    <div class="account-grid">
+      <div class="account">
+        <div class="role"><span class="tag admin">管理员</span>老板/运营</div>
+        <div class="kv">手机号：<b>15313659956</b></div>
+        <div class="kv">密　码：<b>sushenghuo107</b></div>
+        <div class="kv">登录后自动跳：<b>管理后台</b></div>
+      </div>
+      <div class="account">
+        <div class="role"><span class="tag kitchen">后厨</span>包饺砸师傅</div>
+        <div class="kv">手机号：<b>18301576627</b></div>
+        <div class="kv">密　码：<b>sushenghuo105</b></div>
+        <div class="kv">可看：<b>生产看板 / 订单 / 库存</b></div>
+      </div>
+      <div class="account">
+        <div class="role"><span class="tag customer">顾客</span>自己注册一个</div>
+        <div class="kv">入口：<b>登录页 → 立即注册</b></div>
+        <div class="kv">用任意手机号（11位即可）+ 6位以上密码</div>
+        <div class="kv">可做：<b>选购/下单/取消/查看订单</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 建议试用流程 -->
+  <div class="card">
+    <h2>🧭 三、推荐试用流程（按顺序玩）</h2>
+    <table>
+      <thead>
+        <tr><th style="width:60px">#</th><th>谁来玩</th><th>干啥</th><th>进哪个页面</th><th>重点体验 & 吐槽点</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td><td><span class="tag customer">顾客</span></td>
+          <td>注册 + 逛饺子口味</td>
+          <td><span class="path">/products</span></td>
+          <td>8 种口味、特色 vs 经典标签、只数说明、库存显示对不对</td>
+        </tr>
+        <tr>
+          <td>2</td><td><span class="tag customer">顾客</span></td>
+          <td>加购物车 → 结算</td>
+          <td><span class="path">/cart</span> → <span class="path">/checkout</span></td>
+          <td>✅ <b>定价算法</b>（经典4盒100 / 特色3盒100 / 混拼加差价 / 泡沫箱5元）✅ 自取时间 / 快递省份时效（≤1晚安全，>1晚警告，海南新疆不支持）✅ 冷冻8小时校验和「顾客自行承担风险」勾选项</td>
+        </tr>
+        <tr>
+          <td>3</td><td><span class="tag customer">顾客</span></td>
+          <td>提交订单 → 查看订单详情 → 点「取消订单」</td>
+          <td><span class="path">/orders/[id]</span></td>
+          <td>待支付的订单，顾客能自己取消；已支付的取消会提示联系门店（并返还库存）</td>
+        </tr>
+        <tr>
+          <td>4</td><td><span class="tag admin">管理员</span></td>
+          <td>管理员登录 → 找那笔订单 → 标记支付</td>
+          <td><span class="path">/orders/[id]</span></td>
+          <td>状态时间线：支付、备餐、备好、发货、完成 — 每个节点都记录时间戳</td>
+        </tr>
+        <tr>
+          <td>5</td><td><span class="tag kitchen">后厨</span></td>
+          <td>后厨登录 → 生产看板</td>
+          <td><span class="path">/admin/production</span></td>
+          <td>✅ 今日总盒数、自取/快递各几单 ✅ <b>按口味备货</b>（三鲜要备几盒、黑松露还差几盒）✅ 三色进度条：待备 / 备餐中 / 备好 ✅ 点订单直接跳详情改状态</td>
+        </tr>
+        <tr>
+          <td>6</td><td><span class="tag kitchen">后厨</span></td>
+          <td>库存入库（模拟冷冻饺子入库）</td>
+          <td><span class="path">/admin/inventory</span></td>
+          <td>入库时勾选「刷新冷冻时间」，入库后 <b>8 小时内</b> 快递订单会提示「需要前台冷冻确认」才能发货</td>
+        </tr>
+        <tr>
+          <td>7</td><td><span class="tag admin">管理员</span></td>
+          <td>发货（快递单）</td>
+          <td><span class="path">/orders/[id]</span> 或 <span class="path">/admin/orders/[id]/ship</span></td>
+          <td>✅ 未满8小时冷冻的单，必须勾选「我已确认冷冻情况」才能发货 ✅ 已满的可直接发货</td>
+        </tr>
+        <tr>
+          <td>8</td><td><span class="tag admin">管理员</span></td>
+          <td>新增后厨/管理员账号</td>
+          <td><span class="path">/admin/users</span></td>
+          <td>新增员工、重置密码、禁用启用、切换角色（不能把自己降权/禁用）</td>
+        </tr>
+        <tr>
+          <td>9</td><td><span class="tag admin">管理员</span></td>
+          <td>改门店信息 / 营业参数</td>
+          <td><span class="path">/admin/settings</span></td>
+          <td>门店名、电话、自取地址、营业时间(JSON)、每日限购盒数、泡沫箱价格和容量</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 定价速查 -->
+  <div class="card">
+    <h2>💰 四、定价规则速查（用来帮你核对算得对不对）</h2>
+    <table>
+      <thead>
+        <tr><th>组合</th><th>计算方式</th><th>示例</th><th>总价</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>经典 × 4</td>
+          <td>买三赠一 = 100 元含打包费</td>
+          <td>4 盒三鲜</td>
+          <td>¥ 100</td>
+        </tr>
+        <tr>
+          <td>特色 × 3</td>
+          <td>3 盒 100 元</td>
+          <td>3 盒黑松露</td>
+          <td>¥ 100</td>
+        </tr>
+        <tr>
+          <td>3 经典 + 1 特色</td>
+          <td>基础 100 + 特色 × 10 差价</td>
+          <td>三鲜×3 + 菌菇×1</td>
+          <td>¥ 110</td>
+        </tr>
+        <tr>
+          <td>2 经典 + 2 特色</td>
+          <td>基础 100 + 特色 × 10 × 2</td>
+          <td>荠菜×2 + 菌菇×1 + 黑松露×1</td>
+          <td>¥ 120</td>
+        </tr>
+        <tr>
+          <td>泡沫箱</td>
+          <td>5 元 / 箱，每箱装 5 盒（向上取整）</td>
+          <td>8 盒 = 2 箱</td>
+          <td>+ ¥ 10</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 希望收集的反馈 -->
+  <div class="card">
+    <h2>🙏 五、反馈建议重点收集（老板你可以直接复制发群）</h2>
+    <p>麻烦大家重点看看这几块，拍截图或直接说想法都可以：</p>
+    <ul class="step">
+      <li><b>价格对不对</b>：有没有出现经典/特色/混拼算错钱的情况？</li>
+      <li><b>快递时效准不准</b>：你所在省份，系统显示几天到？和实际京东快递差多少？</li>
+      <li><b>冷冻8小时逻辑</b>：前台是否能清晰看到「这批发货是否要先确认冷冻」？</li>
+      <li><b>后厨看板好不好用</b>：口味汇总够不够直观？能不能一眼看出今天还要做多少？</li>
+      <li><b>页面颜值 & 手机适配</b>：用手机打开会不会歪？字会不会太小？</li>
+      <li><b>操作流程</b>：哪些步骤你觉得多此一举？哪些还可以更傻瓜？</li>
+      <li><b>功能遗漏</b>：还有什么必须要有但没做的？（比如打印小票、对接微信付款、京东快递面单……）</li>
+    </ul>
+  </div>
+
+  <p style="text-align:center; color:#78350f; margin-top: 32px; font-size: 14px;">
+    🥟 感谢大家试用，素生活会越做越好的！
+  </p>
+</div>
+</body>
+</html>

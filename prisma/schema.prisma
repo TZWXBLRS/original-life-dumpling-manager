@@ -1,0 +1,184 @@
+// Prisma schema - SQLite 数据库模型
+// 注意：SQLite 原生不支持 Enum，所有枚举值统一使用 String 类型，
+// 在业务代码层通过常量和校验保证合法值。
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== 用户与认证 ====================
+
+// UserRole 合法值：CUSTOMER | KITCHEN | ADMIN
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  phone        String     @unique
+  passwordHash String
+  role         String     @default("CUSTOMER")
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  addresses     Address[]
+  orders        Order[]
+  inventoryLogs InventoryLog[] @relation("InventoryOperator")
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String   // 收件人姓名
+  phone     String   // 收件人手机号
+  province  String
+  city      String
+  district  String
+  detail    String   // 详细地址（街道门牌号）
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  orders    Order[]  @relation("DeliveryAddress")
+}
+
+// ==================== 商品与库存 ====================
+
+// ProductCategory 合法值：CLASSIC | SPECIALTY
+model Product {
+  id            String    @id @default(cuid())
+  name          String    @unique  // 口味名称
+  category      String    // CLASSIC 经典 / SPECIALTY 特色
+  unitPrice     Int       // 单盒单价（分）
+  stock         Int       @default(0)
+  description   String?
+  imageUrl      String?
+  isActive      Boolean   @default(true)
+  sortOrder     Int       @default(0)
+  lastFrozenAt  DateTime? // 最后冷冻入库时间（用于发货冷冻校验）
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  orderItems    OrderItem[]
+  inventoryLogs InventoryLog[] @relation("ProductInventory")
+}
+
+// InventoryLogType 合法值：INBOUND | OUTBOUND | ADJUST | ORDER_LOCK | ORDER_RELEASE
+model InventoryLog {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation("ProductInventory", fields: [productId], references: [id])
+  type        String
+  quantity    Int
+  beforeStock Int
+  afterStock  Int
+  operatorId  String?
+  operator    User?    @relation("InventoryOperator", fields: [operatorId], references: [id])
+  remark      String?
+  createdAt   DateTime @default(now())
+
+  orderId     String?
+  order       Order?   @relation(fields: [orderId], references: [id])
+}
+
+// ==================== 订单 ====================
+
+// OrderStatus 合法值：
+//   PENDING_PAYMENT | PAID | PREPARING | READY_FOR_PICKUP | SHIPPED | COMPLETED | CANCELLED
+// DeliveryType 合法值：PICKUP | DELIVERY | EXPRESS
+
+model Order {
+  id              String   @id @default(cuid())
+  orderNo         String   @unique
+  pickupCode      String?  // 6位取货码（自取订单生成）
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  status          String   @default("PENDING_PAYMENT")
+
+  // 配送方式
+  deliveryType    String   // PICKUP / DELIVERY / EXPRESS
+  // 自取：时段字符串（例：09:30-11:30）
+  pickupSlot      String?
+  // 兼容老字段
+  pickupTime      DateTime?
+  addressId       String?
+  address         Address? @relation("DeliveryAddress", fields: [addressId], references: [id])
+  addressSnapshot String?  // JSON 字符串存完整地址快照
+
+  // 收货信息（直接冗余存订单上，避免地址被后续修改影响）
+  receiverName     String?
+  receiverPhone    String?
+  receiverProvince String?
+  receiverCity     String?
+  receiverDistrict String?
+  receiverAddress  String?  // 详细地址
+
+  // 费用明细
+  totalBoxes       Int
+  classicBoxes     Int      @default(0)
+  specialtyBoxes   Int      @default(0)
+  goodsAmount      Int
+  foamBoxCount     Int      @default(0)
+  foamBoxAmount    Int      @default(0)
+  totalAmount      Int
+  // 价格优惠组合明细（JSON 数组）
+  pricingBreakdown String?
+
+  // 支付
+  paidAt        DateTime?
+  paymentMethod String?
+  paymentRef    String?
+
+  // 时间线
+  preparingAt  DateTime?
+  readyAt      DateTime?
+  shippedAt    DateTime?
+  completedAt  DateTime?
+  cancelledAt  DateTime?
+  cancelReason String?
+
+  // 冷冻发货相关
+  plannedShipDate      DateTime?  // 计划发货日期（快递默认当天18:00-20:00窗口）
+  frozenConfirmRequired Boolean   @default(false) // 是否需要前台冷冻确认
+  frozenConfirmedAt    DateTime?  // 前台确认冷冻情况的时间
+  frozenConfirmedBy    String?    // 确认人ID
+  deliveryETA          DateTime?  // 预计送达时间
+  customerAckRisk      Boolean    @default(false) // 顾客是否已确认运输风险
+
+  note      String?
+  remark    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items         OrderItem[]
+  inventoryLogs InventoryLog[]
+}
+
+model OrderItem {
+  id          String @id @default(cuid())
+  orderId     String
+  order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product @relation(fields: [productId], references: [id])
+  productName String  // 商品名称快照
+  category    String  // CLASSIC / SPECIALTY
+  quantity    Int
+  unitPrice   Int     // 单价（分）
+  subtotal    Int     // 小计（分）
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// ==================== 系统配置 ====================
+
+model SystemConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+}

@@ -1,0 +1,32 @@
+services:
+  dumpling-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dumpling-manager
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:./data/dumpling.db
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - ADMIN_NAME=${ADMIN_NAME}
+      - ADMIN_PHONE=${ADMIN_PHONE}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    volumes:
+      # 数据库持久化挂载
+      - ./prisma/data:/app/prisma/data
+    networks:
+      - dumpling-net
+    # 启动前先确保数据库 schema 已同步（首次或升级时）
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        node node_modules/prisma/build/index.js db push --skip-generate
+        exec node server.js
+
+networks:
+  dumpling-net:
+    driver: bridge
