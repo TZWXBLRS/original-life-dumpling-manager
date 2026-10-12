@@ -23,6 +23,7 @@ export async function GET() {
       category: true,
       unitPrice: true,
       stock: true,
+      lockedStock: true,
       lastFrozenAt: true,
       description: true,
     },
@@ -31,6 +32,8 @@ export async function GET() {
   return NextResponse.json({
     products: products.map((p) => ({
       ...p,
+      // 可售库存 = 实际库存 - 锁定库存（待支付订单占用）
+      availableStock: Math.max(0, p.stock - p.lockedStock),
       lastFrozenAt: p.lastFrozenAt?.toISOString() ?? null,
     })),
   });

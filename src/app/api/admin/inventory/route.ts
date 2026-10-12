@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+import { INVENTORY_LOG_TYPE } from "@/lib/inventory";
 
 /**
  * 后台库存入库 / 出库 API
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
         await tx.inventoryLog.create({
           data: {
             productId,
-            type: "INCREASE",
+            type: INVENTORY_LOG_TYPE.INCREASE,
             quantity: changeAmount,
             beforeStock,
             afterStock: updated.stock,
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
         await tx.inventoryLog.create({
           data: {
             productId,
-            type: "DECREASE",
+            type: INVENTORY_LOG_TYPE.DECREASE,
             quantity: -changeAmount,
             beforeStock,
             afterStock: updated.stock,

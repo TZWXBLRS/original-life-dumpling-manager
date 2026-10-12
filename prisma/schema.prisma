@@ -53,7 +53,8 @@ model Product {
   name          String    @unique  // 口味名称
   category      String    // CLASSIC 经典 / SPECIALTY 特色
   unitPrice     Int       // 单盒单价（分）
-  stock         Int       @default(0)
+  stock         Int       @default(0)      // 实际库存（已扣减已支付订单）
+  lockedStock   Int       @default(0)      // 锁定库存（待支付订单占用，前台可售 = stock - lockedStock）
   description   String?
   imageUrl      String?
   isActive      Boolean   @default(true)
@@ -66,7 +67,8 @@ model Product {
   inventoryLogs InventoryLog[] @relation("ProductInventory")
 }
 
-// InventoryLogType 合法值：INBOUND | OUTBOUND | ADJUST | ORDER_LOCK | ORDER_RELEASE
+// InventoryLogType 合法值（见 src/lib/inventory.ts 的 INVENTORY_LOG_TYPE）：
+//   INCREASE(入库) | DECREASE(出库) | ORDER_LOCK(下单锁定) | ORDER_DEDUCT(支付扣减) | ORDER_RELEASE(取消释放)
 model InventoryLog {
   id          String   @id @default(cuid())
   productId   String
@@ -87,7 +89,8 @@ model InventoryLog {
 // ==================== 订单 ====================
 
 // OrderStatus 合法值：
-//   PENDING_PAYMENT | PAID | PREPARING | READY_FOR_PICKUP | SHIPPED | COMPLETED | CANCELLED
+//   PENDING_PAYMENT | PAID | PREPARING | READY | READY_FOR_PICKUP | SHIPPED | COMPLETED | CANCELLED
+//   其中 READY 表示"已备好待发货"（快递/闪送），READY_FOR_PICKUP 表示"自取订单已备好"
 // DeliveryType 合法值：PICKUP | DELIVERY | EXPRESS
 
 model Order {
@@ -97,6 +100,7 @@ model Order {
   userId          String
   user            User     @relation(fields: [userId], references: [id])
   status          String   @default("PENDING_PAYMENT")
+  expiresAt       DateTime? // 待支付订单超时时间（到点未支付则自动取消并释放锁定库存）
 
   // 配送方式
   deliveryType    String   // PICKUP / DELIVERY / EXPRESS

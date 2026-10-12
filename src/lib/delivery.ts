@@ -21,7 +21,7 @@ export const MAX_SAFE_NIGHTS = 1;
 
 // ============ 类型定义 ============
 
-export type DeliveryRiskLevel = "SAFE" | "WARNING" | "DANGER" | "UNSUPPORTED";
+export type DeliveryRiskLevel = "SAFE" | "WARNING" | "UNSUPPORTED";
 
 export interface DeliveryETARequest {
   province: string;
