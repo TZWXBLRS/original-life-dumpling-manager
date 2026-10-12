@@ -9,23 +9,30 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=file:./data/dumpling.db
+      # DATABASE_URL 必须指向挂载卷目录，否则容器重启丢数据
+      - DATABASE_URL=file:./prisma/data/dumpling.db
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - ADMIN_NAME=${ADMIN_NAME}
       - ADMIN_PHONE=${ADMIN_PHONE}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - KITCHEN_NAME=${KITCHEN_NAME}
+      - KITCHEN_PHONE=${KITCHEN_PHONE}
+      - KITCHEN_PASSWORD=${KITCHEN_PASSWORD}
+      - STORE_NAME=${STORE_NAME}
+      - STORE_PHONE=${STORE_PHONE}
     volumes:
-      # 数据库持久化挂载
+      # 数据库持久化挂载（与 DATABASE_URL 路径一致）
       - ./prisma/data:/app/prisma/data
     networks:
       - dumpling-net
-    # 启动前先确保数据库 schema 已同步（首次或升级时）
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        node node_modules/prisma/build/index.js db push --skip-generate
-        exec node server.js
+    # 健康检查：服务就绪后探活 /api/health
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 networks:
   dumpling-net:

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import {
   Snowflake,
   Plus,
@@ -107,24 +106,18 @@ export default function AdminInventoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-100">
-      <header className="bg-white border-b border-stone-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center gap-4">
-          <Link href="/admin/dashboard" className="text-stone-500 hover:text-primary-600 text-sm">
-            ← 仪表盘
-          </Link>
-          <h1 className="font-bold text-lg flex items-center gap-2">
-            <Snowflake /> 库存 & 冷冻管理
-          </h1>
-          <div className="flex-1" />
-          <div className="text-xs text-stone-500">
-            <Clock className="w-3.5 h-3.5 inline mr-1" />
-            入库时间即冷冻开始时间，需满8小时才能发快递
-          </div>
+    <div className="max-w-6xl mx-auto w-full">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <Snowflake /> 库存 & 冷冻管理
+        </h1>
+        <div className="text-xs text-stone-500 ml-auto">
+          <Clock className="w-3.5 h-3.5 inline mr-1" />
+          入库时间即冷冻开始时间，需满8小时才能发快递
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
+      <div>
         {msg && (
           <div
             className={`card mb-4 p-3 flex items-center gap-2 text-sm ${
@@ -353,7 +346,7 @@ export default function AdminInventoryPage() {
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

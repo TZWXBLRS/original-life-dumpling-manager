@@ -12,6 +12,7 @@ import {
 } from "@/lib/frozen-check";
 import { queryDeliveryETA } from "@/lib/delivery";
 import { availableStock, INVENTORY_LOG_TYPE } from "@/lib/inventory";
+import { generateOrderNo } from "@/lib/utils";
 import { cleanupExpiredOrders, PENDING_PAYMENT_TIMEOUT_MS } from "@/lib/order-cleanup";
 
 /**
@@ -225,8 +226,8 @@ export async function POST(req: NextRequest) {
       deliveryETA = eta.estimatedArrival;
     }
 
-    // ============== 事务写入：创建订单 + 扣库存 + 写日志 ==============
-    const orderNo = "DMP" + Date.now() + Math.floor(Math.random() * 1000);
+    // ============== 事务写入：创建订单 + 锁定库存 + 写日志 ==============
+    const orderNo = generateOrderNo();
 
     // 自取订单生成6位取货码
     const pickupCode =

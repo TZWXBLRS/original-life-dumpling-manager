@@ -125,23 +125,17 @@ export default async function AdminOrdersPage(props: {
   }));
 
   return (
-    <div className="min-h-screen bg-stone-100">
-      <header className="bg-white border-b border-stone-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center gap-4">
-          <Link href="/admin/dashboard" className="text-stone-500 hover:text-primary-600 text-sm">
-            ← 仪表盘
-          </Link>
-          <h1 className="font-bold text-lg">订单管理</h1>
-          <div className="flex-1" />
-          {totalPending > 0 && (
-            <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">
-              待处理 {totalPending} 单
-            </span>
-          )}
-        </div>
-      </header>
+    <div className="max-w-6xl mx-auto w-full">
+      <div className="mb-6 flex items-center gap-3">
+        <h1 className="text-2xl font-bold">订单管理</h1>
+        {totalPending > 0 && (
+          <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">
+            待处理 {totalPending} 单
+          </span>
+        )}
+      </div>
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
+      <div>
         {/* 搜索 + 筛选 */}
         <form className="card p-4 mb-4 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
@@ -325,7 +319,7 @@ export default async function AdminOrdersPage(props: {
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

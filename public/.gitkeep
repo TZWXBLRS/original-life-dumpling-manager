@@ -1,0 +1,3 @@
+# 此目录用于存放静态资源（商品图片、logo 等）。
+# Product.imageUrl 字段可指向 /public 下的相对路径，例如 "/images/jiaozi-jiicai.jpg"。
+# 生产环境也可改用对象存储（OSS/S3），imageUrl 直接存完整 URL，无需放此目录。
