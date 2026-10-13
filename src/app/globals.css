@@ -21,14 +21,25 @@
     @apply btn bg-primary-500 text-white hover:bg-primary-600 active:bg-primary-700
            shadow-sm hover:shadow;
   }
+  .btn-primary-glow {
+    @apply btn-primary shadow-md shadow-primary-500/25 hover:shadow-lg hover:shadow-primary-500/30;
+  }
   .btn-secondary {
     @apply btn bg-white border border-stone-300 text-stone-700 hover:bg-stone-50;
+  }
+  .btn-secondary-glass {
+    @apply btn bg-white/70 backdrop-blur border border-stone-200 text-stone-700
+           hover:bg-white shadow-sm;
   }
   .btn-danger {
     @apply btn bg-accent-500 text-white hover:bg-accent-600;
   }
   .card {
     @apply bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden;
+  }
+  .card-hover {
+    @apply card transition-all duration-300 hover:-translate-y-1 hover:shadow-xl
+           hover:border-primary-200;
   }
   .input {
     @apply w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none
@@ -52,5 +63,41 @@
   }
   .badge-out {
     @apply badge bg-stone-200 text-stone-500;
+  }
+  .promo-card {
+    @apply card-hover relative p-6 pt-7;
+  }
+  .feature-chip {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur
+           border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600
+           shadow-sm;
+  }
+}
+
+@layer utilities {
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-float {
+    animation: float 5s ease-in-out infinite;
+  }
+  .animate-fade-up {
+    animation: fade-up 0.55s ease-out both;
   }
 }

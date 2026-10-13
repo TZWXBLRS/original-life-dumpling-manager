@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { ShoppingCart, MapPin, Clock, Star } from "lucide-react";
+import {
+  ShoppingCart,
+  MapPin,
+  Clock,
+  Star,
+  Sparkles,
+  Leaf,
+  Truck,
+} from "lucide-react";
 
 /**
  * 顾客端页面 - 首页
@@ -38,13 +46,27 @@ export default function HomePage() {
       </header>
 
       {/* Hero 区域 */}
-      <section className="bg-gradient-to-br from-primary-50 via-white to-accent-50 py-16">
-        <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
-          <div>
-            <div className="inline-block bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm mb-4">
-              🎉 限时特惠 · 4盒组合¥100起
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-accent-50 py-14 md:py-20">
+        {/* 背景装饰 */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.35]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, #ed7312 1px, transparent 1px)",
+            backgroundSize: "26px 26px",
+          }}
+          aria-hidden="true"
+        />
+        <div className="pointer-events-none absolute -top-24 -left-16 w-72 h-72 rounded-full bg-primary-200/30 blur-3xl" aria-hidden="true" />
+        <div className="pointer-events-none absolute -bottom-24 right-0 w-80 h-80 rounded-full bg-accent-200/30 blur-3xl" aria-hidden="true" />
+
+        <div className="relative max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
+          <div className="animate-fade-up">
+            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur border border-primary-200 text-primary-700 px-3.5 py-1.5 rounded-full text-sm font-medium mb-5 shadow-sm">
+              <Sparkles className="w-4 h-4" />
+              限时特惠 · 4盒组合 ¥100 起
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-stone-800 leading-tight mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-stone-800 leading-tight mb-4 tracking-tight">
               手工现包
               <br />
               <span className="text-primary-600">家的味道</span>
@@ -54,66 +76,130 @@ export default function HomePage() {
               <br />
               六种经典口味，两种特色风味，总有一款适合你。
             </p>
-            <div className="flex gap-3">
-              <Link href="/products" className="btn-primary text-lg !px-6 !py-3">
+            <div className="flex flex-wrap gap-3">
+              <Link href="/products" className="btn-primary-glow text-lg !px-6 !py-3">
                 立即选购 🥟
               </Link>
-              <a href="#promo" className="btn-secondary text-lg !px-6 !py-3">
+              <a href="#promo" className="btn-secondary-glass text-lg !px-6 !py-3">
                 查看活动
               </a>
             </div>
-            <div className="flex gap-6 mt-10 text-sm text-stone-500">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" /> 支持自取
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" /> 预约时间
-              </div>
-              <div className="flex items-center gap-2">
-                <Star className="w-4 h-4" /> 京东快递
-              </div>
+            <div className="flex flex-wrap gap-3 mt-8">
+              <span className="feature-chip">
+                <MapPin className="w-3.5 h-3.5 text-primary-500" /> 支持自取
+              </span>
+              <span className="feature-chip">
+                <Clock className="w-3.5 h-3.5 text-primary-500" /> 预约时间
+              </span>
+              <span className="feature-chip">
+                <Leaf className="w-3.5 h-3.5 text-green-600" /> 纯素配方
+              </span>
+              <span className="feature-chip">
+                <Truck className="w-3.5 h-3.5 text-primary-500" /> 京东快递
+              </span>
             </div>
           </div>
-          <div className="hidden md:block">
-            <div className="aspect-square bg-white rounded-3xl shadow-xl border border-stone-200 flex items-center justify-center text-9xl">
-              🥟
+
+          {/* 右侧视觉卡 */}
+          <div className="hidden md:block animate-fade-up">
+            <div className="relative aspect-square rounded-[2rem] bg-gradient-to-br from-primary-100 via-white to-accent-100 border border-white shadow-xl overflow-hidden flex items-center justify-center">
+              <div
+                className="absolute inset-0 opacity-30"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(circle, #d9565a 1px, transparent 1px)",
+                  backgroundSize: "24px 24px",
+                }}
+                aria-hidden="true"
+              />
+              <div className="absolute -top-16 -right-12 w-52 h-52 rounded-full bg-primary-200/40 blur-3xl" aria-hidden="true" />
+              <div className="absolute -bottom-16 -left-12 w-52 h-52 rounded-full bg-accent-200/40 blur-3xl" aria-hidden="true" />
+
+              <span className="relative text-[9rem] leading-none drop-shadow-sm animate-float">
+                🥟
+              </span>
+
+              <div className="absolute top-6 left-6 bg-white/85 backdrop-blur rounded-2xl px-3.5 py-2 shadow-md border border-stone-100">
+                <div className="text-[10px] text-stone-400">当日新鲜</div>
+                <div className="text-sm font-bold text-stone-700">每日现包</div>
+              </div>
+              <div className="absolute bottom-6 right-6 bg-white/85 backdrop-blur rounded-2xl px-3.5 py-2 shadow-md border border-stone-100 text-right">
+                <div className="text-[10px] text-stone-400">口味丰富</div>
+                <div className="text-sm font-bold text-stone-700">6 经典 · 2 特色</div>
+              </div>
+              <div className="absolute bottom-6 left-6 inline-flex items-center gap-1 bg-amber-400/95 text-stone-900 rounded-full px-3 py-1 text-xs font-semibold shadow-md">
+                <Star className="w-3.5 h-3.5 fill-stone-900" /> 手工现包
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* 活动说明 */}
-      <section id="promo" className="py-16 max-w-6xl mx-auto px-4">
-        <h2 className="text-2xl font-bold mb-8 text-center">🎁 优惠活动</h2>
+      <section id="promo" className="py-14 md:py-16 max-w-6xl mx-auto px-4 w-full">
+        <div className="text-center mb-9">
+          <h2 className="text-2xl md:text-3xl font-bold text-stone-800">
+            🎁 优惠活动
+          </h2>
+          <p className="text-stone-500 text-sm mt-2">
+            多买多省，系统结账时自动按最优方案计价
+          </p>
+        </div>
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="card p-6 bg-gradient-to-br from-green-50 to-white">
-            <div className="text-4xl mb-3">💰</div>
-            <h3 className="font-bold text-lg mb-2">特惠套餐A·4盒组合</h3>
-            <p className="text-stone-600 text-sm mb-3">
+          {/* 特惠套餐A */}
+          <div className="promo-card bg-gradient-to-br from-green-50 to-white">
+            <span className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-green-400 to-emerald-200" aria-hidden="true" />
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center text-2xl">
+                💰
+              </div>
+              <span className="badge-classic">最受欢迎</span>
+            </div>
+            <h3 className="font-bold text-lg mb-2">特惠套餐A · 4盒组合</h3>
+            <p className="text-stone-600 text-sm mb-4">
               经典+特色任意搭配，4盒起享活动价
             </p>
             <div className="text-2xl font-bold text-primary-600">
               4盒 ¥100 起
-              <span className="text-sm text-stone-500 ml-2">特色每盒+¥10</span>
+              <span className="text-sm text-stone-500 ml-2 font-normal">
+                特色每盒+¥10
+              </span>
             </div>
           </div>
-          <div className="card p-6 bg-gradient-to-br from-amber-50 to-white">
-            <div className="text-4xl mb-3">✨</div>
-            <h3 className="font-bold text-lg mb-2">特惠套餐B·3盒特色</h3>
-            <p className="text-stone-600 text-sm mb-3">黑松露、菌菇 · 珍稀口味</p>
-            <div className="text-2xl font-bold text-primary-600">
-              3盒 ¥100
+
+          {/* 特惠套餐B */}
+          <div className="promo-card bg-gradient-to-br from-amber-50 to-white">
+            <span className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-amber-400 to-orange-200" aria-hidden="true" />
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-2xl">
+                ✨
+              </div>
+              <span className="badge-specialty">特色精选</span>
             </div>
+            <h3 className="font-bold text-lg mb-2">特惠套餐B · 3盒特色</h3>
+            <p className="text-stone-600 text-sm mb-4">
+              黑松露、菌菇 · 珍稀口味
+            </p>
+            <div className="text-2xl font-bold text-primary-600">3盒 ¥100</div>
           </div>
-          <div className="card p-6 bg-gradient-to-br from-primary-50 to-white">
-            <div className="h-10 mb-3" aria-hidden="true" />
-            <h3 className="font-bold text-lg mb-2">特惠套餐C·6盒乐享</h3>
-            <p className="text-stone-600 text-sm mb-3">
+
+          {/* 特惠套餐C */}
+          <div className="promo-card bg-gradient-to-br from-primary-50 to-white">
+            <span className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-primary-400 to-orange-200" aria-hidden="true" />
+            <div className="flex items-start justify-between mb-4">
+              {/* 无合适图标，保留空位以保持三卡对齐 */}
+              <div className="w-12 h-12" aria-hidden="true" />
+              <span className="badge-stock">超值乐享</span>
+            </div>
+            <h3 className="font-bold text-lg mb-2">特惠套餐C · 6盒乐享</h3>
+            <p className="text-stone-600 text-sm mb-4">
               任意搭配6盒，特色≤2盒不加价
             </p>
             <div className="text-2xl font-bold text-primary-600">
               6盒 ¥158 起
-              <span className="text-sm text-stone-500 ml-2">特色超2盒每盒+¥10</span>
+              <span className="text-sm text-stone-500 ml-2 font-normal">
+                特色超2盒每盒+¥10
+              </span>
             </div>
           </div>
         </div>
