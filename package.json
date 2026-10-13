@@ -13,7 +13,7 @@
     "db:seed": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seed.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:cloudflare": "prisma generate && npx @opennextjs/cloudflare build",
+    "build:cloudflare": "prisma generate && node scripts/build-cloudflare.js",
     "deploy:cloudflare": "npm run build:cloudflare && npx wrangler pages deploy .open-next",
     "preview:cloudflare": "npm run build:cloudflare && npx wrangler pages dev .open-next"
   },
