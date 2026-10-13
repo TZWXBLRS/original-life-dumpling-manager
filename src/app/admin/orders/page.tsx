@@ -87,7 +87,6 @@ export default async function AdminOrdersPage(props: {
         receiverPhone: true,
         totalBoxes: true,
         totalAmount: true,
-        frozenConfirmRequired: true,
         note: true,
         items: { select: { productName: true, quantity: true } },
         user: { select: { phone: true, name: true } },
@@ -369,13 +368,6 @@ export default async function AdminOrdersPage(props: {
                           >
                             {st?.label || order.status}
                           </span>
-                          {order.frozenConfirmRequired &&
-                            (order.status === "READY" || order.status === "PREPARING" || order.status === "PAID") &&
-                            order.deliveryType === "DELIVERY" && (
-                              <div className="mt-1 text-xs text-amber-700 whitespace-nowrap">
-                                ⚠️ 需冷冻确认
-                              </div>
-                            )}
                         </td>
                         <td className="px-4 py-3 align-top text-right whitespace-nowrap">
                           <Link

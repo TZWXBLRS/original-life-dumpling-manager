@@ -16,7 +16,6 @@ import {
   ArrowRight,
   Clock,
   AlertTriangle,
-  Snowflake,
   Truck,
   CheckCircle2,
   XCircle,
@@ -24,10 +23,9 @@ import {
 import {
   DELIVERY_WINDOW_START_HOUR,
   DELIVERY_WINDOW_END_HOUR,
-  FROZEN_REQUIRED_HOURS,
   isInDeliveryWindow,
   getNextDeliveryWindow,
-} from "@/lib/frozen-check";
+} from "@/lib/delivery-window";
 import type { DeliveryETAResult } from "@/lib/delivery";
 import { DemoLoginBar } from "@/components/DemoLoginBar";
 
@@ -203,20 +201,6 @@ export default function CartPage() {
                   <div className="flex items-center gap-2 text-primary-700">
                     <Truck className="w-5 h-5" />
                     <h3 className="font-bold">快递发货须知</h3>
-                  </div>
-
-                  {/* 冷冻时间提示 */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
-                    <div className="flex items-start gap-2">
-                      <Snowflake className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-                      <div>
-                        <div className="font-medium text-blue-800">冷冻要求</div>
-                        <div className="text-blue-700 mt-1">
-                          冷冻饺子入库后需满 <b>{FROZEN_REQUIRED_HOURS} 小时</b> 才能发快递，
-                          确保饺子充分冷冻。发货时间不会早于冷冻完成时间。
-                        </div>
-                      </div>
-                    </div>
                   </div>
 
                   {/* 发货时间窗口提示 */}

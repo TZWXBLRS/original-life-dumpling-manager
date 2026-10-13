@@ -3,14 +3,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  Snowflake,
   Plus,
   Minus,
   Loader2,
   PackageMinus,
   PackagePlus,
-  Clock,
-  Store,
   AlertTriangle,
   CheckCircle2,
 } from "lucide-react";
@@ -21,7 +18,6 @@ interface Product {
   category: string;
   unitPrice: number;
   stock: number;
-  lastFrozenAt: string | null;
   description: string;
 }
 
@@ -33,8 +29,8 @@ const STATUS_TEXT = {
 /**
  * 后台 - 库存管理页
  * 功能：
- *  1. 查看当前所有口味库存、单价、冷冻入库时间
- *  2. 入库操作：新增库存 + 同时更新 lastFrozenAt（冷冻开始时间）
+ *  1. 查看当前所有口味库存、单价
+ *  2. 入库操作：新增库存
  *  3. 出库操作：减少库存（如：报废、盘点差异）
  *  4. 最近变更记录
  */
@@ -81,9 +77,7 @@ export default function AdminInventoryPage() {
       if (!res.ok) throw new Error(data.error);
       setMsg({
         type: "ok",
-        text: `「${p.name}」${opType === "IN" ? "入库" : "出库"}成功：${opQty} 盒，${
-          opType === "IN" ? "lastFrozenAt 已同步更新为当前时间" : ""
-        }`,
+        text: `「${p.name}」${opType === "IN" ? "入库" : "出库"}成功：${opQty} 盒`,
       });
       setEditingId(null);
       load();
@@ -95,17 +89,6 @@ export default function AdminInventoryPage() {
     }
   };
 
-  const frozenStatus = (p: Product) => {
-    if (!p.lastFrozenAt) return { ok: false, text: "无冷冻记录", hours: 0 };
-    const ms = Date.now() - new Date(p.lastFrozenAt).getTime();
-    const h = Math.floor(ms / (60 * 60 * 1000));
-    return {
-      ok: h >= 8,
-      text: h >= 8 ? `冷冻 ${h}h ✅` : `冷冻 ${h}h（需≥8h）`,
-      hours: h,
-    };
-  };
-
   return (
     <div className="min-h-screen bg-stone-100">
       <header className="bg-white border-b border-stone-200 sticky top-0 z-10">
@@ -114,13 +97,9 @@ export default function AdminInventoryPage() {
             ← 仪表盘
           </Link>
           <h1 className="font-bold text-lg flex items-center gap-2">
-            <Snowflake /> 库存 & 冷冻管理
+            库存管理
           </h1>
           <div className="flex-1" />
-          <div className="text-xs text-stone-500">
-            <Clock className="w-3.5 h-3.5 inline mr-1" />
-            入库时间即冷冻开始时间，需满8小时才能发快递
-          </div>
         </div>
       </header>
 
@@ -155,15 +134,12 @@ export default function AdminInventoryPage() {
                     <th className="text-left px-4 py-3">商品</th>
                     <th className="text-left px-4 py-3">当前库存</th>
                     <th className="text-left px-4 py-3">单价</th>
-                    <th className="text-left px-4 py-3">最近入库/冷冻时间</th>
-                    <th className="text-left px-4 py-3">发货状态</th>
                     <th className="text-left px-4 py-3">操作</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100">
                   {products.map((p) => {
                     const st = STATUS_TEXT[p.category as keyof typeof STATUS_TEXT];
-                    const fz = frozenStatus(p);
                     const editing = editingId === p.id;
                     return (
                       <tr key={p.id}>
@@ -191,35 +167,6 @@ export default function AdminInventoryPage() {
                           )}
                         </td>
                         <td className="px-4 py-3">¥{(p.unitPrice / 100).toFixed(0)}</td>
-                        <td className="px-4 py-3">
-                          {p.lastFrozenAt ? (
-                            <>
-                              <div className="text-xs text-stone-600">
-                                {new Date(p.lastFrozenAt).toLocaleString("zh-CN", {
-                                  month: "2-digit",
-                                  day: "2-digit",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </div>
-                            </>
-                          ) : (
-                            <span className="text-accent-600 text-xs">
-                              无冷冻记录
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-block px-2 py-0.5 rounded-full text-xs ${
-                              fz.ok
-                                ? "bg-green-100 text-green-700"
-                                : "bg-amber-100 text-amber-700"
-                            }`}
-                          >
-                            {fz.text}
-                          </span>
-                        </td>
                         <td className="px-4 py-3">
                           {!editing ? (
                             <div className="flex gap-2">
@@ -313,12 +260,8 @@ export default function AdminInventoryPage() {
                                 >
                                   {submitting ? (
                                     <Loader2 className="w-3 h-3 animate-spin" />
-                                  ) : opType === "IN" ? (
-                                    <Snowflake className="w-3 h-3" />
-                                  ) : (
-                                    ""
-                                  )}
-                                  确认{opType === "IN" ? "入库（更新冷冻时间）" : "出库"}
+                                  ) : null}
+                                  确认{opType === "IN" ? "入库" : "出库"}
                                 </button>
                                 <button
                                   className="btn-secondary !py-1.5 !px-3 text-xs"
@@ -328,13 +271,6 @@ export default function AdminInventoryPage() {
                                   取消
                                 </button>
                               </div>
-                              {opType === "IN" && (
-                                <div className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg p-2">
-                                  <Store className="w-3 h-3 inline mr-1" />
-                                  入库后 lastFrozenAt 会更新为当前时间，该批次需要 8
-                                  小时后才能发快递。
-                                </div>
-                              )}
                               {opType === "OUT" &&
                                 opQty > p.stock && (
                                   <div className="text-xs text-accent-700 bg-accent-50 border border-accent-200 rounded-lg p-2">

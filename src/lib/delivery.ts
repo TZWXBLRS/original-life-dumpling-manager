@@ -12,7 +12,7 @@
  * 后续可对接京东物流开放API获取实时时效。
  */
 
-import { getNextDeliveryWindow } from "./frozen-check";
+import { getNextDeliveryWindow } from "./delivery-window";
 
 // ============ 常量 ============
 

@@ -16,7 +16,6 @@ type Props = {
   orderId: string;
   status: string;
   deliveryType: string;
-  frozenConfirmRequired: boolean;
   userRole: "CUSTOMER" | "KITCHEN" | "ADMIN";
   isOwner: boolean;
 };
@@ -70,13 +69,11 @@ export default function OrderActionButtons({
   orderId,
   status,
   deliveryType,
-  frozenConfirmRequired,
   userRole,
   isOwner,
 }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState<Action | null>(null);
-  const [frozenChecked, setFrozenChecked] = useState(false);
   const [cancelInput, setCancelInput] = useState("");
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [error, setError] = useState("");
@@ -118,16 +115,9 @@ export default function OrderActionButtons({
       return;
     }
 
-    // 发货前确认冷冻
-    if (action === "SHIP" && frozenConfirmRequired && !frozenChecked) {
-      setError("请先勾选：已确认冷冻情况，确认可发货");
-      return;
-    }
-
     setLoading(action);
     try {
       const body: any = { action };
-      if (action === "SHIP") body.frozenConfirm = frozenChecked || !frozenConfirmRequired;
       if (action === "PAY") body.paymentMethod = "MANUAL";
 
       const res = await fetch(`/api/orders/${orderId}/status`, {
@@ -173,30 +163,6 @@ export default function OrderActionButtons({
   return (
     <div className="card p-5">
       <h3 className="font-bold mb-3">订单操作</h3>
-
-      {/* 冷冻确认检查框 */}
-      {frozenConfirmRequired &&
-        (status === "PAID" ||
-          status === "PREPARING" ||
-          status === "READY") &&
-        deliveryType === "DELIVERY" && (
-          <label className="flex items-start gap-2 p-3 mb-3 bg-amber-50 border border-amber-200 rounded-lg cursor-pointer">
-            <input
-              type="checkbox"
-              className="mt-0.5"
-              checked={frozenChecked}
-              onChange={(e) => setFrozenChecked(e.target.checked)}
-            />
-            <div className="text-xs text-amber-800">
-              <div className="font-medium flex items-center gap-1">
-                <AlertTriangle className="w-3.5 h-3.5" /> 冷冻确认
-              </div>
-              <div className="mt-0.5">
-                此订单商品入库未满 8 小时。我已亲自确认冷冻情况，饺子处于合格冷冻状态，可以发货。
-              </div>
-            </div>
-          </label>
-        )}
 
       {error && (
         <div className="mb-3 p-3 rounded-lg text-sm bg-accent-50 text-accent-700 border border-accent-200">

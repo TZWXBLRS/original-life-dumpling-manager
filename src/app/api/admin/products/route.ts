@@ -23,15 +23,11 @@ export async function GET() {
       category: true,
       unitPrice: true,
       stock: true,
-      lastFrozenAt: true,
       description: true,
     },
   });
 
   return NextResponse.json({
-    products: products.map((p) => ({
-      ...p,
-      lastFrozenAt: p.lastFrozenAt?.toISOString() ?? null,
-    })),
+    products,
   });
 }

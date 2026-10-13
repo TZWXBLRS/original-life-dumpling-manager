@@ -7,8 +7,6 @@ import { z } from "zod";
  * 后台库存入库 / 出库 API
  * POST /api/admin/inventory
  * body: { productId, changeType: 'IN'|'OUT', changeAmount, reason }
- *
- * 入库时同步更新 Product.lastFrozenAt = NOW()
  */
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -45,7 +43,6 @@ export async function POST(req: NextRequest) {
           where: { id: productId },
           data: {
             stock: { increment: changeAmount },
-            lastFrozenAt: new Date(), // 入库即重置冷冻开始时间
           },
         });
         await tx.inventoryLog.create({
@@ -62,7 +59,6 @@ export async function POST(req: NextRequest) {
         return {
           product: updated.name,
           newStock: updated.stock,
-          lastFrozenAt: updated.lastFrozenAt,
         };
       } else {
         // 出库：先判断库存够不够

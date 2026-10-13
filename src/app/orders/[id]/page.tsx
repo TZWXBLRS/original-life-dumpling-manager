@@ -104,7 +104,6 @@ export default async function OrderDetailPage(props: {
             orderId={order.id}
             status={order.status}
             deliveryType={order.deliveryType}
-            frozenConfirmRequired={!!order.frozenConfirmRequired}
             userRole={session.user.role}
             isOwner={isOwner}
           />

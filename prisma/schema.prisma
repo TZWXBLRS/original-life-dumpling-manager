@@ -58,7 +58,6 @@ model Product {
   imageUrl      String?
   isActive      Boolean   @default(true)
   sortOrder     Int       @default(0)
-  lastFrozenAt  DateTime? // 最后冷冻入库时间（用于发货冷冻校验）
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -140,11 +139,8 @@ model Order {
   cancelledAt  DateTime?
   cancelReason String?
 
-  // 冷冻发货相关
+  // 快递发货相关
   plannedShipDate      DateTime?  // 计划发货日期（快递默认当天18:00-20:00窗口）
-  frozenConfirmRequired Boolean   @default(false) // 是否需要前台冷冻确认
-  frozenConfirmedAt    DateTime?  // 前台确认冷冻情况的时间
-  frozenConfirmedBy    String?    // 确认人ID
   deliveryETA          DateTime?  // 预计送达时间
   customerAckRisk      Boolean    @default(false) // 顾客是否已确认运输风险
 

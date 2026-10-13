@@ -67,7 +67,6 @@ const ACTION_TO_STATUS: Record<
  * body: {
  *   action: 'PAY' | 'START_PREPARE' | 'MARK_READY' | 'SHIP' | 'COMPLETE' | 'CANCEL',
  *   cancelReason?: string,  // 取消原因
- *   frozenConfirm?: boolean, // 冷冻确认（快递发货时）
  * }
  */
 export async function PATCH(
@@ -91,7 +90,6 @@ export async function PATCH(
         "CANCEL",
       ]),
       cancelReason: z.string().max(200).optional(),
-      frozenConfirm: z.boolean().optional(),
       paymentMethod: z.string().optional(),
     });
     const parsed = schema.safeParse(body);
@@ -101,7 +99,7 @@ export async function PATCH(
         { status: 400 }
       );
     }
-    const { action, cancelReason, frozenConfirm, paymentMethod } = parsed.data;
+    const { action, cancelReason, paymentMethod } = parsed.data;
 
     // 1. 查订单
     const order = await prisma.order.findUnique({
@@ -161,21 +159,7 @@ export async function PATCH(
       );
     }
 
-    // 4. 快递发货时：冷冻确认检查
-    if (action === "SHIP" && order.deliveryType === "DELIVERY") {
-      if (order.frozenConfirmRequired && !frozenConfirm) {
-        return NextResponse.json(
-          {
-            error:
-              "此订单冷冻时间未满8小时，请前台确认饺子冷冻情况后，勾选冷冻确认再发货",
-            needFrozenConfirm: true,
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    // 5. 执行状态变更（事务处理）
+    // 4. 执行状态变更（事务处理）
     const now = new Date();
     const updateData: any = {
       status: nextStatus,
@@ -196,10 +180,6 @@ export async function PATCH(
         break;
       case "SHIPPED":
         updateData.shippedAt = now;
-        if (order.frozenConfirmRequired) {
-          updateData.frozenConfirmedAt = now;
-          updateData.frozenConfirmedBy = session.user.id;
-        }
         break;
       case "COMPLETED":
         updateData.completedAt = now;

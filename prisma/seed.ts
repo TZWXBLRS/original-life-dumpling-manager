@@ -70,9 +70,6 @@ async function main() {
   console.log(`  ✓ 后厨账号: ${kitchenPhone} / ${kitchenPassword} (${kitchenName})`);
 
   // ========= 3. 初始化商品（饺子口味） =========
-  // 初始冷冻时间设为24小时前，确保可发货
-  const frozenTime = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
   const products = [
     {
       name: "荠菜饺子",
@@ -81,7 +78,6 @@ async function main() {
       description: "新鲜荠菜，清香可口（每盒20只）",
       sortOrder: 1,
       stock: 50,
-      lastFrozenAt: frozenTime,
     },
     {
       name: "酸菜饺子",
@@ -90,7 +86,6 @@ async function main() {
       description: "东北酸菜风味，酸爽开胃（每盒20只）",
       sortOrder: 2,
       stock: 50,
-      lastFrozenAt: frozenTime,
     },
     {
       name: "三鲜饺子",
@@ -99,7 +94,6 @@ async function main() {
       description: "素三鲜组合，三种时蔬鲜香搭配（每盒20只）",
       sortOrder: 3,
       stock: 50,
-      lastFrozenAt: frozenTime,
     },
     {
       name: "茴香饺子",
@@ -108,7 +102,6 @@ async function main() {
       description: "北方特色茴香口味，回味悠长（每盒20只）",
       sortOrder: 4,
       stock: 50,
-      lastFrozenAt: frozenTime,
     },
     {
       name: "芹菜饺子",
@@ -117,7 +110,6 @@ async function main() {
       description: "新鲜芹菜，清爽不腻（每盒20只）",
       sortOrder: 5,
       stock: 50,
-      lastFrozenAt: frozenTime,
     },
     {
       name: "玉米饺子",
@@ -126,7 +118,6 @@ async function main() {
       description: "甜玉米粒，老少皆宜（每盒20只）",
       sortOrder: 6,
       stock: 50,
-      lastFrozenAt: frozenTime,
     },
     {
       name: "黑松露饺子",
@@ -135,7 +126,6 @@ async function main() {
       description: "珍稀黑松露，高端风味（每盒12只）",
       sortOrder: 7,
       stock: 20,
-      lastFrozenAt: frozenTime,
     },
     {
       name: "菌菇饺子",
@@ -144,7 +134,6 @@ async function main() {
       description: "多种野生菌菇混合，鲜美无比（每盒20只）",
       sortOrder: 8,
       stock: 20,
-      lastFrozenAt: frozenTime,
     },
   ];
 
@@ -472,7 +461,6 @@ async function seedDemoOrders() {
         pickupCode,
         // 快递
         plannedShipDate,
-        frozenConfirmRequired: false,
         deliveryETA,
         customerAckRisk: false,
         // 支付（演示默认微信支付占位）

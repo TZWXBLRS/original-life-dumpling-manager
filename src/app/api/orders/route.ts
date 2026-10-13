@@ -6,10 +6,7 @@ import {
   calculatePrice,
   type CartItem,
 } from "@/lib/pricing";
-import {
-  checkOrderFrozenStatus,
-  getNextDeliveryWindow,
-} from "@/lib/frozen-check";
+import { getNextDeliveryWindow } from "@/lib/delivery-window";
 import { queryDeliveryETA } from "@/lib/delivery";
 
 /**
@@ -91,7 +88,7 @@ export async function POST(req: NextRequest) {
     const productIds = items.map((i) => i.productId);
     const products = await prisma.product.findMany({
       where: { id: { in: productIds } },
-      select: { id: true, stock: true, lastFrozenAt: true, name: true, unitPrice: true, category: true },
+      select: { id: true, stock: true, name: true, unitPrice: true, category: true },
     });
 
     const productMap = new Map(products.map((p) => [p.id, p]));
@@ -154,27 +151,11 @@ export async function POST(req: NextRequest) {
       deliveryType as "PICKUP" | "DELIVERY" | "EXPRESS"
     );
 
-    // ============== 快递冷冻与时效校验 ==============
+    // ============== 快递时效校验 ==============
     let plannedShipDate: Date | null = null;
-    let frozenConfirmRequired = false;
     let deliveryETA: Date | null = null;
 
     if (deliveryType === "DELIVERY") {
-      // 冷冻时间检查
-      const frozenInfos = products.map((p) => ({
-        productId: p.id,
-        productName: p.name,
-        lastFrozenAt: p.lastFrozenAt,
-      }));
-      const frozenCheck = checkOrderFrozenStatus(frozenInfos);
-      if (frozenCheck.items.some((i) => i.status === "NO_RECORD")) {
-        return NextResponse.json(
-          { error: "部分商品未入库，请稍后重试或联系门店" },
-          { status: 400 }
-        );
-      }
-      frozenConfirmRequired = frozenCheck.needsConfirmation;
-
       // 发货时间：取下一个快递窗口的开始时间
       plannedShipDate = getNextDeliveryWindow().start;
 
@@ -271,7 +252,6 @@ export async function POST(req: NextRequest) {
           pickupCode: deliveryType === "PICKUP" ? pickupCode : null,
           // 快递发货相关
           plannedShipDate,
-          frozenConfirmRequired,
           deliveryETA,
           customerAckRisk,
           note: note ?? null,
