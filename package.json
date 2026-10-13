@@ -12,10 +12,15 @@
     "db:generate": "prisma generate",
     "db:seed": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seed.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "build:cloudflare": "prisma generate && npx @opennextjs/cloudflare build",
+    "deploy:cloudflare": "npm run build:cloudflare && npx wrangler pages deploy .open-next",
+    "preview:cloudflare": "npm run build:cloudflare && npx wrangler pages dev .open-next"
   },
   "dependencies": {
-    "@prisma/client": "^5.18.0",
+    "@libsql/client": "^0.18.0",
+    "@prisma/adapter-libsql": "^6.19.3",
+    "@prisma/client": "^6.19.3",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",
     "lucide-react": "^0.439.0",
@@ -27,6 +32,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.20.10",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.5.0",
     "@types/react": "^18.3.5",
@@ -35,10 +41,11 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.6",
     "postcss": "^8.4.45",
-    "prisma": "^5.18.0",
+    "prisma": "^6.19.3",
     "tailwindcss": "^3.4.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4",
-    "vitest": "^2.0.5"
+    "vitest": "^2.0.5",
+    "wrangler": "^4.149.0"
   }
 }

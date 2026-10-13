@@ -16,3 +16,9 @@ coverage
 # IDE / editor 临时文件
 .trae
 tsconfig.tsbuildinfo
+
+# Cloudflare / OpenNext 构建产物
+.open-next
+.wrangler
+prisma/migrations/dev.db*
+
