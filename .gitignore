@@ -23,3 +23,4 @@ tsconfig.tsbuildinfo
 .wrangler
 prisma/migrations/dev.db*
 
+.uploads
