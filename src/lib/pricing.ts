@@ -225,16 +225,16 @@ function aggregateBreakdown(
     switch (g.type) {
       case "RULE_A_4":
         description = g.s === 0
-          ? `规则A·4盒组合（4经典）`
-          : `规则A·4盒组合（${g.c}经典+${g.s}特色）`;
+          ? `特惠套餐A·4盒组合（4经典）`
+          : `特惠套餐A·4盒组合（${g.c}经典+${g.s}特色）`;
         break;
       case "RULE_B_3":
-        description = `规则B·3盒特色特惠`;
+        description = `特惠套餐B·3盒特色`;
         break;
       case "RULE_C_6":
         description = g.s === 0
-          ? `规则C·6盒乐享（6经典）`
-          : `规则C·6盒乐享（${g.c}经典+${g.s}特色）`;
+          ? `特惠套餐C·6盒乐享（6经典）`
+          : `特惠套餐C·6盒乐享（${g.c}经典+${g.s}特色）`;
         break;
       case "CLASSIC_UNIT":
         description = `经典单盒`;

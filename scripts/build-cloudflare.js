@@ -114,10 +114,67 @@ const child = spawn(
   }
 );
 
+// ============ Pages 输出后处理 ============
+// OpenNext 面向 Cloudflare Workers 设计：静态资源放在 .open-next/assets，
+// 由平台的 assets binding 提供。但 Cloudflare Pages 只在「输出目录根」查找静态文件，
+// 且 _worker.js 会拦截所有请求，导致 /_next/static/* 全部 404（页面无样式、按钮不响应）。
+// 处理方式：
+//   1. 把 .open-next/assets 的内容平铺到输出目录根，让 Pages 能直接命中静态文件
+//   2. 生成 _routes.json，将 /_next/static/* 排除出 Worker，交给 Pages 静态资源层
+function preparePagesOutput() {
+  const openNextDir = path.join(__dirname, "..", ".open-next");
+  const assetsDir = path.join(openNextDir, "assets");
+  if (!fs.existsSync(assetsDir)) {
+    console.error("✗ 找不到 .open-next/assets，跳过 Pages 后处理");
+    return;
+  }
+
+  // 1. 平铺 assets 到输出目录根
+  for (const entry of fs.readdirSync(assetsDir)) {
+    fs.cpSync(path.join(assetsDir, entry), path.join(openNextDir, entry), {
+      recursive: true,
+      force: true,
+    });
+  }
+
+  // 2. 写入 _routes.json：静态资源交给 Pages，其余路由交给 Worker
+  fs.writeFileSync(
+    path.join(openNextDir, "_routes.json"),
+    JSON.stringify(
+      { version: 1, include: ["/*"], exclude: ["/_next/static/*"] },
+      null,
+      2
+    ) + "\n"
+  );
+
+  // 3. Pages 高级模式只认 `_worker.js` 作为动态路由入口；
+  //    OpenNext 产出的是 `worker.js`（面向 Workers 的 main），
+  //    这里复制一份为 _worker.js，相对 import 路径不变，Pages 即可运行 Worker。
+  const workerFile = path.join(openNextDir, "worker.js");
+  if (fs.existsSync(workerFile)) {
+    fs.copyFileSync(workerFile, path.join(openNextDir, "_worker.js"));
+  } else {
+    console.error("✗ 找不到 .open-next/worker.js，无法生成 _worker.js");
+  }
+
+  console.log(
+    "✓ 已生成 Pages 输出（assets 平铺 + _routes.json + _worker.js）"
+  );
+}
+
 child.on("close", (code) => {
   // 停止 watcher
   if (watcher) watcher.close();
   if (watchTimeout) clearTimeout(watchTimeout);
+
+  // build 成功后再做 Pages 后处理
+  if (code === 0) {
+    try {
+      preparePagesOutput();
+    } catch (e) {
+      console.error("✗ Pages 后处理失败:", e.message);
+    }
+  }
 
   // 恢复原内容
   for (const [f, content] of Object.entries(backups)) {

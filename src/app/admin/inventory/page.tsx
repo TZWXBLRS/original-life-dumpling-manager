@@ -1,16 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import {
   Plus,
   Minus,
   Loader2,
+  Package,
   PackageMinus,
   PackagePlus,
   AlertTriangle,
   CheckCircle2,
 } from "lucide-react";
+import { AdminShell } from "@/components/AdminShell";
 
 interface Product {
   id: string;
@@ -90,20 +91,16 @@ export default function AdminInventoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-100">
-      <header className="bg-white border-b border-stone-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center gap-4">
-          <Link href="/admin/dashboard" className="text-stone-500 hover:text-primary-600 text-sm">
-            ← 仪表盘
-          </Link>
-          <h1 className="font-bold text-lg flex items-center gap-2">
-            库存管理
+    <AdminShell role="ADMIN">
+      <main className="flex-1 overflow-auto p-4 md:p-8">
+        <div className="mb-6">
+          <h1 className="flex items-center gap-2 text-2xl font-bold">
+            <Package className="w-7 h-7 text-primary-600" /> 库存管理
           </h1>
-          <div className="flex-1" />
+          <p className="mt-1 text-sm text-stone-500">
+            查看口味库存与单价，支持入库 / 出库操作
+          </p>
         </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 py-6">
         {msg && (
           <div
             className={`card mb-4 p-3 flex items-center gap-2 text-sm ${
@@ -290,6 +287,6 @@ export default function AdminInventoryPage() {
           </div>
         )}
       </main>
-    </div>
+    </AdminShell>
   );
 }

@@ -412,6 +412,9 @@ export default function CartPage() {
                 ) : (
                   <Link
                     href="/checkout"
+                    onClick={() =>
+                      localStorage.setItem("deliveryType", deliveryType)
+                    }
                     className="btn-primary w-full !py-3 text-base"
                   >
                     去结算 <ArrowRight className="w-4 h-4 ml-1" />

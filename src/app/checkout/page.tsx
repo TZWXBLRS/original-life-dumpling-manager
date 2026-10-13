@@ -69,7 +69,7 @@ export default function CheckoutPage() {
   // 读取 localStorage 里的购物车
   useEffect(() => {
     setMounted(true);
-    const cart = localStorage.getItem("cart");
+    const cart = localStorage.getItem("dumpling-cart");
     const dt = localStorage.getItem("deliveryType");
     if (cart) {
       try {
@@ -146,8 +146,8 @@ export default function CheckoutPage() {
       if (!res.ok) throw new Error(data.error);
       setOrderNo(data.orderNo);
       setOk(true);
-      // 清空购物车
-      localStorage.removeItem("cart");
+      // 清空购物车（key 与 CartProvider 保持一致）
+      localStorage.removeItem("dumpling-cart");
     } catch (err: any) {
       setError(err.message || "下单失败");
     } finally {

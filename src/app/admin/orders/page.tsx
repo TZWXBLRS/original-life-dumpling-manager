@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { formatYuan } from "@/lib/pricing";
 import { ExportCSVButton } from "@/components/ExportCSVButton";
+import { AdminShell } from "@/components/AdminShell";
 
 const STATUS_TEXT: Record<string, { label: string; cls: string }> = {
   PENDING_PAYMENT: { label: "待支付", cls: "bg-amber-100 text-amber-800" },
@@ -149,23 +150,23 @@ export default async function AdminOrdersPage(props: {
   }));
 
   return (
-    <div className="min-h-screen bg-stone-100">
-      <header className="bg-white border-b border-stone-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center gap-4">
-          <Link href="/admin/dashboard" className="text-stone-500 hover:text-primary-600 text-sm">
-            ← 仪表盘
-          </Link>
-          <h1 className="font-bold text-lg">订单管理</h1>
-          <div className="flex-1" />
+    <AdminShell role={session.user.role}>
+      <main className="flex-1 overflow-auto p-4 md:p-8">
+        <div className="mb-6 flex items-center justify-between gap-3">
+          <div>
+            <h1 className="flex items-center gap-2 text-2xl font-bold">
+              <PackageSearch className="w-7 h-7 text-primary-600" /> 订单管理
+            </h1>
+            <p className="mt-1 text-sm text-stone-500">
+              按时间段、状态筛选订单，并导出 CSV
+            </p>
+          </div>
           {totalPending > 0 && (
-            <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">
+            <span className="shrink-0 rounded-full bg-amber-100 px-3 py-1 text-sm text-amber-800">
               待处理 {totalPending} 单
             </span>
           )}
         </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 py-6">
         {/* 当期范围汇总卡片 */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
           <div className="card p-4">
@@ -398,6 +399,6 @@ export default async function AdminOrdersPage(props: {
           </div>
         )}
       </main>
-    </div>
+    </AdminShell>
   );
 }

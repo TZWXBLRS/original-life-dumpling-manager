@@ -19,13 +19,16 @@ export default function HomePage() {
               <div className="text-xs text-stone-500 -mt-1">手工饺子</div>
             </div>
           </Link>
-          <nav className="flex items-center gap-6 text-sm">
-            <Link href="/products" className="text-stone-600 hover:text-primary-600">
+          <nav className="flex items-center gap-3 text-sm sm:gap-6">
+            <Link href="/products" className="hidden text-stone-600 hover:text-primary-600 sm:inline">
               全部口味
+            </Link>
+            <Link href="/products" className="text-stone-600 hover:text-primary-600 sm:hidden">
+              选购
             </Link>
             <Link href="/cart" className="relative text-stone-600 hover:text-primary-600">
               <ShoppingCart className="w-5 h-5 inline" />
-              <span className="ml-1">购物车</span>
+              <span className="ml-1 hidden sm:inline">购物车</span>
             </Link>
             <Link href="/orders" className="btn-secondary !py-1.5 !px-3 text-sm">
               我的订单
@@ -85,7 +88,7 @@ export default function HomePage() {
         <div className="grid md:grid-cols-3 gap-6">
           <div className="card p-6 bg-gradient-to-br from-green-50 to-white">
             <div className="text-4xl mb-3">💰</div>
-            <h3 className="font-bold text-lg mb-2">规则A·4盒组合</h3>
+            <h3 className="font-bold text-lg mb-2">特惠套餐A·4盒组合</h3>
             <p className="text-stone-600 text-sm mb-3">
               经典+特色任意搭配，4盒起享活动价
             </p>
@@ -96,16 +99,15 @@ export default function HomePage() {
           </div>
           <div className="card p-6 bg-gradient-to-br from-amber-50 to-white">
             <div className="text-4xl mb-3">✨</div>
-            <h3 className="font-bold text-lg mb-2">规则B·3盒特色</h3>
+            <h3 className="font-bold text-lg mb-2">特惠套餐B·3盒特色</h3>
             <p className="text-stone-600 text-sm mb-3">黑松露、菌菇 · 珍稀口味</p>
             <div className="text-2xl font-bold text-primary-600">
               3盒 ¥100
-              <span className="text-sm text-stone-400 line-through ml-2">¥114</span>
             </div>
           </div>
           <div className="card p-6 bg-gradient-to-br from-primary-50 to-white">
-            <div className="text-4xl mb-3">🎲</div>
-            <h3 className="font-bold text-lg mb-2">规则C·6盒乐享</h3>
+            <div className="h-10 mb-3" aria-hidden="true" />
+            <h3 className="font-bold text-lg mb-2">特惠套餐C·6盒乐享</h3>
             <p className="text-stone-600 text-sm mb-3">
               任意搭配6盒，特色≤2盒不加价
             </p>
