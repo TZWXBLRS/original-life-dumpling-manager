@@ -25,7 +25,7 @@ const STATUS_TEXT: Record<string, { label: string; cls: string }> = {
 };
 
 export default async function AdminOrdersPage(props: {
-  searchParams: { status?: string; q?: string };
+  searchParams: { status?: string; q?: string; startDate?: string; endDate?: string };
 }) {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/login");
@@ -35,6 +35,8 @@ export default async function AdminOrdersPage(props: {
 
   const status = props.searchParams.status;
   const q = props.searchParams.q;
+  const startDate = props.searchParams.startDate;
+  const endDate = props.searchParams.endDate;
 
   const where: any = {};
   if (status && status !== "ALL") where.status = status;
@@ -49,6 +51,20 @@ export default async function AdminOrdersPage(props: {
         },
       },
     ];
+  }
+  // 日期范围筛选：startDate 当天 00:00:00 起，endDate 当天 23:59:59 止
+  if (startDate || endDate) {
+    where.createdAt = {} as any;
+    if (startDate) {
+      const s = new Date(startDate);
+      s.setHours(0, 0, 0, 0);
+      where.createdAt.gte = s;
+    }
+    if (endDate) {
+      const e = new Date(endDate);
+      e.setHours(23, 59, 59, 999);
+      where.createdAt.lte = e;
+    }
   }
 
   const [orders, counts] = await Promise.all([
@@ -78,11 +94,20 @@ export default async function AdminOrdersPage(props: {
       },
       take: 100,
     }),
+    // 状态计数同样应用日期范围筛选，让 tab 上的数字与列表一致
     prisma.order.groupBy({
       by: ["status"],
       _count: { status: true },
+      where,
     }),
   ]);
+
+  // 当期范围内的汇总数据（总订单数、总销售额、总盒数）
+  const summary = await prisma.order.aggregate({
+    where: { ...where, status: { not: "CANCELLED" } },
+    _count: { id: true },
+    _sum: { totalBoxes: true, totalAmount: true },
+  });
 
   const countMap: Record<string, number> = {};
   for (const c of counts) countMap[c.status] = c._count.status;
@@ -142,29 +167,88 @@ export default async function AdminOrdersPage(props: {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6">
-        {/* 搜索 + 筛选 */}
-        <form className="card p-4 mb-4 flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-            <input
-              name="q"
-              defaultValue={q || ""}
-              placeholder="搜索订单号 / 手机号 / 姓名"
-              className="input pl-10"
-            />
+        {/* 当期范围汇总卡片 */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <div className="card p-4">
+            <div className="text-xs text-stone-500 mb-1">当期订单数</div>
+            <div className="text-2xl font-bold text-primary-700">
+              {summary._count.id ?? 0}
+              <span className="text-xs text-stone-400 ml-1">单</span>
+            </div>
           </div>
+          <div className="card p-4">
+            <div className="text-xs text-stone-500 mb-1">当期销售额</div>
+            <div className="text-2xl font-bold text-primary-700">
+              ¥{formatYuan(summary._sum.totalAmount ?? 0)}
+            </div>
+          </div>
+          <div className="card p-4">
+            <div className="text-xs text-stone-500 mb-1">当期总盒数</div>
+            <div className="text-2xl font-bold text-primary-700">
+              {summary._sum.totalBoxes ?? 0}
+              <span className="text-xs text-stone-400 ml-1">盒</span>
+            </div>
+          </div>
+          <div className="card p-4">
+            <div className="text-xs text-stone-500 mb-1">当期范围</div>
+            <div className="text-sm font-medium text-stone-700">
+              {startDate || "起始"} ~ {endDate || "至今"}
+            </div>
+          </div>
+        </div>
+
+        {/* 搜索 + 日期范围 + 状态筛选 */}
+        <form className="card p-4 mb-4 flex flex-col gap-3" method="get">
+          {/* 第一行：搜索框 + 日期范围 + 导出 */}
+          <div className="flex flex-col sm:flex-row gap-3 items-center">
+            <div className="relative flex-1 w-full">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <input
+                name="q"
+                defaultValue={q || ""}
+                placeholder="搜索订单号 / 手机号 / 姓名"
+                className="input pl-10"
+              />
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <input
+                type="date"
+                name="startDate"
+                defaultValue={startDate || ""}
+                className="input !py-2 !w-40"
+              />
+              <span className="text-stone-400">至</span>
+              <input
+                type="date"
+                name="endDate"
+                defaultValue={endDate || ""}
+                className="input !py-2 !w-40"
+              />
+            </div>
+            <button type="submit" className="btn-primary !py-2 text-sm">
+              查询
+            </button>
+            <Link
+              href="/admin/orders"
+              className="btn-secondary !py-2 text-sm"
+            >
+              重置
+            </Link>
+            <ExportCSVButton orders={csvRows} />
+          </div>
+
+          {/* 第二行：状态筛选 - 链接需保留日期参数 */}
+          {/* 注意：状态切换走 Link 改写 URL，q/startDate/endDate 通过隐藏字段重提交更复杂，这里改用按钮提交表单 */}
           <div className="flex gap-2 flex-wrap">
             {STATUSES.map((s) => {
               const active = (status || "ALL") === s.key;
               const cnt = s.key === "ALL" ? undefined : countMap[s.key];
               return (
-                <Link
+                <button
                   key={s.key}
-                  href={
-                    "/admin/orders?status=" +
-                    s.key +
-                    (q ? "&q=" + encodeURIComponent(q) : "")
-                  }
+                  type="submit"
+                  name="status"
+                  value={s.key === "ALL" ? "ALL" : s.key}
                   className={`px-3 py-2 rounded-lg text-sm border flex items-center gap-1.5 transition-colors ${
                     active
                       ? "bg-primary-50 border-primary-300 text-primary-700 ring-1 ring-primary-200"
@@ -178,15 +262,11 @@ export default async function AdminOrdersPage(props: {
                       {cnt}
                     </span>
                   )}
-                </Link>
+                </button>
               );
             })}
           </div>
         </form>
-
-        <div className="mb-4 flex justify-end">
-          <ExportCSVButton orders={csvRows} />
-        </div>
 
         {/* 订单列表 */}
         {orders.length === 0 ? (

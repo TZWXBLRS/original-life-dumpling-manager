@@ -29,6 +29,7 @@ import {
   getNextDeliveryWindow,
 } from "@/lib/frozen-check";
 import type { DeliveryETAResult } from "@/lib/delivery";
+import { DemoLoginBar } from "@/components/DemoLoginBar";
 
 export default function CartPage() {
   const { items, updateQty, removeItem, clearCart, showComboHint, classicBoxes } =
@@ -87,9 +88,12 @@ export default function CartPage() {
             <span className="text-2xl">🥟</span>
             <span className="font-bold text-primary-700">原味生活</span>
           </Link>
-          <Link href="/products" className="text-sm text-stone-600 hover:text-primary-600">
-            继续选购 →
-          </Link>
+          <div className="flex items-center gap-4 text-sm">
+            <DemoLoginBar compact />
+            <Link href="/products" className="text-stone-600 hover:text-primary-600">
+              继续选购 →
+            </Link>
+          </div>
         </div>
       </header>
 

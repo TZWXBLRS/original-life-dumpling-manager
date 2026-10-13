@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   Store,
 } from "lucide-react";
+import { DemoLoginBar } from "@/components/DemoLoginBar";
 
 // 自取时段（和 seed 默认同步）
 const PICKUP_SLOTS = [
@@ -198,6 +199,9 @@ export default function CheckoutPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-6 grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
+          {/* 演示登录条 - 未登录时显示，正式接入微信小程序后移除 */}
+          <DemoLoginBar />
+
           {/* 配送信息 */}
           <div className="card p-5">
             <h3 className="font-bold mb-4 flex items-center gap-2">

@@ -27,8 +27,8 @@ export default function HomePage() {
               <ShoppingCart className="w-5 h-5 inline" />
               <span className="ml-1">购物车</span>
             </Link>
-            <Link href="/auth/login" className="btn-secondary !py-1.5 !px-3 text-sm">
-              登录
+            <Link href="/orders" className="btn-secondary !py-1.5 !px-3 text-sm">
+              我的订单
             </Link>
           </nav>
         </div>

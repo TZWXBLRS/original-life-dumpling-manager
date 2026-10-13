@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import {
   Package,
   PackageCheck,
@@ -12,6 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { formatYuan } from "@/lib/pricing";
+import { DemoLoginBar } from "@/components/DemoLoginBar";
 
 const STATUS_TEXT: Record<string, { label: string; cls: string }> = {
   PENDING_PAYMENT: { label: "待支付", cls: "bg-amber-100 text-amber-800" },
@@ -31,7 +31,35 @@ const DELIVERY_ICON: Record<string, any> = {
 
 export default async function OrdersPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/auth/login?from=/orders");
+  // demo 模式：未登录时不跳转，显示演示登录条
+  // 真实接入微信小程序后会自动静默登录，此分支不会进入
+  if (!session?.user?.id) {
+    return (
+      <div className="min-h-screen bg-stone-50">
+        <header className="bg-white border-b border-stone-200">
+          <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <span className="text-2xl">🥟</span>
+              <span className="font-bold text-primary-700">素生活</span>
+            </Link>
+            <div className="text-sm text-stone-600">我的订单</div>
+          </div>
+        </header>
+        <main className="max-w-4xl mx-auto px-4 py-8">
+          <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <Package /> 我的订单
+          </h1>
+          <div className="max-w-md">
+            <DemoLoginBar />
+            <div className="card p-8 text-center text-stone-400 mt-3">
+              <PackageCheck className="w-12 h-12 mx-auto mb-3" />
+              登录后可查看历史订单
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   const orders = await prisma.order.findMany({
     where: { userId: session.user.id },
