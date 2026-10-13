@@ -1,8 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../src/lib/prisma";
 import * as bcrypt from "bcryptjs";
 import { calculatePrice, type CartItem } from "../src/lib/pricing";
-
-const prisma = new PrismaClient();
 
 // 合法值常量（代替 Prisma enum，因为 SQLite 不支持）
 const USER_ROLE = {

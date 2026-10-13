@@ -21,12 +21,11 @@ if (globalForPrisma.prisma) {
     // eslint-disable-next-line @typescript-eslint/no-implied-eval
     const dynReq = eval("require") as NodeRequire;
     const { PrismaLibSQL } = dynReq("@prisma/adapter-libsql");
-    const { createClient } = dynReq("@libsql/client");
-    const libsql = createClient({
+    // PrismaLibSQL 构造函数接收 Config 对象（{url, authToken}），不是 client 实例
+    const adapter = new PrismaLibSQL({
       url: tursoUrl,
       authToken: tursoToken,
     });
-    const adapter = new PrismaLibSQL(libsql);
     prisma = new PrismaClient({
       adapter,
       log: ["error"],
