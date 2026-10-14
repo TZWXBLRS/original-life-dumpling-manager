@@ -1,5 +1,10 @@
 const path = require("path");
 
+// 仅在面向 Cloudflare (workerd) 构建时套用这些别名。
+// 本地 `next dev`/`next build`(Node 运行时) 需要 @prisma/adapter-libsql 的 Node 入口，
+// 否则 /web 入口只支持 libsql/wss/http，无法使用 `file:` 本地 SQLite。
+const isCloudflareBuild = process.env.CF_BUILD === "1";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
@@ -7,9 +12,21 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "2mb",
     },
+    // 本地开发（Node 运行时）：不要把 libsql/prisma 适配器交给 webpack 打包。
+    // @libsql/client 的 Node 入口会被 webpack 解析成 context module，
+    // 把目录下的 README.md 当代码解析，导致 ModuleParseError 使 dev server 崩溃。
+    // 交给 Node 运行时 require 即可（Cloudflare 构建走 web 别名，不适用此项）。
+    ...(isCloudflareBuild
+      ? {}
+      : {
+          serverComponentsExternalPackages: [
+            "@libsql/client",
+            "@prisma/adapter-libsql",
+          ],
+        }),
   },
   webpack: (config, { isServer }) => {
-    if (isServer) {
+    if (isServer && isCloudflareBuild) {
       // Cloudflare Workers 环境适配：
       // 1. 把 @prisma/adapter-libsql 强制指向 /web 入口，避开
       //    @libsql/client/lib-esm/node.js 的 require.context 扫描

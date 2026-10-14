@@ -12,6 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { formatYuan } from "@/lib/pricing";
+import { formatDateTime, startOfBeijingDay, endOfBeijingDay } from "@/lib/date";
 import { ExportCSVButton } from "@/components/ExportCSVButton";
 import { AdminShell } from "@/components/AdminShell";
 
@@ -57,14 +58,10 @@ export default async function AdminOrdersPage(props: {
   if (startDate || endDate) {
     where.createdAt = {} as any;
     if (startDate) {
-      const s = new Date(startDate);
-      s.setHours(0, 0, 0, 0);
-      where.createdAt.gte = s;
+      where.createdAt.gte = startOfBeijingDay(startDate);
     }
     if (endDate) {
-      const e = new Date(endDate);
-      e.setHours(23, 59, 59, 999);
-      where.createdAt.lte = e;
+      where.createdAt.lte = endOfBeijingDay(endDate);
     }
   }
 
@@ -140,7 +137,7 @@ export default async function AdminOrdersPage(props: {
     totalBoxes: o.totalBoxes,
     totalAmount: o.totalAmount,
     status: STATUS_TEXT[o.status]?.label || o.status,
-    createdAt: o.createdAt.toLocaleString("zh-CN"),
+    createdAt: formatDateTime(o.createdAt),
     receiverName: o.receiverName || "",
     receiverPhone: o.receiverPhone || "",
     receiverAddress: `${o.receiverProvince || ""}${o.receiverCity || ""}${
@@ -300,7 +297,7 @@ export default async function AdminOrdersPage(props: {
                             {order.orderNo}
                           </div>
                           <div className="text-xs text-stone-400 mt-1">
-                            {order.createdAt.toLocaleString("zh-CN", {
+                            {formatDateTime(order.createdAt, {
                               month: "2-digit",
                               day: "2-digit",
                               hour: "2-digit",

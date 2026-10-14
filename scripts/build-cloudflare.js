@@ -75,6 +75,9 @@ function applyPatch() {
 applyPatch();
 console.log("✓ 初始 patch 完成（index.js + default.js → patched wasm.js）");
 
+// 标记本次构建面向 Cloudflare（workerd），让 next.config.js 启用 Prisma/libSQL 的 web 别名
+process.env.CF_BUILD = "1";
+
 // 启动 OpenNext build（子进程）
 // 注意：不使用 fs.watch，因为在 CI 环境可能不稳定。
 // 改为在 build 完成后再次 patch，确保 OpenNext 重新生成 client 时也能覆盖。

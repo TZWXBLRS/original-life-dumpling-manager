@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
+import { formatDate, formatDateTime, startOfBeijingDay } from "@/lib/date";
 import {
   Package,
   ChefHat,
@@ -19,11 +20,8 @@ export default async function ProductionDashboardPage() {
     redirect("/");
   }
 
-  // 今日开始时间
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const tomorrowStart = new Date(todayStart);
-  tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+  // 今日开始时间（北京时间自然日）
+  const todayStart = startOfBeijingDay(new Date());
 
   // 所有已支付、备餐中、备好的订单（今日 + 未来自取的）
   const whereActive: any = {
@@ -114,7 +112,7 @@ export default async function ProductionDashboardPage() {
               <ChefHat className="w-7 h-7 text-primary-600" /> 生产看板
             </h1>
             <p className="text-stone-500 text-sm mt-1">
-              待处理订单汇总 · {todayStart.toLocaleDateString("zh-CN")}
+              待处理订单汇总 · {formatDate(todayStart)}
             </p>
           </div>
           <div className="text-right">
@@ -308,7 +306,7 @@ export default async function ProductionDashboardPage() {
                     <div className="text-right text-xs text-stone-400 shrink-0">
                       <div className="flex items-center gap-1 justify-end">
                         <Clock className="w-3 h-3" />
-                        {o.createdAt.toLocaleString("zh-CN", {
+                        {formatDateTime(o.createdAt, {
                           month: "2-digit",
                           day: "2-digit",
                           hour: "2-digit",

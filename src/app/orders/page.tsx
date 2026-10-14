@@ -11,6 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { formatYuan } from "@/lib/pricing";
+import { formatDateTime } from "@/lib/date";
 import { DemoLoginBar } from "@/components/DemoLoginBar";
 
 const STATUS_TEXT: Record<string, { label: string; cls: string }> = {
@@ -152,7 +153,7 @@ export default async function OrdersPage() {
                     <div className="text-right shrink-0">
                       <div className="text-xs text-stone-400 mb-1 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {new Date(order.createdAt).toLocaleString("zh-CN", {
+                        {formatDateTime(order.createdAt, {
                           month: "2-digit",
                           day: "2-digit",
                           hour: "2-digit",

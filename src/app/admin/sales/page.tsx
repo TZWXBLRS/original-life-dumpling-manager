@@ -6,6 +6,13 @@ import { formatYuan } from "@/lib/pricing";
 import { AdminShell } from "@/components/AdminShell";
 import { ExportCSVButton } from "@/components/ExportCSVButton";
 import {
+  beijingDayKey,
+  formatDateTime,
+  startOfBeijingDay,
+  endOfBeijingDay,
+  toDate,
+} from "@/lib/date";
+import {
   BarChart3,
   TrendingUp,
   ShoppingBasket,
@@ -50,18 +57,10 @@ const STATUS_LABEL: Record<string, string> = {
   CANCELLED: "已取消",
 };
 
-/** 将日期归到「北京时间」的自然日 key（YYYY-MM-DD） */
-function beijingDayKey(d: Date): string {
-  const t = new Date(d.getTime() + 8 * 3600 * 1000);
-  return `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, "0")}-${String(
-    t.getUTCDate()
-  ).padStart(2, "0")}`;
-}
-
 function resolveRange(range: RangeKey, startDate?: string, endDate?: string) {
   const now = new Date();
-  const todayStart = new Date(now);
-  todayStart.setHours(0, 0, 0, 0);
+  // 统一使用北京时间自然日边界（Cloudflare 运行时时区为 UTC）
+  const todayStart = startOfBeijingDay(now);
 
   let from = new Date(todayStart);
   let to = new Date(now);
@@ -71,24 +70,18 @@ function resolveRange(range: RangeKey, startDate?: string, endDate?: string) {
     to = new Date(now);
   } else if (range === "7d") {
     from = new Date(todayStart);
-    from.setDate(from.getDate() - 6);
+    from.setUTCDate(from.getUTCDate() - 6);
   } else if (range === "30d") {
     from = new Date(todayStart);
-    from.setDate(from.getDate() - 29);
+    from.setUTCDate(from.getUTCDate() - 29);
   } else if (range === "custom") {
     if (startDate) {
-      const s = new Date(startDate);
-      if (!isNaN(s.getTime())) {
-        s.setHours(0, 0, 0, 0);
-        from = s;
-      }
+      const s = startOfBeijingDay(startDate);
+      if (!isNaN(s.getTime())) from = s;
     }
     if (endDate) {
-      const e = new Date(endDate);
-      if (!isNaN(e.getTime())) {
-        e.setHours(23, 59, 59, 999);
-        to = e;
-      }
+      const e = endOfBeijingDay(endDate);
+      if (!isNaN(e.getTime())) to = e;
     }
   }
 
@@ -181,16 +174,18 @@ export default async function AdminSalesPage(props: {
   const maxFlavorQty = Math.max(1, ...flavors.map((f) => f.qty));
 
   // 按天聚合（补齐区间内没有订单的日期）
+  // 用北京时间零点作为起点，按 24h 递增（避免运行时时区 UTC 造成的错位）
   const dayKeys: string[] = [];
   {
-    const cursor = new Date(from);
-    cursor.setHours(0, 0, 0, 0);
-    const end = new Date(to);
-    // 最多补齐 62 天，防止异常区间
+    const startDay = startOfBeijingDay(from);
+    const endTime = (toDate(to) ?? new Date()).getTime();
     let guard = 0;
-    while (cursor <= end && guard < 62) {
-      dayKeys.push(beijingDayKey(cursor));
-      cursor.setDate(cursor.getDate() + 1);
+    for (
+      let t = startDay.getTime();
+      t <= endTime && guard < 62;
+      t += 24 * 3600 * 1000
+    ) {
+      dayKeys.push(beijingDayKey(t));
       guard++;
     }
   }
@@ -221,7 +216,7 @@ export default async function AdminSalesPage(props: {
     totalBoxes: o.totalBoxes,
     totalAmount: o.totalAmount,
     status: STATUS_LABEL[o.status] || o.status,
-    createdAt: o.createdAt.toLocaleString("zh-CN"),
+    createdAt: formatDateTime(o.createdAt),
     receiverName: o.receiverName || "",
     receiverPhone: o.receiverPhone || "",
     receiverAddress: "",
@@ -574,7 +569,7 @@ export default async function AdminSalesPage(props: {
                         ¥{formatYuan(o.totalAmount)}
                       </td>
                       <td className="px-4 py-3 text-xs text-stone-400">
-                        {o.createdAt.toLocaleString("zh-CN", {
+                        {formatDateTime(o.createdAt, {
                           month: "2-digit",
                           day: "2-digit",
                           hour: "2-digit",

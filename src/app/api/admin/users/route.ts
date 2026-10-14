@@ -5,18 +5,29 @@ import { z } from "zod";
 import * as bcrypt from "bcryptjs";
 
 /**
- * GET /api/admin/users
- * 管理员：查询员工账号（ADMIN/KITCHEN）
+ * GET /api/admin/users?group=staff|customer
+ * 管理员：查询用户账号
+ *   - group=staff（默认）：门店账号（ADMIN/KITCHEN）
+ *   - group=customer：顾客账号（CUSTOMER）
+ *   - group=all：全部
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "无权限" }, { status: 403 });
   }
 
+  const group = req.nextUrl.searchParams.get("group") || "staff";
+  const roleFilter =
+    group === "customer"
+      ? { in: ["CUSTOMER"] }
+      : group === "all"
+      ? { in: ["ADMIN", "KITCHEN", "CUSTOMER"] }
+      : { in: ["ADMIN", "KITCHEN"] };
+
   const users = await prisma.user.findMany({
     where: {
-      role: { in: ["ADMIN", "KITCHEN"] },
+      role: roleFilter as any,
     },
     select: {
       id: true,
@@ -26,11 +37,12 @@ export async function GET() {
       isActive: true,
       createdAt: true,
       updatedAt: true,
+      _count: { select: { orders: true } },
     },
     orderBy: [{ role: "asc" }, { createdAt: "asc" }],
   });
 
-  return NextResponse.json({ users });
+  return NextResponse.json({ users, group });
 }
 
 /**

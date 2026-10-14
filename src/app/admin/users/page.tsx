@@ -12,17 +12,23 @@ import {
 } from "lucide-react";
 import { AdminShell } from "@/components/AdminShell";
 
-type StaffUser = {
+type Role = "ADMIN" | "KITCHEN" | "CUSTOMER";
+
+type UserRow = {
   id: string;
   name: string;
   phone: string;
-  role: "ADMIN" | "KITCHEN";
+  role: Role;
   isActive: boolean;
   createdAt: string;
+  _count?: { orders: number };
 };
 
+type Group = "staff" | "customer";
+
 export default function AdminUsersPageClient() {
-  const [users, setUsers] = useState<StaffUser[]>([]);
+  const [group, setGroup] = useState<Group>("staff");
+  const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
@@ -36,15 +42,15 @@ export default function AdminUsersPageClient() {
   const [submitting, setSubmitting] = useState(false);
 
   // 重置密码弹窗
-  const [resetUser, setResetUser] = useState<StaffUser | null>(null);
+  const [resetUser, setResetUser] = useState<UserRow | null>(null);
   const [resetPwd, setResetPwd] = useState("");
   const [resetting, setResetting] = useState(false);
 
-  const load = async () => {
+  const load = async (g: Group) => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/admin/users");
+      const res = await fetch(`/api/admin/users?group=${g}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "加载失败");
       setUsers(data.users || []);
@@ -56,8 +62,8 @@ export default function AdminUsersPageClient() {
   };
 
   useEffect(() => {
-    load();
-  }, []);
+    load(group);
+  }, [group]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -87,7 +93,7 @@ export default function AdminUsersPageClient() {
       setNewRole("KITCHEN");
       setNewPwd("");
       showToast("✅ 创建成功");
-      load();
+      load(group);
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -95,7 +101,7 @@ export default function AdminUsersPageClient() {
     }
   };
 
-  const toggleActive = async (u: StaffUser) => {
+  const toggleActive = async (u: UserRow) => {
     try {
       const res = await fetch("/api/admin/users", {
         method: "PATCH",
@@ -109,13 +115,13 @@ export default function AdminUsersPageClient() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "操作失败");
       showToast(u.isActive ? "已禁用" : "已启用");
-      load();
+      load(group);
     } catch (e: any) {
       alert(e.message);
     }
   };
 
-  const changeRole = async (u: StaffUser, role: "ADMIN" | "KITCHEN") => {
+  const changeRole = async (u: UserRow, role: "ADMIN" | "KITCHEN") => {
     if (role === u.role) return;
     if (!confirm(`确定将「${u.name}」改为${role === "ADMIN" ? "管理员" : "后厨"}吗？`)) return;
     try {
@@ -127,7 +133,7 @@ export default function AdminUsersPageClient() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "修改失败");
       showToast("角色已更新");
-      load();
+      load(group);
     } catch (e: any) {
       alert(e.message);
     }
@@ -166,14 +172,42 @@ export default function AdminUsersPageClient() {
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Users className="w-7 h-7 text-primary-600" /> 用户管理
             </h1>
-            <p className="text-stone-500 text-sm mt-1">管理员和后厨员工账号管理</p>
+            <p className="text-stone-500 text-sm mt-1">
+              {group === "staff"
+                ? "管理员与后厨员工账号"
+                : "注册顾客账号（含一键登录的微信昵称与手机号）"}
+            </p>
           </div>
-          <button
-            className="btn-primary flex items-center gap-1.5 text-sm"
-            onClick={() => setShowCreate(true)}
-          >
-            <UserPlus className="w-4 h-4" /> 新增员工
-          </button>
+          {group === "staff" && (
+            <button
+              className="btn-primary flex items-center gap-1.5 text-sm"
+              onClick={() => setShowCreate(true)}
+            >
+              <UserPlus className="w-4 h-4" /> 新增员工
+            </button>
+          )}
+        </div>
+
+        {/* 权限分组：管理员/员工 与 顾客 */}
+        <div className="mb-4 flex gap-2">
+          {(
+            [
+              { key: "staff", label: "管理员 / 员工" },
+              { key: "customer", label: "顾客" },
+            ] as const
+          ).map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setGroup(t.key)}
+              className={`px-4 py-2 rounded-lg text-sm border transition-colors ${
+                group === t.key
+                  ? "border-primary-300 bg-primary-50 text-primary-700 ring-1 ring-primary-200"
+                  : "border-stone-200 text-stone-600 hover:border-stone-300"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
         {error && (
@@ -191,29 +225,57 @@ export default function AdminUsersPageClient() {
             <table className="w-full text-sm">
               <thead className="bg-stone-50 text-stone-500 text-xs">
                 <tr>
-                  <th className="text-left px-5 py-3">员工</th>
+                  <th className="text-left px-5 py-3">
+                    {group === "staff" ? "员工" : "顾客"}
+                  </th>
                   <th className="text-left px-5 py-3">手机号</th>
                   <th className="text-left px-5 py-3">角色</th>
+                  {group === "customer" && (
+                    <th className="text-left px-5 py-3">订单数</th>
+                  )}
                   <th className="text-left px-5 py-3">状态</th>
-                  <th className="text-left px-5 py-3">创建时间</th>
+                  <th className="text-left px-5 py-3">注册时间</th>
                   <th className="text-right px-5 py-3">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
+                {users.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={group === "customer" ? 7 : 6}
+                      className="px-5 py-12 text-center text-stone-400"
+                    >
+                      {group === "staff"
+                        ? "暂无员工账号"
+                        : "暂无顾客账号（顾客使用微信一键登录后会自动出现在这里）"}
+                    </td>
+                  </tr>
+                )}
                 {users.map((u) => (
                   <tr key={u.id} className="hover:bg-stone-50">
                     <td className="px-5 py-3 font-medium">{u.name}</td>
                     <td className="px-5 py-3 font-mono">{u.phone}</td>
                     <td className="px-5 py-3">
-                      <select
-                        className="text-xs border border-stone-200 rounded px-2 py-1"
-                        value={u.role}
-                        onChange={(e) => changeRole(u, e.target.value as any)}
-                      >
-                        <option value="ADMIN">管理员</option>
-                        <option value="KITCHEN">后厨</option>
-                      </select>
+                      {u.role === "CUSTOMER" ? (
+                        <span className="text-xs text-primary-700 bg-primary-50 px-2 py-0.5 rounded-full">
+                          顾客
+                        </span>
+                      ) : (
+                        <select
+                          className="text-xs border border-stone-200 rounded px-2 py-1"
+                          value={u.role}
+                          onChange={(e) => changeRole(u, e.target.value as any)}
+                        >
+                          <option value="ADMIN">管理员</option>
+                          <option value="KITCHEN">后厨</option>
+                        </select>
+                      )}
                     </td>
+                    {group === "customer" && (
+                      <td className="px-5 py-3 text-stone-600">
+                        {u._count?.orders ?? 0}
+                      </td>
+                    )}
                     <td className="px-5 py-3">
                       {u.isActive ? (
                         <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
@@ -229,15 +291,17 @@ export default function AdminUsersPageClient() {
                       {new Date(u.createdAt).toLocaleDateString("zh-CN")}
                     </td>
                     <td className="px-5 py-3 text-right whitespace-nowrap">
-                      <button
-                        className="text-xs text-stone-600 hover:text-primary-600 inline-flex items-center gap-1 mr-3"
-                        onClick={() => {
-                          setResetUser(u);
-                          setResetPwd("");
-                        }}
-                      >
-                        <KeyRound className="w-3 h-3" /> 重置密码
-                      </button>
+                      {u.role !== "CUSTOMER" && (
+                        <button
+                          className="text-xs text-stone-600 hover:text-primary-600 inline-flex items-center gap-1 mr-3"
+                          onClick={() => {
+                            setResetUser(u);
+                            setResetPwd("");
+                          }}
+                        >
+                          <KeyRound className="w-3 h-3" /> 重置密码
+                        </button>
+                      )}
                       <button
                         className={`text-xs inline-flex items-center gap-1 ${
                           u.isActive

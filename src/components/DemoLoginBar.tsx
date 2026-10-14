@@ -28,6 +28,7 @@ export function DemoLoginBar({
   const [sessionUser, setSessionUser] = useState<{ name?: string; phone?: string } | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [phone, setPhone] = useState("");
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -65,7 +66,7 @@ export function DemoLoginBar({
       const r1 = await fetch("/api/auth/demo-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ phone, name: name.trim() || undefined }),
       });
       const d1 = await r1.json();
       if (!r1.ok) throw new Error(d1.error || "演示登录失败");
@@ -134,19 +135,30 @@ export function DemoLoginBar({
           </div>
         </div>
       </div>
-      <div className="flex gap-2">
+      <div className="space-y-2">
         <input
           type="tel"
           maxLength={11}
           value={phone}
           onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-          placeholder="请输入11位手机号"
-          className="input !py-2 flex-1"
+          placeholder="请输入11位手机号（必填）"
+          className="input !py-2 w-full"
         />
+        <input
+          type="text"
+          maxLength={20}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="微信昵称 / 收件人姓名（可选）"
+          className="input !py-2 w-full"
+        />
+        <div className="text-xs text-stone-400">
+          填写昵称后，下单时会自动作为快递收件人姓名与手机号。
+        </div>
         <button
           onClick={handleDemoLogin}
           disabled={loading || phone.length !== 11}
-          className="btn-primary !py-2 px-4 text-sm flex items-center gap-1.5"
+          className="btn-primary !py-2 w-full text-sm flex items-center justify-center gap-1.5"
         >
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin" />

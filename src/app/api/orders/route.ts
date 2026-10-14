@@ -8,6 +8,7 @@ import {
 } from "@/lib/pricing";
 import { getNextDeliveryWindow } from "@/lib/delivery-window";
 import { queryDeliveryETA } from "@/lib/delivery";
+import { startOfBeijingDay } from "@/lib/date";
 
 /**
  * 创建订单 API
@@ -117,9 +118,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 每日销量上限校验
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    // 每日销量上限校验（按北京时间自然日）
+    const todayStart = startOfBeijingDay(new Date());
     const todayOrders = await prisma.order.aggregate({
       where: {
         createdAt: { gte: todayStart },

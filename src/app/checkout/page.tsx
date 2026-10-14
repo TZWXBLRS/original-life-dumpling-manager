@@ -66,7 +66,19 @@ export default function CheckoutPage() {
   const [ok, setOk] = useState(false);
   const [orderNo, setOrderNo] = useState("");
 
-  // 读取 localStorage 里的购物车
+  // 拉取登录用户信息，自动填充收件人姓名/手机号（仅在字段为空时填充，不覆盖用户已填内容）
+  const fillFromSession = async () => {
+    try {
+      const res = await fetch("/api/auth/session");
+      const data = await res.json();
+      if (data?.user) {
+        if (data.user.name) setReceiverName((v) => v || data.user.name);
+        if (data.user.phone) setReceiverPhone((v) => v || data.user.phone);
+      }
+    } catch {}
+  };
+
+  // 读取 localStorage 里的购物车 + 登录用户信息
   useEffect(() => {
     setMounted(true);
     const cart = localStorage.getItem("dumpling-cart");
@@ -98,6 +110,9 @@ export default function CheckoutPage() {
     if (dt === "DELIVERY" || dt === "EXPRESS" || dt === "PICKUP") {
       setDeliveryType(dt);
     }
+
+    // 拉取当前登录用户，自动填充收件人姓名/手机号
+    fillFromSession();
   }, []);
 
   const pricing = calculatePrice(items, deliveryType);
@@ -142,14 +157,24 @@ export default function CheckoutPage() {
           note,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+      if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error("请先登录后再提交订单（可在上方「一键登录」区输入手机号登录）");
+        }
+        throw new Error(data?.error || `下单失败（${res.status}），请稍后重试`);
+      }
       setOrderNo(data.orderNo);
       setOk(true);
       // 清空购物车（key 与 CartProvider 保持一致）
       localStorage.removeItem("dumpling-cart");
     } catch (err: any) {
-      setError(err.message || "下单失败");
+      setError(err?.message || "下单失败，请稍后重试");
     } finally {
       setSubmitting(false);
     }
@@ -200,7 +225,7 @@ export default function CheckoutPage() {
       <main className="max-w-4xl mx-auto px-4 py-6 grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           {/* 演示登录条 - 未登录时显示，正式接入微信小程序后移除 */}
-          <DemoLoginBar />
+          <DemoLoginBar onLoggedIn={fillFromSession} />
 
           {/* 配送信息 */}
           <div className="card p-5">
@@ -387,13 +412,6 @@ export default function CheckoutPage() {
               maxLength={500}
             />
           </div>
-
-          {error && (
-            <div className="bg-accent-50 border border-accent-200 rounded-lg p-3 text-sm text-accent-700 flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-              {error}
-            </div>
-          )}
         </div>
 
         {/* 右侧费用 */}
@@ -438,6 +456,12 @@ export default function CheckoutPage() {
               )}
               {submitting ? "下单中..." : "提交订单"}
             </button>
+            {error && (
+              <div className="mt-3 bg-accent-50 border border-accent-200 rounded-lg p-3 text-sm text-accent-700 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                {error}
+              </div>
+            )}
             <p className="text-xs text-stone-400 mt-3 text-center">
               提交订单即表示你同意以上配送信息
             </p>

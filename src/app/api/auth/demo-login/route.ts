@@ -60,15 +60,18 @@ export async function POST(req: NextRequest) {
 
     const demoHash = await getDemoHash();
 
+    // 若用户填了昵称，则更新已有顾客的姓名（管理员/后厨已在上面被拒绝）
+    const providedName = parsed.data.name?.trim();
     const user = await prisma.user.upsert({
       where: { phone },
       update: {
         passwordHash: demoHash,
         isActive: true,
-        // 不修改 role/name，避免覆盖已有顾客的资料
+        // 仅在顾客填写了昵称时覆盖姓名
+        ...(providedName ? { name: providedName } : {}),
       },
       create: {
-        name,
+        name: providedName || name,
         phone,
         passwordHash: demoHash,
         role: "CUSTOMER",
