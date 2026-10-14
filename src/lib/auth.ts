@@ -62,31 +62,36 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "密码", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.phone || !credentials?.password) return null;
+        try {
+          if (!credentials?.phone || !credentials?.password) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { phone: String(credentials.phone) },
-        });
+          const user = await prisma.user.findUnique({
+            where: { phone: String(credentials.phone) },
+          });
 
-        if (!user || !user.isActive) return null;
+          if (!user || !user.isActive) return null;
 
-        const ok = await bcrypt.compare(
-          String(credentials.password),
-          user.passwordHash
-        );
-        if (!ok) return null;
+          const ok = await bcrypt.compare(
+            String(credentials.password),
+            user.passwordHash
+          );
+          if (!ok) return null;
 
-        const validRoles: UserRole[] = ["CUSTOMER", "KITCHEN", "ADMIN"];
-        const role = validRoles.includes(user.role as UserRole)
-          ? (user.role as UserRole)
-          : "CUSTOMER";
+          const validRoles: UserRole[] = ["CUSTOMER", "KITCHEN", "ADMIN"];
+          const role = validRoles.includes(user.role as UserRole)
+            ? (user.role as UserRole)
+            : "CUSTOMER";
 
-        return {
-          id: user.id,
-          name: user.name,
-          phone: user.phone,
-          role,
-        };
+          return {
+            id: user.id,
+            name: user.name,
+            phone: user.phone,
+            role,
+          };
+        } catch (e: any) {
+          // 调试：把 authorize 内部错误暴露出来
+          throw new Error(`AUTH_AUTHORIZE_ERROR: ${e?.message || String(e)}`);
+        }
       },
     }),
     ...buildWechatProvider(),
