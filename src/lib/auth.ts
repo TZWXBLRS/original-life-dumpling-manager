@@ -98,7 +98,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     strategy: "jwt",
     maxAge: 7 * 24 * 60 * 60, // 7天免登录
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  // Cloudflare Workers/Pages 环境下请求 host 可能与 NEXTAUTH_URL 不一致，
+  // 必须信任 host，否则回调返回 Configuration 错误
+  trustHost: true,
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
