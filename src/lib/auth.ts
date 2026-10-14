@@ -62,41 +62,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "密码", type: "password" },
       },
       async authorize(credentials) {
-        try {
-          if (!credentials?.phone || !credentials?.password) return null;
-
-          const user = await prisma.user.findUnique({
-            where: { phone: String(credentials.phone) },
-          });
-
-          if (!user || !user.isActive) return null;
-
-          const ok = await bcrypt.compare(
-            String(credentials.password),
-            user.passwordHash
-          );
-          if (!ok) return null;
-
-          const validRoles: UserRole[] = ["CUSTOMER", "KITCHEN", "ADMIN"];
-          const role = validRoles.includes(user.role as UserRole)
-            ? (user.role as UserRole)
-            : "CUSTOMER";
-
-          return {
-            id: user.id,
-            name: user.name,
-            phone: user.phone,
-            role,
-          };
-        } catch (e: any) {
-          // 调试：把 authorize 内部错误通过假用户返回，便于从 session 查看
-          return {
-            id: "debug-error",
-            name: `AUTH_ERR: ${e?.message || String(e)}`,
-            phone: String(credentials?.phone || "unknown"),
-            role: "CUSTOMER" as UserRole,
-          };
-        }
+        // 调试：直接返回假用户，跳过数据库和 bcrypt
+        return {
+          id: "debug-user",
+          name: "调试用户",
+          phone: String(credentials?.phone || "unknown"),
+          role: "CUSTOMER" as UserRole,
+        };
       },
     }),
     ...buildWechatProvider(),
