@@ -114,24 +114,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        token.phone = user.phone;
-        // 未接入微信登录前 openid 置空，避免 undefined 被误传
-        token.openid = (user as any).openid || "";
+      try {
+        if (user) {
+          token.id = user.id;
+          token.role = user.role;
+          token.phone = user.phone;
+          token.openid = (user as any).openid || "";
+        }
+        return token;
+      } catch (e: any) {
+        (token as any).jwtError = e?.message || String(e);
+        return token;
       }
-      return token;
     },
     async session({ session, token }) {
-      if (session.user && token.id) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as UserRole;
-        session.user.phone = token.phone as string;
-        const oid = token.openid as string | undefined;
-        (session.user as any).openid = oid || undefined;
+      try {
+        if (session.user && token.id) {
+          session.user.id = token.id as string;
+          session.user.role = token.role as UserRole;
+          session.user.phone = token.phone as string;
+          const oid = token.openid as string | undefined;
+          (session.user as any).openid = oid || undefined;
+        }
+        // 调试：把 jwtError 带到 session
+        if ((token as any).jwtError) {
+          (session.user as any).jwtError = (token as any).jwtError;
+        }
+        return session;
+      } catch (e: any) {
+        (session.user as any).sessionError = e?.message || String(e);
+        return session;
       }
-      return session;
     },
   },
 });
