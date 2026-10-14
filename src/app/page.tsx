@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { StaffLoginLink } from "@/components/StaffLoginLink";
+import { CartLink } from "@/components/CartLink";
 import {
-  ShoppingCart,
   MapPin,
   Clock,
   Star,
@@ -35,10 +35,7 @@ export default function HomePage() {
             <Link href="/products" className="text-stone-600 hover:text-primary-600 sm:hidden">
               选购
             </Link>
-            <Link href="/cart" className="relative text-stone-600 hover:text-primary-600">
-              <ShoppingCart className="w-5 h-5 inline" />
-              <span className="ml-1 hidden sm:inline">购物车</span>
-            </Link>
+            <CartLink iconClassName="w-5 h-5" showLabel />
             <Link href="/orders" className="btn-secondary !py-1.5 !px-3 text-sm">
               我的订单
             </Link>

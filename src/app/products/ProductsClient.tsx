@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ShoppingCart, Plus, Home, Sparkles, CheckCircle2 } from "lucide-react";
+import { Plus, Minus, Home, Sparkles, CheckCircle2 } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
+import { CartLink } from "@/components/CartLink";
 import { StaffLoginLink } from "@/components/StaffLoginLink";
 import type { CartItem, ProductCategory } from "@/lib/pricing";
 
@@ -58,9 +59,7 @@ export function ProductsClient({ products }: { products: ProductListItem[] }) {
             <Link href="/" className="text-stone-600 hover:text-primary-600">
               <Home className="w-4 h-4 inline" />
             </Link>
-            <Link href="/cart" className="text-stone-600 hover:text-primary-600">
-              <ShoppingCart className="w-4 h-4 inline" />
-            </Link>
+            <CartLink iconClassName="w-4 h-4" showLabel />
             <StaffLoginLink />
           </nav>
         </div>
@@ -140,7 +139,9 @@ function ProductCard({
   onAdd: (item: CartItem) => void;
 }) {
   const outOfStock = product.stock === 0;
-  const [added, setAdded] = useState(false);
+  const maxQty = Math.max(1, product.stock);
+  const [qty, setQty] = useState(1);
+  const [added, setAdded] = useState(0);
 
   // 最大库存参考值，用于进度条计算
   const MAX_STOCK = 60;
@@ -151,17 +152,19 @@ function ProductCard({
     ? "from-green-50 to-emerald-50"
     : "from-amber-50 to-orange-50";
 
+  // 顾客先在卡片上选盒数（1 ~ 库存），点「加购 n 盒」后同步进购物车
   const handleAdd = () => {
     if (outOfStock) return;
     onAdd({
       productId: product.id,
       productName: product.name,
       category: product.category,
-      quantity: 1,
+      quantity: qty,
       unitPrice: product.unitPrice,
     });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1500);
+    setAdded(qty);
+    setQty(1);
+    setTimeout(() => setAdded(0), 1500);
   };
 
   return (
@@ -195,29 +198,58 @@ function ProductCard({
           {product.description}
         </p>
 
-        {/* 底部：价格 + 加购 */}
-        <div className="flex items-end justify-between mt-auto">
+        {/* 底部：价格 + 数量选择 */}
+        <div className="flex items-center justify-between mt-auto">
           <div className="text-base font-bold text-primary-600">
             ¥{(product.unitPrice / 100).toFixed(0)}
             <span className="text-[10px] text-stone-400 font-normal">/盒</span>
           </div>
-          <button
-            disabled={outOfStock}
-            onClick={handleAdd}
-            className="btn-primary !py-1 !px-2.5 text-xs flex items-center gap-0.5 disabled:opacity-50"
-          >
-            {added ? (
-              <>
-                <CheckCircle2 className="w-3 h-3" /> 已加入
-              </>
-            ) : (
-              <>
-                <Plus className="w-3 h-3" />
-                加购
-              </>
-            )}
-          </button>
+          {!outOfStock && (
+            <div className="flex items-center rounded-lg border border-stone-200 bg-stone-50">
+              <button
+                type="button"
+                aria-label="减少一盒"
+                disabled={qty <= 1}
+                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                className="w-7 h-7 flex items-center justify-center text-stone-500 disabled:opacity-30 hover:text-primary-600"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <span className="w-7 text-center text-sm font-semibold text-stone-800 tabular-nums">
+                {qty}
+              </span>
+              <button
+                type="button"
+                aria-label="增加一盒"
+                disabled={qty >= maxQty}
+                onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                className="w-7 h-7 flex items-center justify-center text-stone-500 disabled:opacity-30 hover:text-primary-600"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </div>
+
+        {/* 加购按钮：按钮上直接显示当前选中的盒数 */}
+        <button
+          disabled={outOfStock}
+          onClick={handleAdd}
+          className="btn-primary w-full !py-1.5 mt-2 text-xs flex items-center justify-center gap-1 disabled:opacity-50"
+        >
+          {added > 0 ? (
+            <>
+              <CheckCircle2 className="w-3 h-3" /> 已加入 {added} 盒
+            </>
+          ) : outOfStock ? (
+            "已售罄"
+          ) : (
+            <>
+              <Plus className="w-3 h-3" />
+              加购 {qty} 盒
+            </>
+          )}
+        </button>
 
         {/* 库存进度条 */}
         <div className="w-full h-[3px] bg-stone-100 rounded-full mt-2 overflow-hidden">
