@@ -75,35 +75,9 @@ function applyPatch() {
 applyPatch();
 console.log("✓ 初始 patch 完成（index.js + default.js → patched wasm.js）");
 
-// 启动 fs.watch 监听 .prisma/client 目录变化
-// 注意：fs.watch 在 Linux 下用 inotify，对目录监听会收到目录下所有文件变化事件
-let watcher;
-let watchTimeout = null;
-try {
-  watcher = fs.watch(prismaClientDir, (eventType, filename) => {
-    if (!filename) return;
-    if (filename !== "index.js" && filename !== "default.js") return;
-
-    // 防抖：短时间内多次触发合并为一次检查
-    if (watchTimeout) clearTimeout(watchTimeout);
-    watchTimeout = setTimeout(() => {
-      watchTimeout = null;
-      // 检查是否需要重新 patch（如果是 patched 版本就跳过，防自我触发）
-      const filesToCheck = [indexFile, defaultFile];
-      let changed = false;
-      for (const f of filesToCheck) {
-        if (applyPatchIfNeeded(f)) changed = true;
-      }
-      if (changed) {
-        console.log(`↻ 检测到 prisma 重新生成，已重新 patch`);
-      }
-    }, 100);
-  });
-} catch (e) {
-  console.error("✗ 启动 watcher 失败:", e.message);
-}
-
 // 启动 OpenNext build（子进程）
+// 注意：不使用 fs.watch，因为在 CI 环境可能不稳定。
+// 改为在 build 完成后再次 patch，确保 OpenNext 重新生成 client 时也能覆盖。
 const child = spawn(
   "npx",
   ["@opennextjs/cloudflare", "build", "--dangerouslyUseUnsupportedNextVersion"],
@@ -163,12 +137,14 @@ function preparePagesOutput() {
 }
 
 child.on("close", (code) => {
-  // 停止 watcher
-  if (watcher) watcher.close();
-  if (watchTimeout) clearTimeout(watchTimeout);
-
-  // build 成功后再做 Pages 后处理
+  // build 成功后重新 patch（防止 OpenNext 重新生成 client）+ Pages 后处理
   if (code === 0) {
+    try {
+      applyPatch();
+      console.log("✓ build 后重新 patch 完成");
+    } catch (e) {
+      console.error("✗ build 后重新 patch 失败:", e.message);
+    }
     try {
       preparePagesOutput();
     } catch (e) {
@@ -187,8 +163,6 @@ child.on("close", (code) => {
 
 child.on("error", (err) => {
   console.error("✗ OpenNext build 失败:", err.message);
-  if (watcher) watcher.close();
-  if (watchTimeout) clearTimeout(watchTimeout);
   for (const [f, content] of Object.entries(backups)) {
     fs.writeFileSync(f, content);
   }
