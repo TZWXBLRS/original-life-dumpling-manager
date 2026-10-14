@@ -129,11 +129,8 @@ function LoginForm() {
             </div>
           </div>
 
-          <div className="mt-5 pt-5 border-t border-stone-100 text-xs text-stone-400 space-y-1">
-            <div>🏪 门店登录入口：</div>
-            <div>• 管理员：15313659956 / sushenghuo107</div>
-            <div>• 后厨：18301576627 / sushenghuo105</div>
-            <div>• 顾客请点击上方"立即注册"</div>
+          <div className="mt-5 pt-5 border-t border-stone-100 text-xs text-stone-400">
+            🏪 门店员工请使用门店账号登录
           </div>
         </form>
 
