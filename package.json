@@ -5,7 +5,7 @@
   "description": "Original Life Dumpling Manager - 冷冻饺子订购管理系统",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "db:push": "prisma db push",
