@@ -89,8 +89,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             role,
           };
         } catch (e: any) {
-          // 调试：把 authorize 内部错误暴露出来
-          throw new Error(`AUTH_AUTHORIZE_ERROR: ${e?.message || String(e)}`);
+          // 调试：把 authorize 内部错误通过假用户返回，便于从 session 查看
+          return {
+            id: "debug-error",
+            name: `AUTH_ERR: ${e?.message || String(e)}`,
+            phone: String(credentials?.phone || "unknown"),
+            role: "CUSTOMER" as UserRole,
+          };
         }
       },
     }),
