@@ -16,9 +16,16 @@ export async function GET() {
       select: { id: true, name: true, phone: true, role: true },
     });
 
-    const kitchen = await prisma.user.update({
+    const kitchen = await prisma.user.upsert({
       where: { phone: "18301576627" },
-      data: { passwordHash: kitchenHash, isActive: true },
+      update: { passwordHash: kitchenHash, isActive: true },
+      create: {
+        name: "素生活后厨",
+        phone: "18301576627",
+        passwordHash: kitchenHash,
+        role: "KITCHEN",
+        isActive: true,
+      },
       select: { id: true, name: true, phone: true, role: true },
     });
 
