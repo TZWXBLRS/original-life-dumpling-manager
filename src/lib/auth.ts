@@ -62,13 +62,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "密码", type: "password" },
       },
       async authorize(credentials) {
-        // 调试：直接返回假用户，跳过数据库和 bcrypt
-        return {
-          id: "debug-user",
-          name: "调试用户",
-          phone: String(credentials?.phone || "unknown"),
-          role: "CUSTOMER" as UserRole,
-        };
+        try {
+          const phone = String(credentials?.phone || "");
+          const password = String(credentials?.password || "");
+          if (!phone || !password) return null;
+
+          const user = await prisma.user.findUnique({ where: { phone } });
+          if (!user || !user.isActive) return null;
+
+          const ok = await bcrypt.compare(password, user.passwordHash);
+          if (!ok) return null;
+
+          return {
+            id: user.id,
+            name: user.name,
+            phone: user.phone,
+            role: user.role as UserRole,
+          };
+        } catch (e) {
+          // 数据库或 bcrypt 出错时返回 null（登录失败），避免抛出 Configuration
+          return null;
+        }
       },
     }),
     ...buildWechatProvider(),
