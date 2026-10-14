@@ -5,7 +5,7 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Phone, Lock, Loader2 } from "lucide-react";
 // 使用 NextAuth 官方 signIn，避免 CSRF token 缺失问题
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 
 export const dynamic = "force-dynamic";
 
@@ -38,15 +38,13 @@ function LoginForm() {
       }
 
       if (result.ok && !result.error) {
+        // 管理员 / 后厨登录后优先跳仪表盘，顾客跳 callbackUrl。
+        // 角色从服务端 session 读取，避免在客户端硬编码手机号。
+        const session = await getSession();
+        const role = session?.user?.role;
+        const isStaff = role === "ADMIN" || role === "KITCHEN";
         router.refresh();
-        // 管理员 / 后厨登录后优先跳仪表盘，顾客跳 callbackUrl
-        const adminPhones = ["15313659956"];
-        const kitchenPhones = ["18301576627"];
-        const dest =
-          adminPhones.includes(phone) || kitchenPhones.includes(phone)
-            ? "/admin/dashboard"
-            : callbackUrl;
-        router.push(dest);
+        router.push(isStaff ? "/admin/dashboard" : callbackUrl);
       } else if (result.status === 401 || result.error) {
         setError("手机号或密码错误");
       } else {
