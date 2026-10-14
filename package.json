@@ -11,6 +11,7 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:seed": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seed.ts",
+    "db:reset-accounts": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/reset-accounts.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "build:cloudflare": "prisma generate && node scripts/build-cloudflare.js",

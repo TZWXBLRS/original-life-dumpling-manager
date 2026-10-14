@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StaffLoginLink } from "@/components/StaffLoginLink";
 import {
   ShoppingCart,
   MapPin,
@@ -41,6 +42,7 @@ export default function HomePage() {
             <Link href="/orders" className="btn-secondary !py-1.5 !px-3 text-sm">
               我的订单
             </Link>
+            <StaffLoginLink className="ml-1" />
           </nav>
         </div>
       </header>

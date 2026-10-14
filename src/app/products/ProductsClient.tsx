@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ShoppingCart, Plus, Home, Sparkles, CheckCircle2 } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
+import { StaffLoginLink } from "@/components/StaffLoginLink";
 import type { CartItem, ProductCategory } from "@/lib/pricing";
 
 /**
@@ -60,6 +61,7 @@ export function ProductsClient({ products }: { products: ProductListItem[] }) {
             <Link href="/cart" className="text-stone-600 hover:text-primary-600">
               <ShoppingCart className="w-4 h-4 inline" />
             </Link>
+            <StaffLoginLink />
           </nav>
         </div>
       </header>
