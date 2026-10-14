@@ -104,6 +104,8 @@ try {
 }
 
 // 启动 OpenNext build（子进程）
+// CF_BUILD=1 让 next.config.js 启用 Cloudflare 边缘适配的 webpack alias
+// （本地 dev / 自托管构建不设置该变量，走 Node 运行时原生 SQLite）。
 const child = spawn(
   "npx",
   ["@opennextjs/cloudflare", "build", "--dangerouslyUseUnsupportedNextVersion"],
@@ -111,6 +113,7 @@ const child = spawn(
     stdio: "inherit",
     cwd: path.join(__dirname, ".."),
     shell: process.platform === "win32",
+    env: { ...process.env, CF_BUILD: "1" },
   }
 );
 
