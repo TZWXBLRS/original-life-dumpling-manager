@@ -29,6 +29,10 @@ const nextConfig = {
           __dirname,
           "node_modules/@prisma/client/runtime/wasm-engine-edge.js"
         ),
+        // Cloudflare Workers 没有 Node 的 crypto 模块，jose 的 node 构建
+        // 会调用 crypto.createCipheriv 导致 [unenv] not implemented 错误。
+        // 强制使用 browser 构建，走 Web Crypto (crypto.subtle)。
+        jose: path.resolve(__dirname, "node_modules/jose/dist/browser/index.js"),
       };
     }
     return config;
