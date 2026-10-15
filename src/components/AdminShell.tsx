@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard,
@@ -44,6 +44,25 @@ export function AdminShell({
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname() || "";
+  const router = useRouter();
+
+  // 客户端二次校验：非门店账号（顾客）不应停留在后台，统一弹回首页。
+  // 服务端页面（仪表盘/订单/销售/生产）已有 auth() 校验，这里是给纯客户端
+  // 页面（库存/用户/配置）兜底，保证所有后台页面权限行为一致。
+  useEffect(() => {
+    let active = true;
+    fetch("/api/auth/session")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!active) return;
+        const role = d?.user?.role;
+        if (role !== "ADMIN" && role !== "KITCHEN") router.replace("/");
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");

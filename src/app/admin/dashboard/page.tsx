@@ -1,4 +1,6 @@
 import { AdminShell } from "@/components/AdminShell";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import {
   ShoppingBasket,
   Package,
@@ -12,7 +14,14 @@ import {
  * 角色：后厨 / 管理员
  */
 export default async function AdminDashboardPage() {
-  // TODO: 接入真实数据 & 权限校验（auth() 判断 role === ADMIN 或 KITCHEN）
+  // 权限校验：仅门店账号（管理员 / 后厨）可进后台，与订单、销售、生产页保持一致
+  const session = await auth();
+  if (!session?.user?.id) redirect("/auth/login");
+  if (session.user.role !== "ADMIN" && session.user.role !== "KITCHEN") {
+    redirect("/");
+  }
+
+  // TODO: 接入真实数据
   const todayOrders = 23;
   const todaySales = 12850; // 分
   const todayBoxes = 47;

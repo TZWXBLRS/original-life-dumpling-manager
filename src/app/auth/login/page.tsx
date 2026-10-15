@@ -38,14 +38,23 @@ function LoginForm() {
       }
 
       if (result.ok && !result.error) {
+        // 按会话中的真实角色决定落地页：门店账号（管理员/后厨）进后台，
+        // 普通顾客始终留在顾客端，避免顾客被 /admin 的 callbackUrl 带进后台后
+        // 再被权限校验弹回首页。
+        let role: string | undefined;
+        try {
+          const sess = await fetch("/api/auth/session").then((r) => r.json());
+          role = sess?.user?.role;
+        } catch {
+          role = undefined;
+        }
+        const isStaff = role === "ADMIN" || role === "KITCHEN";
+        const dest = isStaff
+          ? "/admin/dashboard"
+          : callbackUrl.startsWith("/admin")
+          ? "/"
+          : callbackUrl;
         router.refresh();
-        // 管理员 / 后厨登录后优先跳仪表盘，顾客跳 callbackUrl
-        const adminPhones = ["15313659956"];
-        const kitchenPhones = ["18301576627"];
-        const dest =
-          adminPhones.includes(phone) || kitchenPhones.includes(phone)
-            ? "/admin/dashboard"
-            : callbackUrl;
         router.push(dest);
       } else if (result.status === 401 || result.error) {
         setError("手机号或密码错误");
@@ -127,13 +136,6 @@ function LoginForm() {
             <div className="mt-3 text-xs text-stone-400">
               注册后可保存收货地址、查看历史订单、跟踪配送进度
             </div>
-          </div>
-
-          <div className="mt-5 pt-5 border-t border-stone-100 text-xs text-stone-400 space-y-1">
-            <div>🏪 门店登录入口：</div>
-            <div>• 管理员：15313659956 / sushenghuo107</div>
-            <div>• 后厨：18301576627 / sushenghuo105</div>
-            <div>• 顾客请点击上方"立即注册"</div>
           </div>
         </form>
 
