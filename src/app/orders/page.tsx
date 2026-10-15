@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { formatYuan } from "@/lib/pricing";
 import { DemoLoginBar } from "@/components/DemoLoginBar";
+import { UserMenu } from "@/components/UserMenu";
 
 const STATUS_TEXT: Record<string, { label: string; cls: string }> = {
   PENDING_PAYMENT: { label: "待支付", cls: "bg-amber-100 text-amber-800" },
@@ -42,7 +43,7 @@ export default async function OrdersPage() {
               <span className="text-2xl">🥟</span>
               <span className="font-bold text-primary-700">素生活</span>
             </Link>
-            <div className="text-sm text-stone-600">我的订单</div>
+            <UserMenu />
           </div>
         </header>
         <main className="max-w-4xl mx-auto px-4 py-8">
@@ -80,8 +81,9 @@ export default async function OrdersPage() {
             <span className="text-2xl">🥟</span>
             <span className="font-bold text-primary-700">素生活</span>
           </Link>
-          <div className="text-sm text-stone-600">
-            我的订单
+          <div className="flex items-center gap-4 text-sm text-stone-600">
+            <span className="hidden sm:inline">我的订单</span>
+            <UserMenu />
           </div>
         </div>
       </header>

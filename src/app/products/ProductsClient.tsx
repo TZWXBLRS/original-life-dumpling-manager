@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, CheckCircle2, Sparkles } from "lucide-react";
+import { Plus, Minus, Sparkles } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
-import type { CartItem, ProductCategory } from "@/lib/pricing";
+import type { ProductCategory } from "@/lib/pricing";
 
 type ProductFromDB = {
   id: string;
@@ -25,8 +24,11 @@ const emojiMap: Record<string, string> = {
   "菌菇饺子": "🍄",
 };
 
+// 库存进度条的满格基准
+const MAX_STOCK = 100;
+
 export function ProductsClient({ products }: { products: ProductFromDB[] }) {
-  const { addToCart, showComboHint } = useCart();
+  const { showComboHint, totalBoxes } = useCart();
 
   // 售罄沉底
   const sortedProducts = [...products].sort((a, b) => {
@@ -49,6 +51,17 @@ export function ProductsClient({ products }: { products: ProductFromDB[] }) {
 
   return (
     <>
+      {totalBoxes > 0 && (
+        <div className="mb-3 flex items-center justify-between gap-2 rounded-lg bg-primary-50 border border-primary-200 px-3 py-2 text-sm text-primary-700">
+          <span className="font-medium">
+            已选 <b>{totalBoxes}</b> 盒，购物车已实时同步
+          </span>
+          <a href="/cart" className="text-xs font-medium underline underline-offset-2">
+            去购物车 →
+          </a>
+        </div>
+      )}
+
       {showComboHint && (
         <div className="mb-4 px-3 py-2.5 rounded-lg bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-medium flex items-center gap-2">
           <Sparkles className="w-3.5 h-3.5 shrink-0" />
@@ -67,7 +80,6 @@ export function ProductsClient({ products }: { products: ProductFromDB[] }) {
               key={p.id}
               product={p}
               emoji={emojiMap[p.name] || "🥟"}
-              onAdd={(item) => addToCart(item)}
             />
           ))}
         </div>
@@ -84,7 +96,6 @@ export function ProductsClient({ products }: { products: ProductFromDB[] }) {
               key={p.id}
               product={p}
               emoji={emojiMap[p.name] || "🥟"}
-              onAdd={(item) => addToCart(item)}
             />
           ))}
         </div>
@@ -96,32 +107,32 @@ export function ProductsClient({ products }: { products: ProductFromDB[] }) {
 function ProductCard({
   product,
   emoji,
-  onAdd,
 }: {
   product: ProductFromDB;
   emoji: string;
-  onAdd: (item: CartItem) => void;
 }) {
-  const outOfStock = product.stock === 0;
-  const [added, setAdded] = useState(false);
+  const { items, addToCart, updateQty } = useCart();
 
-  const MAX_STOCK = 60;
-  const stockPercent = outOfStock ? 0 : Math.min(100, (product.stock / MAX_STOCK) * 100);
+  const outOfStock = product.stock === 0;
+  const selected = items.find((it) => it.productId === product.id)?.quantity ?? 0;
+  const atMax = selected >= product.stock;
+
+  const stockPercent = outOfStock
+    ? 0
+    : Math.min(100, (product.stock / MAX_STOCK) * 100);
 
   const isClassic = product.category === "CLASSIC";
   const mediaTint = isClassic ? "from-green-50 to-emerald-50" : "from-amber-50 to-orange-50";
 
   const handleAdd = () => {
-    if (outOfStock) return;
-    onAdd({
+    if (outOfStock || atMax) return;
+    addToCart({
       productId: product.id,
       productName: product.name,
       category: product.category as ProductCategory,
       quantity: 1,
       unitPrice: product.unitPrice,
     });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1500);
   };
 
   return (
@@ -144,6 +155,11 @@ function ProductCard({
             库存{product.stock}
           </span>
         )}
+        {selected > 0 && (
+          <span className="absolute top-2 left-2 text-[10px] font-semibold text-white bg-primary-500 rounded-full px-1.5 py-0.5 shadow-sm">
+            已选{selected}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-col flex-1 p-2.5 sm:p-3">
@@ -154,26 +170,39 @@ function ProductCard({
           </p>
         )}
 
-        <div className="flex items-end justify-between mt-auto">
+        <div className="flex items-center justify-between mt-auto mb-1.5">
           <div className="text-base font-bold text-primary-600">
             ¥{(product.unitPrice / 100).toFixed(0)}
             <span className="text-[10px] text-stone-400 font-normal">/盒</span>
           </div>
+          <span className="text-[10px] text-stone-500">
+            {selected > 0 ? `已选 ${selected} 盒` : "未选择"}
+          </span>
+        </div>
+
+        {/* 数量选择：减 / 数量 / 加 */}
+        <div className="flex items-center gap-1.5">
           <button
-            disabled={outOfStock}
-            onClick={handleAdd}
-            className="btn-primary !py-1 !px-2.5 text-xs flex items-center gap-0.5 disabled:opacity-50"
+            type="button"
+            aria-label="减少一盒"
+            disabled={selected === 0}
+            onClick={() => updateQty(product.id, -1)}
+            className="w-8 h-8 shrink-0 rounded-lg border border-stone-300 flex items-center justify-center text-stone-600 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {added ? (
-              <>
-                <CheckCircle2 className="w-3 h-3" /> 已加入
-              </>
-            ) : (
-              <>
-                <Plus className="w-3 h-3" />
-                加购
-              </>
-            )}
+            <Minus className="w-3.5 h-3.5" />
+          </button>
+          <div className="flex-1 h-8 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center gap-0.5 text-sm font-bold text-stone-700">
+            {selected}
+            <span className="text-[10px] font-normal text-stone-400">盒</span>
+          </div>
+          <button
+            type="button"
+            aria-label="加购一盒"
+            disabled={outOfStock || atMax}
+            onClick={handleAdd}
+            className="w-8 h-8 shrink-0 rounded-lg bg-primary-500 text-white flex items-center justify-center hover:bg-primary-600 active:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Plus className="w-3.5 h-3.5" />
           </button>
         </div>
 

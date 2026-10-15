@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import {
   LayoutDashboard,
   ShoppingBasket,
@@ -129,7 +130,11 @@ export function AdminShell({
           <div className="px-3 py-2 text-xs text-stone-400">
             当前登录：{role === "KITCHEN" ? "后厨" : "管理员"}
           </div>
-          <button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-stone-300 hover:bg-stone-800">
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: "/auth/login" })}
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-stone-300 hover:bg-stone-800"
+          >
             <LogOut className="w-4 h-4" /> 退出登录
           </button>
           <Link

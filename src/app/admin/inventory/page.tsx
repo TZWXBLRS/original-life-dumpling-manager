@@ -39,11 +39,19 @@ export default function AdminInventoryPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [opType, setOpType] = useState<"IN" | "OUT">("IN");
+  const [opType, setOpType] = useState<"IN" | "OUT" | "SET">("IN");
   const [opQty, setOpQty] = useState(10);
   const [opReason, setOpReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [batchValue, setBatchValue] = useState(100);
+  const [batching, setBatching] = useState(false);
+
+  const OP_LABEL: Record<"IN" | "OUT" | "SET", string> = {
+    IN: "入库",
+    OUT: "出库",
+    SET: "修改",
+  };
 
   const load = async () => {
     setLoading(true);
@@ -69,16 +77,23 @@ export default function AdminInventoryPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId: p.id,
-          changeType: opType, // IN 入库 / OUT 出库
+          changeType: opType, // IN 入库 / OUT 出库 / SET 直接设定
           changeAmount: opQty,
-          reason: opReason || (opType === "IN" ? "入库" : "出库"),
+          reason:
+            opReason ||
+            (opType === "SET"
+              ? `直接设定为 ${opQty} 盒`
+              : OP_LABEL[opType]),
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setMsg({
         type: "ok",
-        text: `「${p.name}」${opType === "IN" ? "入库" : "出库"}成功：${opQty} 盒`,
+        text:
+          opType === "SET"
+            ? `「${p.name}」库存已设为 ${opQty} 盒`
+            : `「${p.name}」${OP_LABEL[opType]}成功：${opQty} 盒`,
       });
       setEditingId(null);
       load();
@@ -90,6 +105,36 @@ export default function AdminInventoryPage() {
     }
   };
 
+  // 批量把所有口味库存设为同一数值（默认 100）
+  const batchSet = async () => {
+    setBatching(true);
+    setMsg(null);
+    try {
+      for (const p of products) {
+        if (p.stock === batchValue) continue;
+        const res = await fetch("/api/admin/inventory", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            productId: p.id,
+            changeType: "SET",
+            changeAmount: batchValue,
+            reason: `批量设置为 ${batchValue}`,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+      }
+      setMsg({ type: "ok", text: `已将全部口味库存设为 ${batchValue} 盒` });
+      load();
+      setTimeout(() => setMsg(null), 4000);
+    } catch (e: any) {
+      setMsg({ type: "err", text: e.message || "批量设置失败" });
+    } finally {
+      setBatching(false);
+    }
+  };
+
   return (
     <AdminShell role="ADMIN">
       <main className="flex-1 overflow-auto p-4 md:p-8">
@@ -98,9 +143,51 @@ export default function AdminInventoryPage() {
             <Package className="w-7 h-7 text-primary-600" /> 库存管理
           </h1>
           <p className="mt-1 text-sm text-stone-500">
-            查看口味库存与单价，支持入库 / 出库操作
+            查看口味库存与单价，支持入库 / 出库 / 直接修改库存
           </p>
         </div>
+
+        {/* 批量设置：一次性把所有口味库存设为同一数值 */}
+        <div className="card mb-4 p-4 flex flex-wrap items-center gap-3">
+          <span className="text-sm font-medium text-stone-700">
+            批量设置库存（全部口味）：
+          </span>
+          <div className="flex items-center gap-1 border border-stone-200 rounded-lg">
+            <button
+              className="w-8 h-8 hover:bg-stone-100 flex items-center justify-center"
+              onClick={() => setBatchValue(Math.max(0, batchValue - 10))}
+            >
+              <Minus className="w-3 h-3" />
+            </button>
+            <input
+              type="number"
+              className="w-16 text-center py-1 outline-none bg-transparent"
+              value={batchValue}
+              onChange={(e) =>
+                setBatchValue(Math.max(0, parseInt(e.target.value) || 0))
+              }
+            />
+            <button
+              className="w-8 h-8 hover:bg-stone-100 flex items-center justify-center"
+              onClick={() => setBatchValue(batchValue + 10)}
+            >
+              <Plus className="w-3 h-3" />
+            </button>
+          </div>
+          <button
+            className="btn-primary !py-1.5 !px-3 text-xs flex items-center gap-1"
+            disabled={batching || products.length === 0}
+            onClick={batchSet}
+          >
+            {batching ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <PackagePlus className="w-3 h-3" />
+            )}
+            全部设为 {batchValue} 盒
+          </button>
+        </div>
+
         {msg && (
           <div
             className={`card mb-4 p-3 flex items-center gap-2 text-sm ${
@@ -166,7 +253,7 @@ export default function AdminInventoryPage() {
                         <td className="px-4 py-3">¥{(p.unitPrice / 100).toFixed(0)}</td>
                         <td className="px-4 py-3">
                           {!editing ? (
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                               <button
                                 className="btn-secondary !py-1.5 !px-3 text-xs flex items-center gap-1"
                                 onClick={() => {
@@ -189,10 +276,21 @@ export default function AdminInventoryPage() {
                               >
                                 <PackageMinus className="w-3 h-3" /> 出库
                               </button>
+                              <button
+                                className="btn-secondary !py-1.5 !px-3 text-xs flex items-center gap-1"
+                                onClick={() => {
+                                  setEditingId(p.id);
+                                  setOpType("SET");
+                                  setOpQty(p.stock);
+                                  setOpReason("");
+                                }}
+                              >
+                                <Package className="w-3 h-3" /> 直接修改
+                              </button>
                             </div>
                           ) : (
                             <div className="space-y-2">
-                              <div className="flex items-center gap-2">
+                              <div className="flex flex-wrap items-center gap-2">
                                 <button
                                   onClick={() => setOpType("IN")}
                                   className={`text-xs px-2 py-1 rounded-lg border ${
@@ -215,12 +313,23 @@ export default function AdminInventoryPage() {
                                   <PackageMinus className="w-3 h-3 inline mr-1" />
                                   出库
                                 </button>
+                                <button
+                                  onClick={() => setOpType("SET")}
+                                  className={`text-xs px-2 py-1 rounded-lg border ${
+                                    opType === "SET"
+                                      ? "bg-blue-50 border-blue-300 text-blue-700"
+                                      : "border-stone-200"
+                                  }`}
+                                >
+                                  <Package className="w-3 h-3 inline mr-1" />
+                                  设为
+                                </button>
                                 <div className="flex-1" />
                                 <div className="flex items-center gap-1 border border-stone-200 rounded-lg">
                                   <button
                                     className="w-7 h-7 hover:bg-stone-100 flex items-center justify-center"
                                     onClick={() =>
-                                      setOpQty(Math.max(1, opQty - 1))
+                                      setOpQty(Math.max(0, opQty - 1))
                                     }
                                   >
                                     <Minus className="w-3 h-3" />
@@ -231,7 +340,7 @@ export default function AdminInventoryPage() {
                                     value={opQty}
                                     onChange={(e) =>
                                       setOpQty(
-                                        Math.max(1, parseInt(e.target.value) || 1)
+                                        Math.max(0, parseInt(e.target.value) || 0)
                                       )
                                     }
                                   />
@@ -245,7 +354,11 @@ export default function AdminInventoryPage() {
                               </div>
                               <input
                                 className="input !py-1.5 text-xs"
-                                placeholder="操作原因（例如：补货 / 报废 / 盘点差异）"
+                                placeholder={
+                                  opType === "SET"
+                                    ? `将库存设为多少盒（例如：100）`
+                                    : "操作原因（例如：补货 / 报废 / 盘点差异）"
+                                }
                                 value={opReason}
                                 onChange={(e) => setOpReason(e.target.value)}
                               />
@@ -258,7 +371,7 @@ export default function AdminInventoryPage() {
                                   {submitting ? (
                                     <Loader2 className="w-3 h-3 animate-spin" />
                                   ) : null}
-                                  确认{opType === "IN" ? "入库" : "出库"}
+                                  确认{OP_LABEL[opType]}
                                 </button>
                                 <button
                                   className="btn-secondary !py-1.5 !px-3 text-xs"
@@ -275,6 +388,11 @@ export default function AdminInventoryPage() {
                                     当前库存 {p.stock} 盒，不能出库 {opQty} 盒
                                   </div>
                                 )}
+                              {opType === "SET" && (
+                                <div className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg p-2">
+                                  当前库存 {p.stock} 盒，将直接改为 {opQty} 盒
+                                </div>
+                              )}
                             </div>
                           )}
                         </td>

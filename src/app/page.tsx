@@ -1,13 +1,15 @@
 import Link from "next/link";
 import {
-  ShoppingCart,
   MapPin,
   Clock,
   Star,
   Sparkles,
   Leaf,
   Truck,
+  Settings,
 } from "lucide-react";
+import { CartLink } from "@/components/CartLink";
+import { UserMenu } from "@/components/UserMenu";
 
 /**
  * 顾客端页面 - 首页
@@ -27,19 +29,23 @@ export default function HomePage() {
               <div className="text-xs text-stone-500 -mt-1">手工饺子</div>
             </div>
           </Link>
-          <nav className="flex items-center gap-3 text-sm sm:gap-6">
+          <nav className="flex items-center gap-3 text-sm sm:gap-5">
             <Link href="/products" className="hidden text-stone-600 hover:text-primary-600 sm:inline">
               全部口味
             </Link>
             <Link href="/products" className="text-stone-600 hover:text-primary-600 sm:hidden">
               选购
             </Link>
-            <Link href="/cart" className="relative text-stone-600 hover:text-primary-600">
-              <ShoppingCart className="w-5 h-5 inline" />
-              <span className="ml-1 hidden sm:inline">购物车</span>
-            </Link>
+            <CartLink />
             <Link href="/orders" className="btn-secondary !py-1.5 !px-3 text-sm">
               我的订单
+            </Link>
+            <UserMenu />
+            <Link
+              href="/auth/login?callbackUrl=/admin/dashboard"
+              className="hidden items-center gap-1 text-stone-400 hover:text-primary-600 md:flex"
+            >
+              <Settings className="w-4 h-4" /> 商家后台
             </Link>
           </nav>
         </div>
@@ -209,7 +215,13 @@ export default function HomePage() {
       <footer className="mt-auto border-t border-stone-200 bg-white py-8">
         <div className="max-w-6xl mx-auto px-4 text-center text-sm text-stone-500">
           <div className="mb-2">原味生活饺子馆 · 用心做好每一个饺子</div>
-          <div>© {new Date().getFullYear()} Original Life Dumpling Manager</div>
+          <Link
+            href="/auth/login?callbackUrl=/admin/dashboard"
+            className="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-primary-600"
+          >
+            <Settings className="w-3.5 h-3.5" /> 商家后台入口
+          </Link>
+          <div className="mt-2">© {new Date().getFullYear()} Original Life Dumpling Manager</div>
         </div>
       </footer>
     </div>

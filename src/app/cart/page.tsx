@@ -27,7 +27,7 @@ import {
   getNextDeliveryWindow,
 } from "@/lib/delivery-window";
 import type { DeliveryETAResult } from "@/lib/delivery";
-import { DemoLoginBar } from "@/components/DemoLoginBar";
+import { UserMenu } from "@/components/UserMenu";
 
 export default function CartPage() {
   const { items, updateQty, removeItem, clearCart, showComboHint, classicBoxes } =
@@ -87,7 +87,7 @@ export default function CartPage() {
             <span className="font-bold text-primary-700">原味生活</span>
           </Link>
           <div className="flex items-center gap-4 text-sm">
-            <DemoLoginBar compact />
+            <UserMenu />
             <Link href="/products" className="text-stone-600 hover:text-primary-600">
               继续选购 →
             </Link>

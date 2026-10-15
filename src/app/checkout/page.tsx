@@ -21,6 +21,7 @@ import {
   Store,
 } from "lucide-react";
 import { DemoLoginBar } from "@/components/DemoLoginBar";
+import { UserMenu } from "@/components/UserMenu";
 
 // 自取时段（和 seed 默认同步）
 const PICKUP_SLOTS = [
@@ -194,6 +195,9 @@ export default function CheckoutPage() {
             <ArrowLeft className="w-4 h-4" /> 返回购物车
           </Link>
           <h1 className="font-bold text-lg">确认订单</h1>
+          <div className="ml-auto">
+            <UserMenu />
+          </div>
         </div>
       </header>
 

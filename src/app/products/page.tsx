@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ProductsClient } from "./ProductsClient";
+import { CartLink } from "@/components/CartLink";
+import { UserMenu } from "@/components/UserMenu";
 
 // 强制 SSR：构建时没有 Turso 环境变量，Prisma 无法连接
 export const dynamic = "force-dynamic";
@@ -35,9 +37,8 @@ export default async function ProductsPage() {
             <Link href="/" className="text-stone-600 hover:text-primary-600">
               🏠
             </Link>
-            <Link href="/cart" className="text-stone-600 hover:text-primary-600">
-              🛒
-            </Link>
+            <CartLink showLabel={false} />
+            <UserMenu />
           </nav>
         </div>
       </header>

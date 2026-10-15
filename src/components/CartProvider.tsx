@@ -23,6 +23,8 @@ interface CartContextValue {
   updateQty: (productId: string, delta: number) => void;
   removeItem: (productId: string) => void;
   clearCart: () => void;
+  /** 购物车总盒数（所有口味数量之和） */
+  totalBoxes: number;
   /** 经典口味总盒数 */
   classicBoxes: number;
   /** 是否该提示「再加1盒凑4盒享组合价」 */
@@ -91,6 +93,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = useCallback(() => setItems([]), []);
 
+  const totalBoxes = items.reduce((sum, it) => sum + it.quantity, 0);
+
   const classicBoxes = items
     .filter((it) => it.category === "CLASSIC")
     .reduce((sum, it) => sum + it.quantity, 0);
@@ -106,6 +110,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         updateQty,
         removeItem,
         clearCart,
+        totalBoxes,
         classicBoxes,
         showComboHint,
       }}
