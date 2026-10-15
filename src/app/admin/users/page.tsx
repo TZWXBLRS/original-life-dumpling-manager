@@ -9,6 +9,8 @@ import {
   KeyRound,
   Loader2,
   X,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { AdminShell } from "@/components/AdminShell";
 
@@ -45,6 +47,11 @@ export default function AdminUsersPageClient() {
   const [resetUser, setResetUser] = useState<UserRow | null>(null);
   const [resetPwd, setResetPwd] = useState("");
   const [resetting, setResetting] = useState(false);
+
+  // 修改顾客手机号弹窗
+  const [editPhoneUser, setEditPhoneUser] = useState<UserRow | null>(null);
+  const [editPhoneValue, setEditPhoneValue] = useState("");
+  const [savingPhone, setSavingPhone] = useState(false);
 
   const load = async (g: Group) => {
     setLoading(true);
@@ -161,6 +168,56 @@ export default function AdminUsersPageClient() {
       setError(e.message);
     } finally {
       setResetting(false);
+    }
+  };
+
+  const savePhone = async () => {
+    if (!editPhoneUser) return;
+    const next = editPhoneValue.trim();
+    if (!/^1[3-9]\d{9}$/.test(next)) {
+      setError("请输入正确的11位手机号");
+      return;
+    }
+    setSavingPhone(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editPhoneUser.id,
+          action: "UPDATE_PHONE",
+          phone: next,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "修改失败");
+      setEditPhoneUser(null);
+      setEditPhoneValue("");
+      showToast("✅ 手机号已更新");
+      load(group);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setSavingPhone(false);
+    }
+  };
+
+  const deleteCustomer = async (u: UserRow) => {
+    if (!confirm(`确定删除顾客「${u.name} / ${u.phone}」吗？此操作不可撤销。`))
+      return;
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: u.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "删除失败");
+      showToast("✅ 已删除");
+      load(group);
+    } catch (e: any) {
+      alert(e.message);
     }
   };
 
@@ -291,6 +348,25 @@ export default function AdminUsersPageClient() {
                       {new Date(u.createdAt).toLocaleDateString("zh-CN")}
                     </td>
                     <td className="px-5 py-3 text-right whitespace-nowrap">
+                      {u.role === "CUSTOMER" && (
+                        <>
+                          <button
+                            className="text-xs text-stone-600 hover:text-primary-600 inline-flex items-center gap-1 mr-3"
+                            onClick={() => {
+                              setEditPhoneUser(u);
+                              setEditPhoneValue(u.phone);
+                            }}
+                          >
+                            <Pencil className="w-3 h-3" /> 改手机号
+                          </button>
+                          <button
+                            className="text-xs text-accent-600 hover:text-accent-700 inline-flex items-center gap-1 mr-3"
+                            onClick={() => deleteCustomer(u)}
+                          >
+                            <Trash2 className="w-3 h-3" /> 删除
+                          </button>
+                        </>
+                      )}
                       {u.role !== "CUSTOMER" && (
                         <button
                           className="text-xs text-stone-600 hover:text-primary-600 inline-flex items-center gap-1 mr-3"
@@ -447,6 +523,51 @@ export default function AdminUsersPageClient() {
               >
                 {resetting && <Loader2 className="w-4 h-4 animate-spin" />}
                 确认重置
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* 修改顾客手机号弹窗 */}
+      {editPhoneUser && (
+        <Modal
+          title={`修改手机号 · ${editPhoneUser.name}`}
+          onClose={() => setEditPhoneUser(null)}
+        >
+          <div className="space-y-3">
+            <div className="text-xs text-stone-500">
+              当前手机号：{editPhoneUser.phone}。修改后顾客需用新手机号一键登录，历史订单不受影响。
+            </div>
+            <div>
+              <label className="label">新手机号</label>
+              <input
+                className="input"
+                type="tel"
+                value={editPhoneValue}
+                onChange={(e) =>
+                  setEditPhoneValue(e.target.value.replace(/\D/g, ""))
+                }
+                maxLength={11}
+                autoFocus
+                required
+              />
+            </div>
+            <div className="pt-2 flex gap-3 justify-end">
+              <button
+                className="px-4 py-2 rounded-lg text-sm border border-stone-200 hover:bg-stone-50"
+                onClick={() => setEditPhoneUser(null)}
+                disabled={savingPhone}
+              >
+                取消
+              </button>
+              <button
+                className="btn-primary text-sm flex items-center gap-1.5"
+                disabled={savingPhone || editPhoneValue.trim().length !== 11}
+                onClick={savePhone}
+              >
+                {savingPhone && <Loader2 className="w-4 h-4 animate-spin" />}
+                保存
               </button>
             </div>
           </div>

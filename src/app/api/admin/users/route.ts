@@ -120,10 +120,16 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
     const schema = z.object({
       id: z.string().min(1),
-      action: z.enum(["TOGGLE_ACTIVE", "RESET_PASSWORD", "UPDATE_ROLE"]),
+      action: z.enum([
+        "TOGGLE_ACTIVE",
+        "RESET_PASSWORD",
+        "UPDATE_ROLE",
+        "UPDATE_PHONE",
+      ]),
       isActive: z.boolean().optional(),
       password: z.string().min(6).max(50).optional(),
       role: z.enum(["ADMIN", "KITCHEN"]).optional(),
+      phone: z.string().regex(/^1[3-9]\d{9}$/, "请输入正确的手机号").optional(),
     });
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
@@ -132,7 +138,7 @@ export async function PATCH(req: NextRequest) {
         { status: 400 }
       );
     }
-    const { id, action, isActive, password, role } = parsed.data;
+    const { id, action, isActive, password, role, phone } = parsed.data;
 
     // 不能禁用自己
     if (id === session.user.id && action === "TOGGLE_ACTIVE" && isActive === false) {
@@ -144,6 +150,16 @@ export async function PATCH(req: NextRequest) {
       update.isActive = isActive;
     } else if (action === "RESET_PASSWORD" && password) {
       update.passwordHash = await bcrypt.hash(password, 10);
+    } else if (action === "UPDATE_PHONE" && phone) {
+      // 手机号唯一：改号前先确认没有别的账号占用
+      const dup = await prisma.user.findUnique({ where: { phone } });
+      if (dup && dup.id !== id) {
+        return NextResponse.json(
+          { error: "该手机号已被其他账号使用" },
+          { status: 400 }
+        );
+      }
+      update.phone = phone;
     } else if (action === "UPDATE_ROLE" && role) {
       // 降权自己不允许
       if (id === session.user.id && role !== "ADMIN") {
@@ -170,6 +186,61 @@ export async function PATCH(req: NextRequest) {
   } catch (e: any) {
     return NextResponse.json(
       { error: e?.message || "操作失败" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/admin/users
+ * 管理员：删除顾客账号
+ *   - 仅允许删除 CUSTOMER（门店账号不可删）
+ *   - 有订单的顾客不可删（避免订单与账号失联）
+ */
+export async function DELETE(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "无权限" }, { status: 403 });
+  }
+
+  try {
+    const body = await req.json();
+    const schema = z.object({ id: z.string().min(1) });
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0].message },
+        { status: 400 }
+      );
+    }
+    const { id } = parsed.data;
+
+    if (id === session.user.id) {
+      return NextResponse.json({ error: "不能删除当前登录账号" }, { status: 400 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, role: true, _count: { select: { orders: true } } },
+    });
+    if (!user) {
+      return NextResponse.json({ error: "账号不存在" }, { status: 404 });
+    }
+    if (user.role !== "CUSTOMER") {
+      return NextResponse.json({ error: "仅支持删除顾客账号" }, { status: 400 });
+    }
+    if (user._count.orders > 0) {
+      return NextResponse.json(
+        { error: "该顾客已有订单，不能删除" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.user.delete({ where: { id } });
+    return NextResponse.json({ ok: true });
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: e?.message || "删除失败" },
       { status: 500 }
     );
   }
