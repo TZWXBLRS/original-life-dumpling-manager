@@ -88,24 +88,6 @@ export default function CheckoutPage() {
         const arr = JSON.parse(cart);
         if (Array.isArray(arr) && arr.length > 0) setItems(arr);
       } catch {}
-    } else {
-      // 没有购物车就放默认演示数据，方便走流程
-      setItems([
-        {
-          productId: "default-1",
-          productName: "三鲜饺子",
-          category: "CLASSIC",
-          quantity: 3,
-          unitPrice: 3300,
-        },
-        {
-          productId: "default-2",
-          productName: "菌菇饺子",
-          category: "SPECIALTY",
-          quantity: 1,
-          unitPrice: 3800,
-        },
-      ]);
     }
     if (dt === "DELIVERY" || dt === "EXPRESS" || dt === "PICKUP") {
       setDeliveryType(dt);
@@ -187,6 +169,27 @@ export default function CheckoutPage() {
   };
 
   if (!mounted) return null;
+
+  // 购物车为空：引导去选购（避免用假商品下单）
+  if (items.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-50 p-4">
+        <div className="card max-w-md w-full p-8 text-center">
+          <div className="text-5xl mb-4">🛒</div>
+          <h2 className="text-xl font-bold mb-2">购物车是空的</h2>
+          <p className="text-stone-500 text-sm mb-6">
+            请先挑选口味加入购物车，再来结算下单。
+          </p>
+          <Link href="/products" className="btn-primary w-full !py-3 block">
+            去选购饺子
+          </Link>
+          <Link href="/" className="btn-secondary w-full block mt-2">
+            返回首页
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (ok) {
     return (

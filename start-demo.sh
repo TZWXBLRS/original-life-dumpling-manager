@@ -202,7 +202,7 @@ if [ -n "$PUBLIC_URL" ] && [ "$PUBLIC_URL" != "http://localhost:3000" ]; then
   echo "     ⚠️  免费隧道域名随机，有效期为本脚本运行期间"
 fi
 echo ""
-echo "  👑 管理员账号:  15313659956  /  sushenghuo107"
+echo "  👑 管理员账号:  15313659956  /  123456"
 echo "  🍳 后厨账号:    18301576627  /  sushenghuo105"
 echo "  🙋 顾客账号:    点击「立即注册」自己创建（任意手机号）"
 echo ""

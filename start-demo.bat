@@ -303,7 +303,7 @@ if "%PUBLIC_URL%"=="" (
     echo      %PROJECT_DIR%\logs\tunnel.log
 )
 echo.
-echo   👑 管理员账号:  15313659956  /  sushenghuo107
+echo   👑 管理员账号:  15313659956  /  123456
 echo   🍳 后厨账号:    18301576627  /  sushenghuo105
 echo   🙋 顾客账号:    点「立即注册」自己创建（任意手机号）
 echo.

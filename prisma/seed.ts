@@ -19,11 +19,11 @@ async function main() {
 
   // ========= 1. 创建/更新 管理员账号 =========
   // 注意：手机号必须唯一，一个手机号不能同时是两个角色。
-  // 管理员：15313659956 / sushenghuo107
+  // 管理员：15313659956 / 123456
   // 后厨：18301576627 / sushenghuo105
   const adminName = process.env.ADMIN_NAME || "素生活";
   const adminPhone = process.env.ADMIN_PHONE || "15313659956";
-  const adminPassword = process.env.ADMIN_PASSWORD || "sushenghuo107";
+  const adminPassword = process.env.ADMIN_PASSWORD || "123456";
   const adminHash = await bcrypt.hash(adminPassword, 10);
 
   await prisma.user.upsert({
