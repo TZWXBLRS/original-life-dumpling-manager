@@ -11,7 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { formatYuan } from "@/lib/pricing";
-import { DemoLoginBar } from "@/components/DemoLoginBar";
+import { PhoneLoginPanel } from "@/components/PhoneLoginPanel";
 import { UserMenu } from "@/components/UserMenu";
 
 const STATUS_TEXT: Record<string, { label: string; cls: string }> = {
@@ -51,8 +51,10 @@ export default async function OrdersPage() {
             <Package /> 我的订单
           </h1>
           <div className="max-w-md">
-            <DemoLoginBar />
-            <div className="card p-8 text-center text-stone-400 mt-3">
+            <div className="card p-4 mb-3">
+              <PhoneLoginPanel />
+            </div>
+            <div className="card p-8 text-center text-stone-400">
               <PackageCheck className="w-12 h-12 mx-auto mb-3" />
               登录后可查看历史订单
             </div>

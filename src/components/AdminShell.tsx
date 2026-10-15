@@ -46,7 +46,7 @@ export function AdminShell({
   const pathname = usePathname() || "";
   const router = useRouter();
 
-  // 客户端二次校验：非门店账号（顾客）不应停留在后台，统一弹回首页。
+  // 客户端二次校验：非门店账号（顾客）不应停留在后台，统一弹回后台登录页。
   // 服务端页面（仪表盘/订单/销售/生产）已有 auth() 校验，这里是给纯客户端
   // 页面（库存/用户/配置）兜底，保证所有后台页面权限行为一致。
   useEffect(() => {
@@ -56,7 +56,7 @@ export function AdminShell({
       .then((d) => {
         if (!active) return;
         const role = d?.user?.role;
-        if (role !== "ADMIN" && role !== "KITCHEN") router.replace("/");
+        if (role !== "ADMIN" && role !== "KITCHEN") router.replace("/admin/login");
       })
       .catch(() => {});
     return () => {
@@ -151,7 +151,7 @@ export function AdminShell({
           </div>
           <button
             type="button"
-            onClick={() => signOut({ callbackUrl: "/auth/login" })}
+            onClick={() => signOut({ callbackUrl: "/admin/login" })}
             className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-stone-300 hover:bg-stone-800"
           >
             <LogOut className="w-4 h-4" /> 退出登录

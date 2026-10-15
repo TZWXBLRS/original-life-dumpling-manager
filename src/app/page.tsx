@@ -42,7 +42,7 @@ export default function HomePage() {
             </Link>
             <UserMenu />
             <Link
-              href="/auth/login?callbackUrl=/admin/dashboard"
+              href="/admin/login"
               className="hidden items-center gap-1 text-stone-400 hover:text-primary-600 md:flex"
             >
               <Settings className="w-4 h-4" /> 商家后台
@@ -216,7 +216,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4 text-center text-sm text-stone-500">
           <div className="mb-2">原味生活饺子馆 · 用心做好每一个饺子</div>
           <Link
-            href="/auth/login?callbackUrl=/admin/dashboard"
+            href="/admin/login"
             className="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-primary-600"
           >
             <Settings className="w-3.5 h-3.5" /> 商家后台入口

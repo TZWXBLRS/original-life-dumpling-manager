@@ -16,7 +16,7 @@ import {
 export default async function AdminDashboardPage() {
   // 权限校验：仅门店账号（管理员 / 后厨）可进后台，与订单、销售、生产页保持一致
   const session = await auth();
-  if (!session?.user?.id) redirect("/auth/login");
+  if (!session?.user?.id) redirect("/admin/login");
   if (session.user.role !== "ADMIN" && session.user.role !== "KITCHEN") {
     redirect("/");
   }

@@ -21,6 +21,14 @@ model User {
   passwordHash String
   role         String     @default("CUSTOMER")
   isActive     Boolean    @default(true)
+
+  // 顾客资料（一键登录时可选填写，下单自动带出）
+  wechatName   String?  // 微信名 / 收货人姓名
+  addrProvince String?
+  addrCity     String?
+  addrDistrict String?
+  addrDetail   String?  // 详细地址
+
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 

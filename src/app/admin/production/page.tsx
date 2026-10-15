@@ -14,7 +14,7 @@ import {
 
 export default async function ProductionDashboardPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/auth/login");
+  if (!session?.user?.id) redirect("/admin/login");
   if (session.user.role !== "ADMIN" && session.user.role !== "KITCHEN") {
     redirect("/");
   }

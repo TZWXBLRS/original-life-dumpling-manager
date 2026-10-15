@@ -29,7 +29,7 @@ export default async function AdminOrdersPage(props: {
   searchParams: { status?: string; q?: string; startDate?: string; endDate?: string };
 }) {
   const session = await auth();
-  if (!session?.user?.id) redirect("/auth/login");
+  if (!session?.user?.id) redirect("/admin/login");
   if (session.user.role !== "ADMIN" && session.user.role !== "KITCHEN") {
     redirect("/");
   }

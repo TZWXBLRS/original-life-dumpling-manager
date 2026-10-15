@@ -6,6 +6,11 @@ CREATE TABLE "User" (
     "passwordHash" TEXT NOT NULL,
     "role" TEXT NOT NULL DEFAULT 'CUSTOMER',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "wechatName" TEXT,
+    "addrProvince" TEXT,
+    "addrCity" TEXT,
+    "addrDistrict" TEXT,
+    "addrDetail" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );

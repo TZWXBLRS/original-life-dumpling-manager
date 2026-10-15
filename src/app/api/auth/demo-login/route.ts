@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import * as bcrypt from "bcryptjs";
 import { z } from "zod";
+import { isSmsConfigured } from "@/lib/sms";
+import { verifyCode, clearCode } from "@/lib/login-code";
 
 // 演示模式固定密码 - 真实接入微信小程序静默登录后此接口可移除
 const DEMO_PASSWORD = "demo123456";
@@ -15,26 +17,34 @@ async function getDemoHash() {
 }
 
 /**
- * 演示模式登录 API
+ * 顾客一键登录 API（顾客端唯一的登录入口）
  * POST /api/auth/demo-login
- * body: { phone, name? }
+ * body: { phone, code?, wechatName?, address? }
  *
- * 演示阶段绕过注册/登录，输入手机号即可：
- * 1. 校验手机号格式
- * 2. 拒绝门店账号（管理员/后厨）通过此入口登录
- * 3. upsert 一个 CUSTOMER 用户（passwordHash 设为演示固定密码的 hash）
- * 4. 返回 phone + password，前端用 NextAuth `signIn("credentials")` 登录
+ * 流程：
+ *  1. 校验手机号格式；拒绝门店账号（管理员/后厨）从顾客入口登录
+ *  2. 若已配置短信服务商 → 必须携带正确且未过期的验证码
+ *  3. upsert 一个 CUSTOMER 用户，并写入微信名与收货地址资料
+ *  4. 返回 phone + password，前端用 NextAuth `signIn("credentials")` 完成登录
  *
  * 真实接入微信小程序后此接口可移除，改为：
  *   小程序 wx.login() → 后端 code2session 换 openid → 自动建账
- *   + <button open-type="phoneOneClickLogin"> 一键授权手机号
  */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const schema = z.object({
       phone: z.string().regex(/^1\d{10}$/, "请输入正确的11位手机号"),
-      name: z.string().min(1).max(20).optional(),
+      code: z.string().optional(),
+      wechatName: z.string().max(20).optional(),
+      address: z
+        .object({
+          province: z.string().max(20).optional(),
+          city: z.string().max(20).optional(),
+          district: z.string().max(20).optional(),
+          detail: z.string().max(200).optional(),
+        })
+        .optional(),
     });
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
@@ -43,29 +53,53 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const { phone } = parsed.data;
-    const name = parsed.data.name || `顾客${phone.slice(-4)}`;
+    const { phone, code, wechatName, address } = parsed.data;
 
-    // 拒绝门店账号通过演示入口登录（避免误改门店账号密码）
+    // 拒绝门店账号通过顾客入口登录（避免误改门店账号密码）
     const existing = await prisma.user.findUnique({
       where: { phone },
       select: { id: true, role: true, name: true },
     });
     if (existing && existing.role !== "CUSTOMER") {
       return NextResponse.json(
-        { error: "该手机号为门店账号，请使用登录页登录" },
+        { error: "该手机号为门店账号，请使用后台登录" },
         { status: 400 }
       );
     }
 
+    // 配置了短信服务商 → 必须验证码
+    if (isSmsConfigured()) {
+      if (!code) {
+        return NextResponse.json({ error: "请输入验证码" }, { status: 400 });
+      }
+      const okCode = await verifyCode(phone, code);
+      if (!okCode) {
+        return NextResponse.json(
+          { error: "验证码错误或已过期" },
+          { status: 400 }
+        );
+      }
+    }
+
     const demoHash = await getDemoHash();
+    const name = wechatName || existing?.name || `顾客${phone.slice(-4)}`;
+
+    // 只写入用户实际填了的内容，未填的保持原值
+    const profileData = {
+      ...(wechatName ? { wechatName } : {}),
+      ...(address?.province ? { addrProvince: address.province } : {}),
+      ...(address?.city ? { addrCity: address.city } : {}),
+      ...(address?.district ? { addrDistrict: address.district } : {}),
+      ...(address?.detail ? { addrDetail: address.detail } : {}),
+    };
 
     const user = await prisma.user.upsert({
       where: { phone },
       update: {
         passwordHash: demoHash,
         isActive: true,
-        // 不修改 role/name，避免覆盖已有顾客的资料
+        // 不修改 role，避免覆盖已有顾客资料
+        ...profileData,
       },
       create: {
         name,
@@ -73,9 +107,13 @@ export async function POST(req: NextRequest) {
         passwordHash: demoHash,
         role: "CUSTOMER",
         isActive: true,
+        ...profileData,
       },
       select: { id: true, name: true, phone: true, role: true },
     });
+
+    // 验证码用掉即作废
+    if (isSmsConfigured()) await clearCode(phone);
 
     return NextResponse.json({
       ok: true,
@@ -86,7 +124,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     return NextResponse.json(
-      { error: e?.message || "演示登录失败" },
+      { error: e?.message || "登录失败" },
       { status: 500 }
     );
   }

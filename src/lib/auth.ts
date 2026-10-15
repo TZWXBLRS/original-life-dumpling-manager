@@ -88,7 +88,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     ...buildWechatProvider(),
   ],
   pages: {
-    signIn: "/auth/login",
+    signIn: "/admin/login",
   },
   session: {
     strategy: "jwt",

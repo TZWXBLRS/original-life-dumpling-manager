@@ -280,7 +280,7 @@ export async function POST(req: NextRequest) {
       totalAmount: result.order.totalAmount,
       pickupCode: result.order.pickupCode,
       // 支付链接占位（后续接入真实支付）
-      payUrl: "/checkout/pay?orderId=" + result.order.id,
+      payUrl: "/orders?paid=1",
     });
   } catch (e: any) {
     return NextResponse.json(

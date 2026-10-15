@@ -39,7 +39,8 @@ export default async function OrderDetailPage(props: {
   params: { id: string };
 }) {
   const session = await auth();
-  if (!session?.user?.id) redirect("/auth/login");
+  // 顾客端未登录时回到「我的订单」，那里提供一键登录入口
+  if (!session?.user?.id) redirect("/orders");
 
   const order = await prisma.order.findUnique({
     where: { id: props.params.id },
