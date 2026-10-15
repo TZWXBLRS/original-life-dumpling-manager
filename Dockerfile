@@ -1,5 +1,5 @@
 # ============================================================
-# 原味生活饺子馆 · Docker 镜像
+# 素生活饺子馆 · Docker 镜像
 # 用法：
 #   构建： docker build -t dumpling-manager .
 #   启动： docker run -d --name dumpling -p 3000:3000 -v $(pwd)/data:/app/prisma/data dumpling-manager

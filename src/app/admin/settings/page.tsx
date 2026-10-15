@@ -22,7 +22,7 @@ const KEY_LABELS: Record<string, string> = {
 };
 
 const KEY_PLACEHOLDERS: Record<string, string> = {
-  STORE_NAME: "素生活·原味生活饺子馆",
+  STORE_NAME: "素生活饺子馆",
   STORE_PHONE: "18301576627 或 010-xxxxxxxx",
   PICKUP_ADDRESS: "北京昌平路181号院卢卡新天地3号楼底商负107 素生活",
   BUSINESS_HOURS:

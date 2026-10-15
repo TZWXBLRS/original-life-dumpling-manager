@@ -106,7 +106,7 @@ export function AdminShell({
             <span className="text-2xl">🥟</span>
             <div>
               <div className="font-bold text-white">管理后台</div>
-              <div className="text-xs text-stone-400">原味生活</div>
+              <div className="text-xs text-stone-400">素生活</div>
             </div>
           </Link>
           <button

@@ -167,7 +167,7 @@ async function main() {
     });
   const dailyLimit = process.env.DAILY_LIMIT || "100";
   const storePhone = process.env.STORE_PHONE || "18301576627";
-  const storeName = process.env.STORE_NAME || "素生活·原味生活饺子馆";
+  const storeName = process.env.STORE_NAME || "素生活饺子馆";
 
   const configs = [
     { key: "PICKUP_ADDRESS", value: pickupAddress, description: "自取地址" },

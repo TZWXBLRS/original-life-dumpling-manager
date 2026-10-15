@@ -31,7 +31,7 @@ export default async function ProductsPage() {
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-xl">🥟</span>
-            <span className="font-bold text-base text-primary-700">原味生活</span>
+            <span className="font-bold text-base text-primary-700">素生活</span>
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             <Link href="/" className="text-stone-600 hover:text-primary-600">

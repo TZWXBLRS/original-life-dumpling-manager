@@ -6,7 +6,6 @@ import {
   Sparkles,
   Leaf,
   Truck,
-  Settings,
 } from "lucide-react";
 import { CartLink } from "@/components/CartLink";
 import { UserMenu } from "@/components/UserMenu";
@@ -24,7 +23,7 @@ export default function HomePage() {
             <span className="text-2xl">🥟</span>
             <div>
               <div className="font-bold text-lg text-primary-700">
-                原味生活
+                素生活
               </div>
               <div className="text-xs text-stone-500 -mt-1">手工饺子</div>
             </div>
@@ -41,12 +40,6 @@ export default function HomePage() {
               我的订单
             </Link>
             <UserMenu />
-            <Link
-              href="/admin/login"
-              className="hidden items-center gap-1 text-stone-400 hover:text-primary-600 md:flex"
-            >
-              <Settings className="w-4 h-4" /> 商家后台
-            </Link>
           </nav>
         </div>
       </header>
@@ -78,7 +71,7 @@ export default function HomePage() {
               <span className="text-primary-600">家的味道</span>
             </h1>
             <p className="text-stone-600 mb-8 leading-relaxed">
-              原味生活饺子馆，坚持每日手工现包，精选新鲜食材。
+              素生活饺子馆，坚持每日手工现包，精选新鲜食材。
               <br />
               六种经典口味，两种特色风味，总有一款适合你。
             </p>
@@ -214,14 +207,8 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="mt-auto border-t border-stone-200 bg-white py-8">
         <div className="max-w-6xl mx-auto px-4 text-center text-sm text-stone-500">
-          <div className="mb-2">原味生活饺子馆 · 用心做好每一个饺子</div>
-          <Link
-            href="/admin/login"
-            className="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-primary-600"
-          >
-            <Settings className="w-3.5 h-3.5" /> 商家后台入口
-          </Link>
-          <div className="mt-2">© {new Date().getFullYear()} Original Life Dumpling Manager</div>
+          <div className="mb-2">素生活饺子馆 · 用心做好每一个饺子</div>
+          <div className="mt-2">© {new Date().getFullYear()} 素生活饺子馆</div>
         </div>
       </footer>
     </div>

@@ -68,7 +68,7 @@ npm run test
 # 本地：写入 .env.local
 SMS_ACCESS_KEY_ID="LTAI..."
 SMS_ACCESS_KEY_SECRET="..."
-SMS_SIGN_NAME="原味生活"
+SMS_SIGN_NAME="素生活"
 SMS_TEMPLATE_CODE="SMS_123456789"
 ```
 

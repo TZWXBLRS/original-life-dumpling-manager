@@ -1,12 +1,12 @@
 @echo off
 REM ============================================================
-REM 原味生活饺子馆 Demo · 一键停止 (Windows 版)
+REM 素生活饺子馆 Demo · 一键停止 (Windows 版)
 REM 停 Node 服务、停隧道进程、停 Docker 容器
 REM ============================================================
 chcp 65001 >nul
 cd /d "%~dp0"
 
-echo 🛑 停止原味生活饺子馆 Demo...
+echo 🛑 停止素生活饺子馆 Demo...
 echo.
 
 REM 1. 停止 Next.js 相关 Node 进程

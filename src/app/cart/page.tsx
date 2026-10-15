@@ -277,7 +277,7 @@ export default function CartPage() {
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl">🥟</span>
-            <span className="font-bold text-primary-700">原味生活</span>
+            <span className="font-bold text-primary-700">素生活</span>
           </Link>
           <div className="flex items-center gap-4 text-sm">
             <Link href="/products" className="text-stone-600 hover:text-primary-600">
