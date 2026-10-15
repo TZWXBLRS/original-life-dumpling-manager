@@ -125,11 +125,13 @@ export async function PATCH(req: NextRequest) {
         "RESET_PASSWORD",
         "UPDATE_ROLE",
         "UPDATE_PHONE",
+        "UPDATE_NAME",
       ]),
       isActive: z.boolean().optional(),
       password: z.string().min(6).max(50).optional(),
       role: z.enum(["ADMIN", "KITCHEN"]).optional(),
       phone: z.string().regex(/^1[3-9]\d{9}$/, "请输入正确的手机号").optional(),
+      name: z.string().min(1, "姓名不能为空").max(50).optional(),
     });
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
@@ -138,7 +140,7 @@ export async function PATCH(req: NextRequest) {
         { status: 400 }
       );
     }
-    const { id, action, isActive, password, role, phone } = parsed.data;
+    const { id, action, isActive, password, role, phone, name } = parsed.data;
 
     // 不能禁用自己
     if (id === session.user.id && action === "TOGGLE_ACTIVE" && isActive === false) {
@@ -166,6 +168,8 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ error: "不能修改自己的角色" }, { status: 400 });
       }
       update.role = role;
+    } else if (action === "UPDATE_NAME" && name) {
+      update.name = name;
     } else {
       return NextResponse.json({ error: "参数不完整" }, { status: 400 });
     }

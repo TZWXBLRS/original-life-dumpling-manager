@@ -53,6 +53,11 @@ export default function AdminUsersPageClient() {
   const [editPhoneValue, setEditPhoneValue] = useState("");
   const [savingPhone, setSavingPhone] = useState(false);
 
+  // 修改顾客昵称弹窗
+  const [editNameUser, setEditNameUser] = useState<UserRow | null>(null);
+  const [editNameValue, setEditNameValue] = useState("");
+  const [savingName, setSavingName] = useState(false);
+
   const load = async (g: Group) => {
     setLoading(true);
     setError("");
@@ -203,6 +208,38 @@ export default function AdminUsersPageClient() {
     }
   };
 
+  const saveName = async () => {
+    if (!editNameUser) return;
+    const next = editNameValue.trim();
+    if (!next) {
+      setError("昵称不能为空");
+      return;
+    }
+    setSavingName(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editNameUser.id,
+          action: "UPDATE_NAME",
+          name: next,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "修改失败");
+      setEditNameUser(null);
+      setEditNameValue("");
+      showToast("✅ 昵称已更新");
+      load(group);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setSavingName(false);
+    }
+  };
+
   const deleteCustomer = async (u: UserRow) => {
     if (!confirm(`确定删除顾客「${u.name} / ${u.phone}」吗？此操作不可撤销。`))
       return;
@@ -350,6 +387,15 @@ export default function AdminUsersPageClient() {
                     <td className="px-5 py-3 text-right whitespace-nowrap">
                       {u.role === "CUSTOMER" && (
                         <>
+                          <button
+                            className="text-xs text-stone-600 hover:text-primary-600 inline-flex items-center gap-1 mr-3"
+                            onClick={() => {
+                              setEditNameUser(u);
+                              setEditNameValue(u.name);
+                            }}
+                          >
+                            <Pencil className="w-3 h-3" /> 改昵称
+                          </button>
                           <button
                             className="text-xs text-stone-600 hover:text-primary-600 inline-flex items-center gap-1 mr-3"
                             onClick={() => {
@@ -567,6 +613,49 @@ export default function AdminUsersPageClient() {
                 onClick={savePhone}
               >
                 {savingPhone && <Loader2 className="w-4 h-4 animate-spin" />}
+                保存
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* 修改顾客昵称弹窗 */}
+      {editNameUser && (
+        <Modal
+          title={`修改昵称 · ${editNameUser.name}`}
+          onClose={() => setEditNameUser(null)}
+        >
+          <div className="space-y-3">
+            <div className="text-xs text-stone-500">
+              顾客昵称会显示在订单列表、顾客端订单详情里。不会影响手机号与下单。
+            </div>
+            <div>
+              <label className="label">新昵称</label>
+              <input
+                className="input"
+                type="text"
+                value={editNameValue}
+                onChange={(e) => setEditNameValue(e.target.value)}
+                maxLength={20}
+                autoFocus
+                required
+              />
+            </div>
+            <div className="pt-2 flex gap-3 justify-end">
+              <button
+                className="px-4 py-2 rounded-lg text-sm border border-stone-200 hover:bg-stone-50"
+                onClick={() => setEditNameUser(null)}
+                disabled={savingName}
+              >
+                取消
+              </button>
+              <button
+                className="btn-primary text-sm flex items-center gap-1.5"
+                disabled={savingName || !editNameValue.trim()}
+                onClick={saveName}
+              >
+                {savingName && <Loader2 className="w-4 h-4 animate-spin" />}
                 保存
               </button>
             </div>
