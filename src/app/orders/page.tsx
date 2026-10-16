@@ -17,7 +17,7 @@ import { UserMenu } from "@/components/UserMenu";
 const STATUS_TEXT: Record<string, { label: string; cls: string }> = {
   PENDING_PAYMENT: { label: "待支付", cls: "bg-amber-100 text-amber-800" },
   PAID: { label: "已支付", cls: "bg-blue-100 text-blue-800" },
-  PREPARING: { label: "备餐中", cls: "bg-indigo-100 text-indigo-800" },
+  PREPARING: { label: "备货中", cls: "bg-indigo-100 text-indigo-800" },
   READY: { label: "待自取/配送", cls: "bg-teal-100 text-teal-800" },
   SHIPPED: { label: "配送中", cls: "bg-cyan-100 text-cyan-800" },
   COMPLETED: { label: "已完成", cls: "bg-green-100 text-green-800" },

@@ -48,38 +48,53 @@ const DETAIL_HEADER = [
 ];
 
 /**
- * 汇总当前筛选出的订单：按「类别 → 口味」聚合盒数，并给出分类小计与总计。
- * 输出结构：[类别, 口味, 盒数]
+ * 汇总当前筛选出的订单：按「类别 → 口味」逐口味聚合
+ *   - 盒数：该口味被下单的总盒数
+ *   - 订单数：包含该口味的订单笔数
+ * 并给出分类小计与总计。
+ * 输出结构：[类别, 口味, 盒数, 订单数]
  */
 function buildFlavorSummary(orders: OrderCSVRow[]): (string | number)[][] {
-  const map = new Map<string, { category: string; name: string; qty: number }>();
+  const map = new Map<
+    string,
+    { category: string; name: string; boxes: number; orderCount: number }
+  >();
   for (const o of orders) {
+    const seen = new Set<string>();
     for (const it of o.itemsDetail ?? []) {
       const key = `${it.category}__${it.name}`;
-      const rec = map.get(key) ?? { category: it.category, name: it.name, qty: 0 };
-      rec.qty += it.quantity;
+      const rec =
+        map.get(key) ??
+        { category: it.category, name: it.name, boxes: 0, orderCount: 0 };
+      rec.boxes += it.quantity;
+      // 同一订单内同一口味只计一次订单数
+      if (!seen.has(key)) {
+        rec.orderCount += 1;
+        seen.add(key);
+      }
       map.set(key, rec);
     }
   }
 
   const list = [...map.values()].sort((a, b) => {
     if (a.category !== b.category) return a.category === "CLASSIC" ? -1 : 1;
-    return b.qty - a.qty;
+    return b.boxes - a.boxes;
   });
 
-  const rows: (string | number)[][] = [["类别", "口味", "盒数"]];
-  let classicTotal = 0;
-  let specialtyTotal = 0;
-  let grandTotal = 0;
+  const rows: (string | number)[][] = [["类别", "口味", "盒数", "订单数"]];
+  let classicBoxes = 0;
+  let specialtyBoxes = 0;
+  let grandBoxes = 0;
   for (const r of list) {
-    rows.push([CATEGORY_LABEL[r.category] || r.category, r.name, r.qty]);
-    if (r.category === "CLASSIC") classicTotal += r.qty;
-    else specialtyTotal += r.qty;
-    grandTotal += r.qty;
+    // 逐口味明细，颗粒度到「每一个口味」
+    rows.push([CATEGORY_LABEL[r.category] || r.category, r.name, r.boxes, r.orderCount]);
+    if (r.category === "CLASSIC") classicBoxes += r.boxes;
+    else specialtyBoxes += r.boxes;
+    grandBoxes += r.boxes;
   }
-  rows.push(["小计·经典", "", classicTotal]);
-  rows.push(["小计·特色", "", specialtyTotal]);
-  rows.push(["总计", "", grandTotal]);
+  rows.push(["小计·经典", "", classicBoxes, ""]);
+  rows.push(["小计·特色", "", specialtyBoxes, ""]);
+  rows.push(["总计", "", grandBoxes, ""]);
   return rows;
 }
 

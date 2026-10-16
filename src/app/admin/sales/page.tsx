@@ -43,7 +43,7 @@ const DELIVERY_LABEL: Record<string, string> = {
 const STATUS_LABEL: Record<string, string> = {
   PENDING_PAYMENT: "待支付",
   PAID: "已支付",
-  PREPARING: "备餐中",
+  PREPARING: "备货中",
   READY: "待取/发货",
   READY_FOR_PICKUP: "待取",
   SHIPPED: "配送中",

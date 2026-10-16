@@ -19,7 +19,7 @@ import { AdminShell } from "@/components/AdminShell";
 const STATUS_TEXT: Record<string, { label: string; cls: string }> = {
   PENDING_PAYMENT: { label: "待支付", cls: "bg-amber-100 text-amber-800" },
   PAID: { label: "已支付", cls: "bg-blue-100 text-blue-800" },
-  PREPARING: { label: "备餐中", cls: "bg-indigo-100 text-indigo-800" },
+  PREPARING: { label: "备货中", cls: "bg-indigo-100 text-indigo-800" },
   READY: { label: "待取/发货", cls: "bg-teal-100 text-teal-800" },
   SHIPPED: { label: "配送中", cls: "bg-cyan-100 text-cyan-800" },
   COMPLETED: { label: "已完成", cls: "bg-green-100 text-green-800" },
@@ -117,7 +117,7 @@ export default async function AdminOrdersPage(props: {
   const STATUSES = [
     { key: "ALL", label: "全部", icon: PackageSearch },
     { key: "PAID", label: "已支付", icon: CheckCircle2 },
-    { key: "PREPARING", label: "备餐中", icon: ChefHat },
+    { key: "PREPARING", label: "备货中", icon: ChefHat },
     { key: "READY", label: "待取/发货", icon: Clock },
     { key: "SHIPPED", label: "配送中", icon: Truck },
     { key: "COMPLETED", label: "已完成", icon: CheckCircle2 },

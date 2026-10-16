@@ -20,7 +20,7 @@ export default async function ProductionDashboardPage() {
     redirect("/");
   }
 
-  // 所有已支付、备餐中、备好的订单（今日 + 未来自取的）
+  // 所有已支付、备货中、备好的订单（今日 + 未来自取的）
   const whereActive: any = {
     status: { in: ["PAID", "PREPARING", "READY", "READY_FOR_PICKUP", "SHIPPED"] },
   };
@@ -188,7 +188,7 @@ export default async function ProductionDashboardPage() {
                           <span className="text-amber-700">待备 {pending}</span>
                         )}
                         {s.preparing > 0 && (
-                          <span className="text-indigo-700">备餐中 {s.preparing}</span>
+                          <span className="text-indigo-700">备货中 {s.preparing}</span>
                         )}
                         {s.done > 0 && (
                           <span className="text-green-700">备好 {s.done}</span>
@@ -265,7 +265,7 @@ export default async function ProductionDashboardPage() {
                           {o.status === "PAID"
                             ? "已支付"
                             : o.status === "PREPARING"
-                              ? "备餐中"
+                              ? "备货中"
                               : o.status === "READY" || o.status === "READY_FOR_PICKUP"
                                 ? "备好"
                                 : "配送中"}

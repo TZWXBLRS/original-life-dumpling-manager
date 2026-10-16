@@ -19,7 +19,7 @@ import OrderActionButtons from "@/components/OrderActionButtons";
 const STATUS_STEPS = [
   { key: "PENDING_PAYMENT", label: "待支付", icon: Clock },
   { key: "PAID", label: "已支付" },
-  { key: "PREPARING", label: "备餐中" },
+  { key: "PREPARING", label: "备货中" },
   { key: "READY", label: "待取 / 待发货" },
   { key: "SHIPPED", label: "配送中" },
   { key: "COMPLETED", label: "已完成", icon: CheckCircle2 },
@@ -28,7 +28,7 @@ const STATUS_STEPS = [
 const STATUS_TEXT: Record<string, string> = {
   PENDING_PAYMENT: "等待支付",
   PAID: "已支付",
-  PREPARING: "后厨备餐中",
+  PREPARING: "后厨备货中",
   READY: "已备好，等待取货/发货",
   READY_FOR_PICKUP: "已备好，等待取货",
   SHIPPED: "配送中",
