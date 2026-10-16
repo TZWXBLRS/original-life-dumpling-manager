@@ -12,6 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { formatYuan } from "@/lib/pricing";
+import { formatBeijingDateTime } from "@/lib/time";
 import { ExportCSVButton } from "@/components/ExportCSVButton";
 import { AdminShell } from "@/components/AdminShell";
 
@@ -57,14 +58,11 @@ export default async function AdminOrdersPage(props: {
   if (startDate || endDate) {
     where.createdAt = {} as any;
     if (startDate) {
-      const s = new Date(startDate);
-      s.setHours(0, 0, 0, 0);
-      where.createdAt.gte = s;
+      // 以北京时间自然日为准：YYYY-MM-DD 00:00:00+08:00
+      where.createdAt.gte = new Date(`${startDate}T00:00:00+08:00`);
     }
     if (endDate) {
-      const e = new Date(endDate);
-      e.setHours(23, 59, 59, 999);
-      where.createdAt.lte = e;
+      where.createdAt.lte = new Date(`${endDate}T23:59:59.999+08:00`);
     }
   }
 
@@ -89,7 +87,7 @@ export default async function AdminOrdersPage(props: {
         totalBoxes: true,
         totalAmount: true,
         note: true,
-        items: { select: { productName: true, quantity: true } },
+        items: { select: { productName: true, category: true, quantity: true } },
         user: { select: { phone: true, name: true } },
       },
       take: 100,
@@ -137,10 +135,15 @@ export default async function AdminOrdersPage(props: {
         ? "快递"
         : "闪送",
     items: o.items.map((it) => `${it.productName}×${it.quantity}`).join("; "),
+    itemsDetail: o.items.map((it) => ({
+      name: it.productName,
+      category: it.category,
+      quantity: it.quantity,
+    })),
     totalBoxes: o.totalBoxes,
     totalAmount: o.totalAmount,
     status: STATUS_TEXT[o.status]?.label || o.status,
-    createdAt: o.createdAt.toLocaleString("zh-CN"),
+    createdAt: formatBeijingDateTime(o.createdAt),
     receiverName: o.receiverName || "",
     receiverPhone: o.receiverPhone || "",
     receiverAddress: `${o.receiverProvince || ""}${o.receiverCity || ""}${
@@ -301,6 +304,7 @@ export default async function AdminOrdersPage(props: {
                           </div>
                           <div className="text-xs text-stone-400 mt-1">
                             {order.createdAt.toLocaleString("zh-CN", {
+                              timeZone: "Asia/Shanghai",
                               month: "2-digit",
                               day: "2-digit",
                               hour: "2-digit",

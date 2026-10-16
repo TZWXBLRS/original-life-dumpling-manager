@@ -13,6 +13,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { formatYuan } from "@/lib/pricing";
+import { formatBeijingDateTime, formatBeijingDate } from "@/lib/time";
 import OrderActionButtons from "@/components/OrderActionButtons";
 
 const STATUS_STEPS = [
@@ -180,32 +181,32 @@ export default async function OrderDetailPage(props: {
           <div className="mt-4 pt-4 border-t border-stone-100 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-stone-500">
             {order.paidAt && (
               <div>
-                支付：{order.paidAt.toLocaleString("zh-CN")}
+                支付：{formatBeijingDateTime(order.paidAt)}
               </div>
             )}
             {order.preparingAt && (
               <div>
-                开始备餐：{order.preparingAt.toLocaleString("zh-CN")}
+                开始备餐：{formatBeijingDateTime(order.preparingAt)}
               </div>
             )}
             {order.readyAt && (
               <div>
-                备好：{order.readyAt.toLocaleString("zh-CN")}
+                备好：{formatBeijingDateTime(order.readyAt)}
               </div>
             )}
             {order.shippedAt && (
               <div>
-                发货：{order.shippedAt.toLocaleString("zh-CN")}
+                发货：{formatBeijingDateTime(order.shippedAt)}
               </div>
             )}
             {order.completedAt && (
               <div>
-                完成：{order.completedAt.toLocaleString("zh-CN")}
+                完成：{formatBeijingDateTime(order.completedAt)}
               </div>
             )}
             {order.cancelledAt && (
               <div>
-                取消：{order.cancelledAt.toLocaleString("zh-CN")}
+                取消：{formatBeijingDateTime(order.cancelledAt)}
               </div>
             )}
           </div>
@@ -265,7 +266,7 @@ export default async function OrderDetailPage(props: {
                   </div>
                   {order.deliveryETA && (
                     <div className="text-blue-600">
-                      预计送达：{order.deliveryETA.toLocaleDateString("zh-CN")}
+                      预计送达：{formatBeijingDate(order.deliveryETA)}
                     </div>
                   )}
                   {order.customerAckRisk && (
@@ -346,7 +347,7 @@ export default async function OrderDetailPage(props: {
           )}
           <div className="mt-4 text-xs text-stone-400 text-right">
             下单时间：
-            {order.createdAt.toLocaleString("zh-CN")}
+            {formatBeijingDateTime(order.createdAt)}
           </div>
         </div>
       </main>

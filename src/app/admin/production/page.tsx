@@ -11,6 +11,7 @@ import {
   Truck,
   Zap,
 } from "lucide-react";
+import { formatBeijingDate } from "@/lib/time";
 
 export default async function ProductionDashboardPage() {
   const session = await auth();
@@ -18,12 +19,6 @@ export default async function ProductionDashboardPage() {
   if (session.user.role !== "ADMIN" && session.user.role !== "KITCHEN") {
     redirect("/");
   }
-
-  // 今日开始时间
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const tomorrowStart = new Date(todayStart);
-  tomorrowStart.setDate(tomorrowStart.getDate() + 1);
 
   // 所有已支付、备餐中、备好的订单（今日 + 未来自取的）
   const whereActive: any = {
@@ -114,12 +109,14 @@ export default async function ProductionDashboardPage() {
               <ChefHat className="w-7 h-7 text-primary-600" /> 生产看板
             </h1>
             <p className="text-stone-500 text-sm mt-1">
-              待处理订单汇总 · {todayStart.toLocaleDateString("zh-CN")}
+              待处理订单汇总 · {formatBeijingDate(new Date())}
             </p>
           </div>
           <div className="text-right">
             <div className="text-xs text-stone-500">最后更新</div>
-            <div className="text-sm font-mono">{new Date().toLocaleTimeString("zh-CN")}</div>
+            <div className="text-sm font-mono">
+              {new Date().toLocaleTimeString("zh-CN", { timeZone: "Asia/Shanghai", hour12: false })}
+            </div>
           </div>
         </div>
 
@@ -309,6 +306,7 @@ export default async function ProductionDashboardPage() {
                       <div className="flex items-center gap-1 justify-end">
                         <Clock className="w-3 h-3" />
                         {o.createdAt.toLocaleString("zh-CN", {
+                          timeZone: "Asia/Shanghai",
                           month: "2-digit",
                           day: "2-digit",
                           hour: "2-digit",

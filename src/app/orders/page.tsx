@@ -157,6 +157,7 @@ export default async function OrdersPage() {
                       <div className="text-xs text-stone-400 mb-1 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {new Date(order.createdAt).toLocaleString("zh-CN", {
+                          timeZone: "Asia/Shanghai",
                           month: "2-digit",
                           day: "2-digit",
                           hour: "2-digit",

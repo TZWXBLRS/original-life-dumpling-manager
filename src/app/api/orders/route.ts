@@ -8,6 +8,7 @@ import {
 } from "@/lib/pricing";
 import { getNextDeliveryWindow } from "@/lib/delivery-window";
 import { queryDeliveryETA } from "@/lib/delivery";
+import { beijingDayStart } from "@/lib/time";
 
 /**
  * 创建订单 API
@@ -117,9 +118,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 每日销量上限校验
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    // 每日销量上限校验（「今日」按北京时间自然日，Cloudflare 运行时本地时区为 UTC）
+    const todayStart = beijingDayStart();
     const todayOrders = await prisma.order.aggregate({
       where: {
         createdAt: { gte: todayStart },
@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
     });
     const dailyLimit = Number(
       (await prisma.systemConfig.findUnique({ where: { key: "DAILY_LIMIT" } }))
-        ?.value ?? "100"
+        ?.value ?? "700"
     );
     const todaySold = todayOrders._sum.totalBoxes ?? 0;
     const totalBoxes = items.reduce((s, i) => s + i.quantity, 0);
