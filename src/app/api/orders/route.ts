@@ -6,9 +6,8 @@ import {
   calculatePrice,
   type CartItem,
 } from "@/lib/pricing";
-import { getNextDeliveryWindow } from "@/lib/delivery-window";
 import { queryDeliveryETA } from "@/lib/delivery";
-import { beijingDayStart } from "@/lib/time";
+import { beijingDayStart, beijingDayKey } from "@/lib/time";
 
 /**
  * 创建订单 API
@@ -16,8 +15,9 @@ import { beijingDayStart } from "@/lib/time";
  * body: {
  *   items: CartItem[],
  *   deliveryType: 'PICKUP' | 'DELIVERY' | 'EXPRESS',
+ *   deliveryDate: 'YYYY-MM-DD', // 自取日期 / 发货日期（三种配送方式都必填）
  *   address?: { province, city, district, detail, name, phone },
- *   pickupSlot?: string,        // 自取时段
+ *   pickupSlot?: string,        // 自取时段（仅 PICKUP）
  *   customerAckRisk?: boolean,  // 顾客是否确认快递超时风险
  *   note?: string,              // 订单备注
  * }
@@ -43,6 +43,9 @@ export async function POST(req: NextRequest) {
         })
       ),
       deliveryType: z.enum(["PICKUP", "DELIVERY", "EXPRESS"]),
+      deliveryDate: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, "日期格式不正确"),
       address: z
         .object({
           province: z.string().min(1),
@@ -64,7 +67,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const { items, deliveryType, address, pickupSlot, customerAckRisk, note } =
+    const { items, deliveryType, deliveryDate, address, pickupSlot, customerAckRisk, note } =
       parsed.data;
 
     if (items.length === 0) {
@@ -81,6 +84,15 @@ export async function POST(req: NextRequest) {
     if (deliveryType === "PICKUP" && !pickupSlot) {
       return NextResponse.json(
         { error: "自取请选择自取时段" },
+        { status: 400 }
+      );
+    }
+
+    // 履约日期不能早于今天（按北京时间自然日比较）
+    const todayBeijing = beijingDayKey(new Date());
+    if (deliveryDate < todayBeijing) {
+      return NextResponse.json(
+        { error: "不能选择过去的日期，请重新选择" },
         { status: 400 }
       );
     }
@@ -152,18 +164,27 @@ export async function POST(req: NextRequest) {
     );
 
     // ============== 快递时效校验 ==============
+    // plannedShipDate：快递/闪送用顾客选择的发货日期（当天 18:00 发货窗口）；
+    // 自取用顾客选择的自取日期 + 时段起点作为 pickupTime。
     let plannedShipDate: Date | null = null;
     let deliveryETA: Date | null = null;
+    let pickupTime: Date | null = null;
+
+    if (deliveryType === "PICKUP") {
+      // 自取：把「日期 + 时段起点」组合成精确的自取时间
+      const slotStart = (pickupSlot || "09:30-11:30").split("-")[0]; // "09:30"
+      pickupTime = new Date(`${deliveryDate}T${slotStart}:00+08:00`);
+    } else {
+      // 快递 / 闪送：发货日期当天的发货窗口（18:00）
+      plannedShipDate = new Date(`${deliveryDate}T18:00:00+08:00`);
+    }
 
     if (deliveryType === "DELIVERY") {
-      // 发货时间：取下一个快递窗口的开始时间
-      plannedShipDate = getNextDeliveryWindow().start;
-
-      // 快递时效风险
+      // 快递时效风险（按顾客选择的发货日期计算）
       const eta = queryDeliveryETA({
         province: address!.province,
         city: address!.city,
-        shipDate: plannedShipDate,
+        shipDate: plannedShipDate!,
       });
       if (!eta.supported) {
         return NextResponse.json(
@@ -249,6 +270,7 @@ export async function POST(req: NextRequest) {
           receiverAddress: address?.detail ?? null,
           // 自取
           pickupSlot: pickupSlot ?? null,
+          pickupTime,
           pickupCode: deliveryType === "PICKUP" ? pickupCode : null,
           // 快递发货相关
           plannedShipDate,

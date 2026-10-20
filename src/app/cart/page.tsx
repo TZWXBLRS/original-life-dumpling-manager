@@ -35,6 +35,14 @@ import {
 // 门店自取地址
 const STORE_ADDRESS = "北京昌平路181号院卢卡新天地3号楼底商负107 素生活";
 
+/** 客户端计算北京时间当天的 YYYY-MM-DD（浏览器时区不一定是北京） */
+function beijingTodayStr(): string {
+  const t = new Date(Date.now() + 8 * 3600 * 1000);
+  return `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, "0")}-${String(
+    t.getUTCDate()
+  ).padStart(2, "0")}`;
+}
+
 /**
  * 购物车 + 结算 合并单页
  * —— 商品编辑、配送方式、收货信息、费用明细、提交订单全流程集中在此，
@@ -50,6 +58,7 @@ export default function CartPage() {
     "PICKUP" | "DELIVERY" | "EXPRESS"
   >("PICKUP");
   const [pickupSlot, setPickupSlot] = useState("");
+  const [deliveryDate, setDeliveryDate] = useState(beijingTodayStr());
   const [addr, setAddr] = useState({
     province: "",
     city: "",
@@ -124,7 +133,7 @@ export default function CartPage() {
     }
     let active = true;
     setEtaLoading(true);
-    fetch(`/api/delivery/eta?province=${encodeURIComponent(addr.province)}`)
+    fetch(`/api/delivery/eta?province=${encodeURIComponent(addr.province)}&shipDate=${deliveryDate}`)
       .then((r) => r.json())
       .then((d) => {
         if (active) setEtaResult(d);
@@ -138,7 +147,7 @@ export default function CartPage() {
     return () => {
       active = false;
     };
-  }, [deliveryType, addr.province]);
+  }, [deliveryType, addr.province, deliveryDate]);
 
   // 快递是否被阻断（不支持地区 或 超时未确认风险）
   const deliveryBlocked =
@@ -197,6 +206,7 @@ export default function CartPage() {
         body: JSON.stringify({
           items,
           deliveryType,
+          deliveryDate,
           address:
             deliveryType !== "PICKUP"
               ? {
@@ -413,6 +423,18 @@ export default function CartPage() {
                   </div>
                   <div>
                     <label className="mb-2 block text-sm text-stone-600">
+                      <Clock className="mr-1 inline h-4 w-4" /> 选择自取日期
+                    </label>
+                    <input
+                      type="date"
+                      className="input !py-2 text-sm"
+                      value={deliveryDate}
+                      min={beijingTodayStr()}
+                      onChange={(e) => setDeliveryDate(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-sm text-stone-600">
                       <Clock className="mr-1 inline h-4 w-4" /> 选择自取时段（营业时间：9:30-20:30）
                     </label>
                     <div className="grid grid-cols-3 gap-2">
@@ -441,6 +463,23 @@ export default function CartPage() {
                   <h3 className="flex items-center gap-2 font-bold">
                     <MapPin className="h-5 w-5 text-primary-600" /> 收货信息
                   </h3>
+                  <div>
+                    <label className="mb-2 block text-sm text-stone-600">
+                      <Clock className="mr-1 inline h-4 w-4" /> 选择发货日期
+                    </label>
+                    <input
+                      type="date"
+                      className="input !py-2 text-sm"
+                      value={deliveryDate}
+                      min={beijingTodayStr()}
+                      onChange={(e) => setDeliveryDate(e.target.value)}
+                    />
+                    <p className="mt-1 text-xs text-stone-400">
+                      {deliveryType === "DELIVERY"
+                        ? "快递发货窗口为每天 18:00-20:00"
+                        : "闪送按所选日期安排发货"}
+                    </p>
+                  </div>
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div>
                       <label className="mb-1 block text-xs text-stone-500">省份</label>

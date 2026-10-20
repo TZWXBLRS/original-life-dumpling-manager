@@ -228,6 +228,12 @@ export default async function OrderDetailPage(props: {
                 <span className="text-stone-500 w-20 inline-block">自取地址：</span>
                 {pickupAddress}
               </div>
+              {order.pickupTime && (
+                <div>
+                  <span className="text-stone-500 w-20 inline-block">自取日期：</span>
+                  {formatBeijingDate(order.pickupTime)}
+                </div>
+              )}
               <div>
                 <span className="text-stone-500 w-20 inline-block">自取时段：</span>
                 {order.pickupSlot || "—"}
@@ -256,6 +262,14 @@ export default async function OrderDetailPage(props: {
                   </div>
                 </div>
               </div>
+              {order.plannedShipDate && (
+                <div className="text-sm">
+                  <span className="text-stone-500 w-20 inline-block">
+                    {order.deliveryType === "DELIVERY" ? "发货日期：" : "配送日期："}
+                  </span>
+                  {formatBeijingDate(order.plannedShipDate)}
+                </div>
+              )}
               {order.deliveryType === "DELIVERY" && (
                 <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs space-y-1">
                   <div className="flex items-center gap-1 text-blue-700 font-medium">

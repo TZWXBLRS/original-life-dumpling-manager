@@ -19,13 +19,14 @@ async function getDemoHash() {
 /**
  * 顾客一键登录 API（顾客端唯一的登录入口）
  * POST /api/auth/demo-login
- * body: { phone, code?, wechatName?, address? }
+ * body: { phone, code?, wechatName, address? }
  *
  * 流程：
  *  1. 校验手机号格式；拒绝门店账号（管理员/后厨）从顾客入口登录
  *  2. 若已配置短信服务商 → 必须携带正确且未过期的验证码
- *  3. upsert 一个 CUSTOMER 用户，并写入微信名与收货地址资料
- *  4. 返回 phone + password，前端用 NextAuth `signIn("credentials")` 完成登录
+ *  3. wechatName 为必填（顾客微信名/昵称）
+ *  4. upsert 一个 CUSTOMER 用户，并写入微信名与收货地址资料
+ *  5. 返回 phone + password，前端用 NextAuth `signIn("credentials")` 完成登录
  *
  * 真实接入微信小程序后此接口可移除，改为：
  *   小程序 wx.login() → 后端 code2session 换 openid → 自动建账
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
     const schema = z.object({
       phone: z.string().regex(/^1\d{10}$/, "请输入正确的11位手机号"),
       code: z.string().optional(),
-      wechatName: z.string().max(20).optional(),
+      wechatName: z.string().trim().min(1, "请输入微信名/昵称").max(20),
       address: z
         .object({
           province: z.string().max(20).optional(),
@@ -82,11 +83,11 @@ export async function POST(req: NextRequest) {
     }
 
     const demoHash = await getDemoHash();
-    const name = wechatName || existing?.name || `顾客${phone.slice(-4)}`;
+    const name = wechatName;
 
-    // 只写入用户实际填了的内容，未填的保持原值
+    // 只写入用户实际填了的内容（wechatName 必填，地址可选）
     const profileData = {
-      ...(wechatName ? { wechatName } : {}),
+      wechatName,
       ...(address?.province ? { addrProvince: address.province } : {}),
       ...(address?.city ? { addrCity: address.city } : {}),
       ...(address?.district ? { addrDistrict: address.district } : {}),

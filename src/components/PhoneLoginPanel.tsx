@@ -10,6 +10,7 @@ import {
   ChevronDown,
   User,
   ShieldCheck,
+  MapPin,
 } from "lucide-react";
 import { PROVINCE_OPTIONS } from "@/lib/regions";
 
@@ -61,8 +62,9 @@ export function PhoneLoginPanel({
   }, [cooldown]);
 
   const phoneOk = /^1\d{10}$/.test(phone);
+  const wechatNameOk = wechatName.trim().length > 0;
   const hasProfileInput =
-    Boolean(wechatName) || Boolean(addr.province) || Boolean(addr.detail);
+    Boolean(addr.province) || Boolean(addr.detail);
 
   const sendCode = async () => {
     setError("");
@@ -98,6 +100,10 @@ export function PhoneLoginPanel({
       setError("请输入验证码");
       return;
     }
+    if (!wechatNameOk) {
+      setError("请输入微信名/昵称");
+      return;
+    }
     setLoading(true);
     try {
       const r1 = await fetch("/api/auth/demo-login", {
@@ -106,7 +112,7 @@ export function PhoneLoginPanel({
         body: JSON.stringify({
           phone,
           code: smsEnabled ? code : undefined,
-          wechatName: wechatName || undefined,
+          wechatName: wechatName.trim(),
           address: hasProfileInput ? addr : undefined,
         }),
       });
@@ -174,7 +180,24 @@ export function PhoneLoginPanel({
         </div>
       )}
 
-      {/* 下拉可选项：姓名 / 收货地址 */}
+      {/* 微信名/昵称（必填） */}
+      <div>
+        <label className="label">
+          微信名/昵称 <span className="text-accent-500">*</span>
+        </label>
+        <div className="relative">
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+          <input
+            className="input !pl-10"
+            placeholder="请输入微信名或昵称"
+            maxLength={20}
+            value={wechatName}
+            onChange={(e) => setWechatName(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* 下拉可选项：收货地址（可选） */}
       <div className="rounded-lg border border-stone-200">
         <button
           type="button"
@@ -182,7 +205,7 @@ export function PhoneLoginPanel({
           className="flex w-full items-center justify-between px-3 py-2 text-sm text-stone-600 hover:bg-stone-50"
         >
           <span className="flex items-center gap-1.5">
-            <User className="w-4 h-4" /> 填写姓名 / 收货地址（可选）
+            <MapPin className="w-4 h-4" /> 填写收货地址（可选，下单自动带出）
           </span>
           <ChevronDown
             className={`w-4 h-4 transition-transform ${
@@ -192,13 +215,6 @@ export function PhoneLoginPanel({
         </button>
         {showProfile && (
           <div className="space-y-2 border-t border-stone-100 p-3">
-            <input
-              className="input !py-2 text-sm"
-              placeholder="姓名 / 微信名"
-              maxLength={20}
-              value={wechatName}
-              onChange={(e) => setWechatName(e.target.value)}
-            />
             <div className="grid grid-cols-3 gap-2">
               <select
                 className="input !py-2 text-sm"
@@ -245,7 +261,7 @@ export function PhoneLoginPanel({
       <button
         type="button"
         onClick={login}
-        disabled={loading || !phoneOk || (smsEnabled && code.length < 4)}
+        disabled={loading || !phoneOk || !wechatNameOk || (smsEnabled && code.length < 4)}
         className="btn-primary w-full !py-3 flex items-center justify-center gap-2 disabled:opacity-50"
       >
         {loading ? (
