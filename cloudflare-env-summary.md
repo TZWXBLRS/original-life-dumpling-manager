@@ -87,7 +87,26 @@
 
 ---
 
-## 六、微信登录（可选，未实现）
+## 六、客服群通知（企业微信群机器人，可选）
+
+顾客下单成功后，系统自动把订单摘要推送到企业微信群，方便客服即时接单。
+
+| 变量名 | 说明 | 配置方式 | 用途 |
+|--------|------|----------|------|
+| `WECOM_BOT_WEBHOOK` | 企业微信群机器人 webhook 地址（`https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxx`） | Secret | [notify.ts](src/lib/notify.ts) 下单成功后推送 markdown 订单通知 |
+
+> **未配置则跳过通知，不影响下单。**
+> 消息以「fire-and-forget」方式发送，失败仅记日志，不回滚订单。
+> 限流：单机器人 20 条/分钟。
+>
+> 启用步骤：
+> 1. 企业微信群 → 右上角「…」→ 添加群机器人 → 新建 → 复制 webhook 地址
+> 2. `wrangler secret put WECOM_BOT_WEBHOOK` 粘贴地址
+> 3. 重新部署后，新订单即会推送到该群
+
+---
+
+## 七、微信登录（可选，未实现）
 
 | 变量名 | 说明 | 配置方式 | 用途 |
 |--------|------|----------|------|
@@ -98,7 +117,7 @@
 
 ---
 
-## 七、构建相关（无需手动配置）
+## 八、构建相关（无需手动配置）
 
 | 变量名 | 说明 | 设置时机 | 用途 |
 |--------|------|----------|------|
@@ -126,6 +145,9 @@ wrangler secret put SMS_SIGN_NAME
 wrangler secret put SMS_TEMPLATE_CODE
 # 或
 wrangler secret put SMS_PROVIDER_URL
+
+# 客服群通知（可选，不配则不推送）
+wrangler secret put WECOM_BOT_WEBHOOK
 ```
 
 `wrangler.jsonc` 中的非敏感 vars（已配置）：

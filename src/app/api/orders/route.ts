@@ -8,6 +8,7 @@ import {
 } from "@/lib/pricing";
 import { queryDeliveryETA } from "@/lib/delivery";
 import { beijingDayStart, beijingDayKey } from "@/lib/time";
+import { notifyNewOrder } from "@/lib/notify";
 
 /**
  * 创建订单 API
@@ -293,6 +294,33 @@ export async function POST(req: NextRequest) {
       await tx.orderItem.createMany({ data: orderItems });
 
       return { order, orderItems };
+    });
+
+    // 异步推送新订单通知到企业微信群（fire-and-forget，不阻塞下单响应）
+    notifyNewOrder({
+      orderNo: result.order.orderNo,
+      deliveryType,
+      deliveryDate,
+      pickupSlot: result.order.pickupSlot,
+      totalBoxes: result.order.totalBoxes,
+      totalAmount: result.order.totalAmount,
+      receiverName: result.order.receiverName,
+      receiverPhone: result.order.receiverPhone,
+      receiverAddress: result.order.receiverAddress
+        ? [
+            result.order.receiverProvince,
+            result.order.receiverCity,
+            result.order.receiverDistrict,
+            result.order.receiverAddress,
+          ]
+            .filter(Boolean)
+            .join(" ")
+        : null,
+      note: result.order.note,
+      items: result.orderItems.map((it) => ({
+        name: it.productName,
+        quantity: it.quantity,
+      })),
     });
 
     return NextResponse.json({
