@@ -30,7 +30,7 @@ export interface OrderNotifyPayload {
   receiverPhone?: string | null;
   receiverAddress?: string | null;
   note?: string | null;
-  items: Array<{ name: string; quantity: number }>;
+  items: Array<{ name: string; quantity: number; category?: string | null }>;
 }
 
 function deliveryTypeLabel(t: string): string {
@@ -50,6 +50,16 @@ function formatYuan(fen: number): string {
   return `¥${(fen / 100).toFixed(2)}`;
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  CLASSIC: "经典",
+  SPECIALTY: "特色",
+};
+
+function categoryLabel(c?: string | null): string {
+  if (!c) return "其他";
+  return CATEGORY_LABELS[c] || c;
+}
+
 /** 构造 markdown 消息内容 */
 function buildMarkdown(o: OrderNotifyPayload): string {
   const lines: string[] = [];
@@ -66,10 +76,22 @@ function buildMarkdown(o: OrderNotifyPayload): string {
     if (o.receiverAddress) lines.push(`> 地址：${o.receiverAddress}`);
   }
 
-  lines.push("");
-  lines.push("**商品明细：**");
+  // 按类别分组，列出每个口味对应的盒数
+  const groups = new Map<string, Array<{ name: string; quantity: number }>>();
   for (const it of o.items) {
-    lines.push(`- ${it.name} × ${it.quantity}`);
+    const key = it.category || "OTHER";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push({ name: it.name, quantity: it.quantity });
+  }
+
+  lines.push("");
+  lines.push("**口味明细（盒数）：**");
+  for (const [category, list] of groups) {
+    const categoryBoxes = list.reduce((sum, it) => sum + it.quantity, 0);
+    lines.push(`**${categoryLabel(category)}**（${categoryBoxes} 盒）`);
+    for (const it of list) {
+      lines.push(`- ${it.name}：${it.quantity} 盒`);
+    }
   }
 
   if (o.note) {

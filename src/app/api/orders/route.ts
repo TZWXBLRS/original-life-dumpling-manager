@@ -320,6 +320,7 @@ export async function POST(req: NextRequest) {
       items: result.orderItems.map((it) => ({
         name: it.productName,
         quantity: it.quantity,
+        category: it.category,
       })),
     });
 
