@@ -162,6 +162,69 @@ wrangler secret put WECOM_BOT_WEBHOOK
 
 ---
 
+## 生产环境实际凭据（已配置）
+
+> 本节列出当前生产环境 Cloudflare Pages + Turso + GitHub OAuth 的**真实可用值**。
+> 凭据来源：用户直接提供 + Turso 实测验证（curl `/v2/pipeline` 返回 200）。
+> 所有 Secret 已通过 `wrangler secret put` 写入，Cloudflare 控制台不可回显明文。
+
+### Cloudflare Pages 凭据
+
+| 项目 | 值 |
+|------|----|
+| Account ID | `be2d2ee8b0b1f7bce0602ba1355d3c81` |
+| API Token | `cfat_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` |
+| Project Name | `dumpling-shop` |
+| 生产域名 | `https://dumpling-shop.pages.dev` |
+
+### Turso（LibSQL）
+
+| 变量 | 值 | 备注 |
+|------|----|------|
+| `TURSO_DATABASE_URL` | `libsql://dumpling-shop-tzwxblrs.aws-ap-northeast-1.turso.io` | - |
+| `TURSO_AUTH_TOKEN` | `eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJDOXZFNHNja0VmR1JxZkkwUVROYi1nIiwib3JnX2lkIjoxMDAwMjcxNTU3fQ.yaK2H7WiJ5v8AmCyF8PGsUEpeKUFxLzlbqFqBvyxmmRgy8KRwbQXH8WdN2Opxup9bugWuTrtkYPqUovmuhKHBw` | ✅ 生产可用 |
+
+> 用户曾提供过两个 Turso Token，实测**上面这个**是有效的。另一个（`eyJhbGciOi...ImlkIjoiMDFhMTM0...`）返回 `invalid JWT token`，已弃用。
+
+### NextAuth + GitHub OAuth
+
+| 变量 | 值 | 备注 |
+|------|----|------|
+| `NEXTAUTH_URL` | `https://dumpling-shop.pages.dev` | `wrangler.jsonc` vars 明文 |
+| `NEXTAUTH_SECRET` | `dafijHIHknuU8987098787687+__==HGuig678676756867587658765765765765` | Secret |
+| `AUTH_SECRET` | 同上（未单独设置，走 `NEXTAUTH_SECRET` 后备） | - |
+| GitHub OAuth Client ID | `Ov23liCdqwZgChwYooHH` | `AUTH_GITHUB_ID` |
+| GitHub OAuth Client Secret | `826a376067731845bea84cf3d41b209fe5c67212` | `AUTH_GITHUB_SECRET`，Secret |
+
+### 客服群通知
+
+| 变量 | 值 | 备注 |
+|------|----|------|
+| `WECOM_BOT_WEBHOOK` | **未配置** | 配好后自动推送，不配则跳过 |
+
+### 一键部署命令（非交互）
+
+```bash
+export CLOUDFLARE_API_TOKEN=cfat_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+export CLOUDFLARE_ACCOUNT_ID=be2d2ee8b0b1f7bce0602ba1355d3c81
+
+# 构建
+npm run build:cloudflare
+
+# 部署到生产分支 main
+npx wrangler pages deploy .open-next --project-name=dumpling-shop --branch=main
+```
+
+### 重新设置某个 secret
+
+```bash
+# 覆盖已有的 secret（Cloudflare 会提示是否覆盖，y 确认）
+wrangler secret put TURSO_AUTH_TOKEN
+# 粘贴新 token → 回车
+```
+
+---
+
 ## 常见问题
 
 | 现象 | 排查方向 |
