@@ -13,12 +13,13 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { formatYuan } from "@/lib/pricing";
+import { formatBeijingDateTime, formatBeijingDate } from "@/lib/time";
 import OrderActionButtons from "@/components/OrderActionButtons";
 
 const STATUS_STEPS = [
   { key: "PENDING_PAYMENT", label: "待支付", icon: Clock },
   { key: "PAID", label: "已支付" },
-  { key: "PREPARING", label: "备餐中" },
+  { key: "PREPARING", label: "备货中" },
   { key: "READY", label: "待取 / 待发货" },
   { key: "SHIPPED", label: "配送中" },
   { key: "COMPLETED", label: "已完成", icon: CheckCircle2 },
@@ -27,7 +28,7 @@ const STATUS_STEPS = [
 const STATUS_TEXT: Record<string, string> = {
   PENDING_PAYMENT: "等待支付",
   PAID: "已支付",
-  PREPARING: "后厨备餐中",
+  PREPARING: "后厨备货中",
   READY: "已备好，等待取货/发货",
   READY_FOR_PICKUP: "已备好，等待取货",
   SHIPPED: "配送中",
@@ -180,32 +181,32 @@ export default async function OrderDetailPage(props: {
           <div className="mt-4 pt-4 border-t border-stone-100 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-stone-500">
             {order.paidAt && (
               <div>
-                支付：{order.paidAt.toLocaleString("zh-CN")}
+                支付：{formatBeijingDateTime(order.paidAt)}
               </div>
             )}
             {order.preparingAt && (
               <div>
-                开始备餐：{order.preparingAt.toLocaleString("zh-CN")}
+                开始备餐：{formatBeijingDateTime(order.preparingAt)}
               </div>
             )}
             {order.readyAt && (
               <div>
-                备好：{order.readyAt.toLocaleString("zh-CN")}
+                备好：{formatBeijingDateTime(order.readyAt)}
               </div>
             )}
             {order.shippedAt && (
               <div>
-                发货：{order.shippedAt.toLocaleString("zh-CN")}
+                发货：{formatBeijingDateTime(order.shippedAt)}
               </div>
             )}
             {order.completedAt && (
               <div>
-                完成：{order.completedAt.toLocaleString("zh-CN")}
+                完成：{formatBeijingDateTime(order.completedAt)}
               </div>
             )}
             {order.cancelledAt && (
               <div>
-                取消：{order.cancelledAt.toLocaleString("zh-CN")}
+                取消：{formatBeijingDateTime(order.cancelledAt)}
               </div>
             )}
           </div>
@@ -227,6 +228,12 @@ export default async function OrderDetailPage(props: {
                 <span className="text-stone-500 w-20 inline-block">自取地址：</span>
                 {pickupAddress}
               </div>
+              {order.pickupTime && (
+                <div>
+                  <span className="text-stone-500 w-20 inline-block">自取日期：</span>
+                  {formatBeijingDate(order.pickupTime)}
+                </div>
+              )}
               <div>
                 <span className="text-stone-500 w-20 inline-block">自取时段：</span>
                 {order.pickupSlot || "—"}
@@ -255,6 +262,14 @@ export default async function OrderDetailPage(props: {
                   </div>
                 </div>
               </div>
+              {order.plannedShipDate && (
+                <div className="text-sm">
+                  <span className="text-stone-500 w-20 inline-block">
+                    {order.deliveryType === "DELIVERY" ? "发货日期：" : "配送日期："}
+                  </span>
+                  {formatBeijingDate(order.plannedShipDate)}
+                </div>
+              )}
               {order.deliveryType === "DELIVERY" && (
                 <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs space-y-1">
                   <div className="flex items-center gap-1 text-blue-700 font-medium">
@@ -265,7 +280,7 @@ export default async function OrderDetailPage(props: {
                   </div>
                   {order.deliveryETA && (
                     <div className="text-blue-600">
-                      预计送达：{order.deliveryETA.toLocaleDateString("zh-CN")}
+                      预计送达：{formatBeijingDate(order.deliveryETA)}
                     </div>
                   )}
                   {order.customerAckRisk && (
@@ -346,7 +361,7 @@ export default async function OrderDetailPage(props: {
           )}
           <div className="mt-4 text-xs text-stone-400 text-right">
             下单时间：
-            {order.createdAt.toLocaleString("zh-CN")}
+            {formatBeijingDateTime(order.createdAt)}
           </div>
         </div>
       </main>

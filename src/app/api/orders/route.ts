@@ -6,8 +6,9 @@ import {
   calculatePrice,
   type CartItem,
 } from "@/lib/pricing";
-import { getNextDeliveryWindow } from "@/lib/delivery-window";
 import { queryDeliveryETA } from "@/lib/delivery";
+import { beijingDayStart, beijingDayKey } from "@/lib/time";
+import { notifyNewOrder } from "@/lib/notify";
 
 /**
  * 创建订单 API
@@ -15,8 +16,9 @@ import { queryDeliveryETA } from "@/lib/delivery";
  * body: {
  *   items: CartItem[],
  *   deliveryType: 'PICKUP' | 'DELIVERY' | 'EXPRESS',
+ *   deliveryDate: 'YYYY-MM-DD', // 自取日期 / 发货日期（三种配送方式都必填）
  *   address?: { province, city, district, detail, name, phone },
- *   pickupSlot?: string,        // 自取时段
+ *   pickupSlot?: string,        // 自取时段（仅 PICKUP）
  *   customerAckRisk?: boolean,  // 顾客是否确认快递超时风险
  *   note?: string,              // 订单备注
  * }
@@ -42,6 +44,9 @@ export async function POST(req: NextRequest) {
         })
       ),
       deliveryType: z.enum(["PICKUP", "DELIVERY", "EXPRESS"]),
+      deliveryDate: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, "日期格式不正确"),
       address: z
         .object({
           province: z.string().min(1),
@@ -63,7 +68,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const { items, deliveryType, address, pickupSlot, customerAckRisk, note } =
+    const { items, deliveryType, deliveryDate, address, pickupSlot, customerAckRisk, note } =
       parsed.data;
 
     if (items.length === 0) {
@@ -80,6 +85,15 @@ export async function POST(req: NextRequest) {
     if (deliveryType === "PICKUP" && !pickupSlot) {
       return NextResponse.json(
         { error: "自取请选择自取时段" },
+        { status: 400 }
+      );
+    }
+
+    // 履约日期不能早于今天（按北京时间自然日比较）
+    const todayBeijing = beijingDayKey(new Date());
+    if (deliveryDate < todayBeijing) {
+      return NextResponse.json(
+        { error: "不能选择过去的日期，请重新选择" },
         { status: 400 }
       );
     }
@@ -103,7 +117,7 @@ export async function POST(req: NextRequest) {
       if (p.stock < it.quantity) {
         return NextResponse.json(
           {
-            error: `「${it.productName}」库存不足，只剩 ${p.stock} 盒（你选了 ${it.quantity} 盒）`,
+            error: `「${p.name}」库存不足，只剩 ${p.stock} 盒（你选了 ${it.quantity} 盒）`,
           },
           { status: 400 }
         );
@@ -117,9 +131,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 每日销量上限校验
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    // 每日销量上限校验（「今日」按北京时间自然日，Cloudflare 运行时本地时区为 UTC）
+    const todayStart = beijingDayStart();
     const todayOrders = await prisma.order.aggregate({
       where: {
         createdAt: { gte: todayStart },
@@ -129,7 +142,7 @@ export async function POST(req: NextRequest) {
     });
     const dailyLimit = Number(
       (await prisma.systemConfig.findUnique({ where: { key: "DAILY_LIMIT" } }))
-        ?.value ?? "100"
+        ?.value ?? "700"
     );
     const todaySold = todayOrders._sum.totalBoxes ?? 0;
     const totalBoxes = items.reduce((s, i) => s + i.quantity, 0);
@@ -152,18 +165,27 @@ export async function POST(req: NextRequest) {
     );
 
     // ============== 快递时效校验 ==============
+    // plannedShipDate：快递/闪送用顾客选择的发货日期（当天 18:00 发货窗口）；
+    // 自取用顾客选择的自取日期 + 时段起点作为 pickupTime。
     let plannedShipDate: Date | null = null;
     let deliveryETA: Date | null = null;
+    let pickupTime: Date | null = null;
+
+    if (deliveryType === "PICKUP") {
+      // 自取：把「日期 + 时段起点」组合成精确的自取时间
+      const slotStart = (pickupSlot || "09:30-11:30").split("-")[0]; // "09:30"
+      pickupTime = new Date(`${deliveryDate}T${slotStart}:00+08:00`);
+    } else {
+      // 快递 / 闪送：发货日期当天的发货窗口（18:00）
+      plannedShipDate = new Date(`${deliveryDate}T18:00:00+08:00`);
+    }
 
     if (deliveryType === "DELIVERY") {
-      // 发货时间：取下一个快递窗口的开始时间
-      plannedShipDate = getNextDeliveryWindow().start;
-
-      // 快递时效风险
+      // 快递时效风险（按顾客选择的发货日期计算）
       const eta = queryDeliveryETA({
         province: address!.province,
         city: address!.city,
-        shipDate: plannedShipDate,
+        shipDate: plannedShipDate!,
       });
       if (!eta.supported) {
         return NextResponse.json(
@@ -249,6 +271,7 @@ export async function POST(req: NextRequest) {
           receiverAddress: address?.detail ?? null,
           // 自取
           pickupSlot: pickupSlot ?? null,
+          pickupTime,
           pickupCode: deliveryType === "PICKUP" ? pickupCode : null,
           // 快递发货相关
           plannedShipDate,
@@ -259,18 +282,51 @@ export async function POST(req: NextRequest) {
       });
 
       // 4. 写订单明细
-      const orderItems = items.map((it) => ({
-        orderId: order.id,
-        productId: it.productId,
-        productName: it.productName,
-        category: it.category,
-        unitPrice: it.unitPrice,
-        quantity: it.quantity,
-        subtotal: it.unitPrice * it.quantity,
-      }));
+      // 名称/类别一律取数据库中的商品记录，不使用客户端传值，
+      // 确保订单快照与后台商品（口味、类别）完全一致。
+      const orderItems = items.map((it) => {
+        const p = productMap.get(it.productId)!;
+        return {
+          orderId: order.id,
+          productId: it.productId,
+          productName: p.name,
+          category: p.category,
+          unitPrice: p.unitPrice,
+          quantity: it.quantity,
+          subtotal: p.unitPrice * it.quantity,
+        };
+      });
       await tx.orderItem.createMany({ data: orderItems });
 
       return { order, orderItems };
+    });
+
+    // 异步推送新订单通知到企业微信群（fire-and-forget，不阻塞下单响应）
+    notifyNewOrder({
+      orderNo: result.order.orderNo,
+      deliveryType,
+      deliveryDate,
+      pickupSlot: result.order.pickupSlot,
+      totalBoxes: result.order.totalBoxes,
+      totalAmount: result.order.totalAmount,
+      receiverName: result.order.receiverName,
+      receiverPhone: result.order.receiverPhone,
+      receiverAddress: result.order.receiverAddress
+        ? [
+            result.order.receiverProvince,
+            result.order.receiverCity,
+            result.order.receiverDistrict,
+            result.order.receiverAddress,
+          ]
+            .filter(Boolean)
+            .join(" ")
+        : null,
+      note: result.order.note,
+      items: result.orderItems.map((it) => ({
+        name: it.productName,
+        quantity: it.quantity,
+        category: it.category,
+      })),
     });
 
     return NextResponse.json({

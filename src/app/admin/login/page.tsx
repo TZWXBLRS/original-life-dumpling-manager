@@ -39,15 +39,24 @@ function AdminLoginForm() {
         return;
       }
 
-      // 二次确认角色：顾客账号不允许进入后台
+      // 二次确认角色：顾客账号不允许进入后台。
+      // 容错：只有在「拿到明确的 200 + JSON 会话」且角色非门店时才判定为顾客账号；
+      // 网络异常 / 边缘 503 / 非 JSON 响应不判定、不登出，直接放行跳转，
+      // 避免已成功登录的用户因后端瞬时抖动被误登出、弹回登录页。
       let role: string | undefined;
+      let reliable = false;
       try {
-        const sess = await fetch("/api/auth/session").then((r) => r.json());
-        role = sess?.user?.role;
+        const r = await fetch("/api/auth/session");
+        const ct = r.headers.get("content-type") || "";
+        if (r.ok && ct.includes("application/json")) {
+          const sess = await r.json();
+          role = sess?.user?.role;
+          reliable = true;
+        }
       } catch {
-        role = undefined;
+        reliable = false;
       }
-      if (role !== "ADMIN" && role !== "KITCHEN") {
+      if (reliable && role !== "ADMIN" && role !== "KITCHEN") {
         await fetch("/api/auth/signout", { method: "POST" }).catch(() => {});
         setError("该账号非门店账号，请使用顾客端一键登录");
         return;
