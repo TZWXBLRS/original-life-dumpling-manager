@@ -9,6 +9,8 @@ import {
   Globe2,
   Clock3,
   Star,
+  Heart,
+  Quote,
 } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -122,8 +124,8 @@ export default function HomePage() {
           <div className="relative animate-fade-up delay-1">
             <div className="relative overflow-hidden rounded-t-[9rem] rounded-b-3xl border border-rice-300 bg-rice-100 shadow-soft">
               <img
-                src="/images/heye-hero.jpg"
-                alt="竹笼里刚蒸好的手工素饺，旁边是新鲜荠菜与麦穗"
+                src="/images/heye-hero-v2.jpg"
+                alt="竹笼里刚出锅的手工素饺，旁边是新鲜荠菜与麦穗"
                 className="h-[24rem] w-full object-cover sm:h-[30rem] md:h-[34rem]"
               />
               <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-primary-900/80 via-primary-900/25 to-transparent" />
@@ -236,6 +238,107 @@ export default function HomePage() {
               </p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* 一碗的温度 · 顾客 H 的故事 */}
+      <section
+        id="warmth"
+        className="relative overflow-hidden border-t border-rice-300/70 bg-rice-100/60 paper-grain py-20 md:py-28"
+      >
+        <div
+          className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-wheat-200/35 blur-3xl"
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-primary-200/35 blur-3xl"
+          aria-hidden="true"
+        />
+
+        <div className="relative mx-auto grid max-w-6xl gap-12 px-4 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
+          <div className="animate-fade-up">
+            <div className="text-[11px] tracking-[0.4em] text-primary-600">
+              A BOWL OF WARMTH · 一碗的温度
+            </div>
+            <h2 className="mt-4 font-serif-cn text-4xl leading-tight text-primary-900 md:text-5xl">
+              同样的饺子，
+              <br />
+              为什么店里更好吃？
+            </h2>
+            <WheatDivider className="my-7 max-w-[16rem]" />
+
+            <div className="font-serif-cn text-[17px] leading-[2.1] text-stone-600">
+              <p className="flex gap-2">
+                <Quote className="mt-1.5 h-4 w-4 shrink-0 text-wheat-500" aria-hidden="true" />
+                <span>
+                  经常有顾客问我们：为什么在家里煮同样的饺子，
+                  <br className="hidden sm:block" />
+                  感觉没有店里做的好吃？
+                </span>
+              </p>
+              <p className="mt-4">
+                不同的，也许是食客的心情。
+                <br />
+                在这里，你听到的是亲切的招待，
+                <br />
+                触摸的是归家的温暖，体会的是做餐人的用心。
+              </p>
+            </div>
+
+            <div className="relative mt-9 rounded-2xl border border-accent-200/70 bg-rice-50 p-6 shadow-paper">
+              <div className="absolute -top-3 left-6 flex items-center gap-1.5 bg-rice-50 px-2 text-[10px] tracking-[0.26em] text-accent-600">
+                <Heart className="h-3 w-3" aria-hidden="true" />
+                CUSTOMER H · 顾客 H
+              </div>
+              <div className="flex items-start gap-5">
+                <div className="shrink-0 border border-accent-200 bg-rice-100 px-3 py-2 text-center">
+                  <div className="font-serif-cn text-3xl leading-none text-accent-600">
+                    60
+                  </div>
+                  <div className="mt-1 text-[10px] tracking-[0.14em] text-stone-500">
+                    个饺子
+                  </div>
+                </div>
+                <p className="font-serif-cn text-[15px] leading-[1.95] text-stone-700">
+                  那天，顾客 H 来店里品尝我们的水饺。
+                  他品到了背后的用心，感动得落泪——
+                  那一顿，他一共吃了 60 个饺子。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative animate-fade-up delay-2">
+            <div className="relative overflow-hidden rounded-[2rem] border border-rice-300 shadow-soft">
+              <img
+                src="/images/heye-story-warm-1.jpg"
+                alt="双手端着一碗刚出锅的素饺，热气缓缓升起"
+                className="h-[20rem] w-full object-cover sm:h-[26rem]"
+              />
+              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-primary-900/60 to-transparent" />
+              <div className="absolute left-5 bottom-4 font-serif-cn text-lg text-rice-50 [text-shadow:0_1px_8px_rgba(24,36,28,0.55)]">
+                那一碗，还冒着热气
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              <img
+                src="/images/heye-story-warm-2.jpg"
+                alt="木桌上的一碗素饺、筷子与醋碟"
+                className="h-32 w-full rounded-2xl border border-rice-300 object-cover shadow-paper sm:h-40"
+              />
+              <img
+                src="/images/heye-story-warm-3.jpg"
+                alt="俯拍的素饺、麦穗与木筷，安静的一餐"
+                className="h-32 w-full rounded-2xl border border-rice-300 object-cover shadow-paper sm:h-40"
+              />
+            </div>
+
+            <div className="mt-4 flex items-center gap-2.5 text-[10px] tracking-[0.22em] text-stone-500">
+              <span className="h-px w-6 bg-wheat-400/70" aria-hidden="true" />
+              同一碗饺子 · 三种温度
+            </div>
+          </div>
         </div>
       </section>
 
