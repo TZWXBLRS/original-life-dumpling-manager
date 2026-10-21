@@ -115,7 +115,7 @@ function preparePagesOutput() {
   fs.writeFileSync(
     path.join(openNextDir, "_routes.json"),
     JSON.stringify(
-      { version: 1, include: ["/*"], exclude: ["/_next/static/*"] },
+      { version: 1, include: ["/*"], exclude: ["/_next/static/*", "/images/*", "/favicon.ico"] },
       null,
       2
     ) + "\n"
