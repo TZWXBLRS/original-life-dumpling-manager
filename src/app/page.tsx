@@ -340,6 +340,78 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        <div className="relative mx-auto mt-16 max-w-6xl px-4 md:mt-20">
+          <div className="flex items-center gap-3 text-[10px] tracking-[0.32em] text-primary-600">
+            <span className="h-px w-8 bg-wheat-400/70" aria-hidden="true" />
+            MORE VOICES · 还有这些话
+          </div>
+
+          <div className="mt-6 grid gap-5 md:grid-cols-2">
+            <article className="flex flex-col rounded-2xl border border-accent-200/70 bg-rice-50 p-6 shadow-paper sm:p-7">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] tracking-[0.26em] text-accent-600">
+                  CUSTOMER F · 顾客 F
+                </span>
+                <Quote className="h-4 w-4 text-accent-300" aria-hidden="true" />
+              </div>
+              <h3 className="mt-3 font-serif-cn text-xl leading-snug text-primary-900 sm:text-2xl">
+                “吃了你们的饺子，
+                <br />
+                我再也不自己包了。”
+              </h3>
+              <div className="mt-4 space-y-3 text-[14px] leading-[1.95] text-stone-600">
+                <p>
+                  顾客 F 来到店里，点了经典混合口味的水饺，赞不绝口。
+                  她说自己平时特别会包饺子，可吃过我们的饺子之后，
+                  再也不打算自己做了。
+                </p>
+                <p>
+                  她喜欢店里的陈设与氛围，看到连洗手间都打扫得干干净净，
+                  也欣赏我们对美的这份追求。
+                </p>
+                <p>
+                  她分享说，以前一直处在生存的阶段，不知道为什么会那么忙碌，
+                  像一只在滚轮里奔跑的老鼠。而吃我们的饺子，
+                  能感觉到每一个口味都那么用心。
+                </p>
+              </div>
+              <p className="mt-auto border-l-2 border-accent-300 pl-4 pt-4 font-serif-cn text-[15px] leading-[1.9] text-stone-700">
+                她说，在这里品尝到了爱的滋味，油然而生感恩与幸福。
+              </p>
+            </article>
+
+            <article className="flex flex-col rounded-2xl border border-primary-200/80 bg-primary-50/60 p-6 shadow-paper sm:p-7">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] tracking-[0.26em] text-primary-700">
+                  CUSTOMER M · 顾客 M
+                </span>
+                <Quote className="h-4 w-4 text-primary-300" aria-hidden="true" />
+              </div>
+              <h3 className="mt-3 font-serif-cn text-xl leading-snug text-primary-900 sm:text-2xl">
+                “因为这里，
+                <br />
+                不止有饺子。”
+              </h3>
+              <div className="mt-4 space-y-3 text-[14px] leading-[1.95] text-stone-600">
+                <p>
+                  顾客 M 经常来店里用餐。她问：为什么总觉得店里的饺子更好吃？
+                  店员回答：因为这里不止有饺子。
+                </p>
+                <p>
+                  她很开心用餐时能和店里的服务人员聊上几句，
+                  在一餐一饭的互动里，感受到积极、热情的能量。
+                </p>
+                <p>
+                  有时只是几句家常，一顿饭就变得轻松起来。
+                </p>
+              </div>
+              <p className="mt-auto border-l-2 border-primary-300 pl-4 pt-4 font-serif-cn text-[15px] leading-[1.9] text-stone-700">
+                一餐饭的温度，一半在饺子里，一半在人身上。
+              </p>
+            </article>
+          </div>
+        </div>
       </section>
 
       {/* 产品介绍 */}
