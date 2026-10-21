@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
       if (p.stock < it.quantity) {
         return NextResponse.json(
           {
-            error: `「${it.productName}」库存不足，只剩 ${p.stock} 盒（你选了 ${it.quantity} 盒）`,
+            error: `「${p.name}」库存不足，只剩 ${p.stock} 盒（你选了 ${it.quantity} 盒）`,
           },
           { status: 400 }
         );
@@ -282,15 +282,20 @@ export async function POST(req: NextRequest) {
       });
 
       // 4. 写订单明细
-      const orderItems = items.map((it) => ({
-        orderId: order.id,
-        productId: it.productId,
-        productName: it.productName,
-        category: it.category,
-        unitPrice: it.unitPrice,
-        quantity: it.quantity,
-        subtotal: it.unitPrice * it.quantity,
-      }));
+      // 名称/类别一律取数据库中的商品记录，不使用客户端传值，
+      // 确保订单快照与后台商品（口味、类别）完全一致。
+      const orderItems = items.map((it) => {
+        const p = productMap.get(it.productId)!;
+        return {
+          orderId: order.id,
+          productId: it.productId,
+          productName: p.name,
+          category: p.category,
+          unitPrice: p.unitPrice,
+          quantity: it.quantity,
+          subtotal: p.unitPrice * it.quantity,
+        };
+      });
       await tx.orderItem.createMany({ data: orderItems });
 
       return { order, orderItems };
