@@ -15,13 +15,13 @@ const PRODUCT_CATEGORY = {
 } as const;
 
 async function main() {
-  console.log("🌱 开始初始化数据库（素生活正式配置）...");
+  console.log("🌱 开始初始化数据库（禾也正式配置）...");
 
   // ========= 1. 创建/更新 管理员账号 =========
   // 注意：手机号必须唯一，一个手机号不能同时是两个角色。
   // 管理员：15313659956 / sushenghuo107
   // 后厨：18301576627 / sushenghuo105
-  const adminName = process.env.ADMIN_NAME || "素生活";
+  const adminName = process.env.ADMIN_NAME || "禾也";
   const adminPhone = process.env.ADMIN_PHONE || "15313659956";
   const adminPassword = process.env.ADMIN_PASSWORD || "sushenghuo107";
   const adminHash = await bcrypt.hash(adminPassword, 10);
@@ -44,7 +44,7 @@ async function main() {
   console.log(`  ✓ 管理员账号: ${adminPhone} / ${adminPassword} (${adminName})`);
 
   // ========= 2. 创建/更新 后厨账号 =========
-  const kitchenName = process.env.KITCHEN_NAME || "素生活后厨";
+  const kitchenName = process.env.KITCHEN_NAME || "禾也后厨";
   // 后厨：18301576627 / sushenghuo105（独立于管理员手机号）
   const kitchenPhone = process.env.KITCHEN_PHONE || "18301576627";
   const kitchenPassword = process.env.KITCHEN_PASSWORD || "sushenghuo105";
@@ -149,7 +149,7 @@ async function main() {
   // ========= 4. 初始化系统配置 =========
   const pickupAddress =
     process.env.PICKUP_ADDRESS ||
-    "北京昌平路181号院卢卡新天地3号楼底商负107 素生活";
+    "北京昌平路181号院卢卡新天地3号楼底商负107 禾也";
   const businessHours =
     process.env.BUSINESS_HOURS_JSON ||
     JSON.stringify({
@@ -167,7 +167,7 @@ async function main() {
     });
   const dailyLimit = process.env.DAILY_LIMIT || "100";
   const storePhone = process.env.STORE_PHONE || "18301576627";
-  const storeName = process.env.STORE_NAME || "素生活饺子馆";
+  const storeName = process.env.STORE_NAME || "禾也";
 
   const configs = [
     { key: "PICKUP_ADDRESS", value: pickupAddress, description: "自取地址" },
@@ -200,7 +200,7 @@ async function main() {
   // 演示模式下顾客通过 /api/auth/demo-login 用手机号 upsert 出 CUSTOMER 用户，
   // 这里同步预建一个演示顾客，让后台能立刻看到订单数据用于汇总演示。
   await seedDemoOrders();
-  console.log("\n🎉 数据库初始化完成（素生活正式配置已生效）！");
+  console.log("\n🎉 数据库初始化完成（禾也正式配置已生效）！");
 }
 
 /**

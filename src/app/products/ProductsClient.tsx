@@ -63,7 +63,7 @@ export function ProductsClient({ products }: { products: ProductFromDB[] }) {
       )}
 
       {showComboHint && (
-        <div className="mb-4 px-3 py-2.5 rounded-lg bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-medium flex items-center gap-2">
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-wheat-300 bg-wheat-50 px-3 py-2.5 text-xs font-medium text-wheat-700">
           <Sparkles className="w-3.5 h-3.5 shrink-0" />
           再加1盒经典饺子，即可凑够4盒享组合价（4经典¥100）！
         </div>
@@ -122,7 +122,9 @@ function ProductCard({
     : Math.min(100, (product.stock / MAX_STOCK) * 100);
 
   const isClassic = product.category === "CLASSIC";
-  const mediaTint = isClassic ? "from-green-50 to-emerald-50" : "from-amber-50 to-orange-50";
+  const mediaTint = isClassic
+    ? "from-primary-50 to-rice-100"
+    : "from-wheat-50 to-rice-100";
 
   const handleAdd = () => {
     if (outOfStock || atMax) return;
@@ -151,12 +153,12 @@ function ProductCard({
           </span>
         )}
         {!outOfStock && (
-          <span className="absolute top-2 right-2 text-[10px] font-semibold text-green-700 bg-white/85 backdrop-blur rounded-full px-1.5 py-0.5 shadow-sm">
+          <span className="absolute top-2 right-2 rounded-full bg-rice-50/90 px-1.5 py-0.5 text-[10px] font-semibold text-primary-700 shadow-sm backdrop-blur">
             库存{product.stock}
           </span>
         )}
         {selected > 0 && (
-          <span className="absolute top-2 left-2 text-[10px] font-semibold text-white bg-primary-500 rounded-full px-1.5 py-0.5 shadow-sm">
+          <span className="absolute top-2 left-2 rounded-full bg-primary-600 px-1.5 py-0.5 text-[10px] font-semibold text-rice-50 shadow-sm">
             已选{selected}
           </span>
         )}
@@ -171,7 +173,7 @@ function ProductCard({
         )}
 
         <div className="flex items-center justify-between mt-auto mb-1.5">
-          <div className="text-base font-bold text-primary-600">
+          <div className="text-base font-bold text-primary-700">
             ¥{(product.unitPrice / 100).toFixed(0)}
             <span className="text-[10px] text-stone-400 font-normal">/盒</span>
           </div>
@@ -187,11 +189,11 @@ function ProductCard({
             aria-label="减少一盒"
             disabled={selected === 0}
             onClick={() => updateQty(product.id, -1)}
-            className="w-8 h-8 shrink-0 rounded-lg border border-stone-300 flex items-center justify-center text-stone-600 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="h-11 w-11 shrink-0 rounded-lg border border-stone-300 flex items-center justify-center text-stone-600 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Minus className="w-3.5 h-3.5" />
           </button>
-          <div className="flex-1 h-8 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center gap-0.5 text-sm font-bold text-stone-700">
+          <div className="flex-1 h-11 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center gap-0.5 text-sm font-bold text-stone-700">
             {selected}
             <span className="text-[10px] font-normal text-stone-400">盒</span>
           </div>
@@ -200,20 +202,20 @@ function ProductCard({
             aria-label="加购一盒"
             disabled={outOfStock || atMax}
             onClick={handleAdd}
-            className="w-8 h-8 shrink-0 rounded-lg bg-primary-500 text-white flex items-center justify-center hover:bg-primary-600 active:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="h-11 w-11 shrink-0 rounded-lg bg-primary-600 text-rice-50 flex items-center justify-center hover:bg-primary-700 active:bg-primary-800 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <div className="w-full h-[3px] bg-stone-100 rounded-full mt-2 overflow-hidden">
+        <div className="mt-2 w-full h-[3px] overflow-hidden rounded-full bg-stone-100">
           <div
             className={`h-full rounded-full transition-all duration-500 ${
               outOfStock
                 ? "bg-stone-300"
                 : stockPercent < 30
-                ? "bg-amber-400"
-                : "bg-green-500"
+                ? "bg-wheat-400"
+                : "bg-primary-500"
             }`}
             style={{ width: `${stockPercent}%` }}
           />

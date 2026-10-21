@@ -22,9 +22,9 @@ const KEY_LABELS: Record<string, string> = {
 };
 
 const KEY_PLACEHOLDERS: Record<string, string> = {
-  STORE_NAME: "素生活饺子馆",
+  STORE_NAME: "禾也",
   STORE_PHONE: "18301576627 或 010-xxxxxxxx",
-  PICKUP_ADDRESS: "北京昌平路181号院卢卡新天地3号楼底商负107 素生活",
+  PICKUP_ADDRESS: "北京昌平路181号院卢卡新天地3号楼底商负107 禾也",
   BUSINESS_HOURS:
     '{"weekdays":"9:30-20:30","weekend":"9:30-20:30","holidays":"9:30-20:30（节假日正常营业）","pickupSlots":["09:30-11:30","11:30-13:30","13:30-15:30","15:30-17:30","17:30-19:30","19:30-20:30"]}',
   DAILY_LIMIT: "100",

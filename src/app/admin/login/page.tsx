@@ -67,7 +67,7 @@ function AdminLoginForm() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="text-5xl mb-3">🥟</div>
-          <h1 className="text-2xl font-bold text-white">素生活 · 管理后台</h1>
+          <h1 className="text-2xl font-bold text-white">禾也 · 管理后台</h1>
           <p className="text-stone-400 text-sm mt-1">仅限门店员工登录</p>
         </div>
 

@@ -3,7 +3,7 @@
 set +e
 cd "$(dirname "$0")"
 
-echo "🛑 停止素生活饺子馆 Demo..."
+echo "🛑 停止禾也 Demo..."
 
 # 1. Node 服务
 if [ -f logs/app.pid ]; then

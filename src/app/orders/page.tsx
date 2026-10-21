@@ -41,7 +41,7 @@ export default async function OrdersPage() {
           <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
               <span className="text-2xl">🥟</span>
-              <span className="font-bold text-primary-700">素生活</span>
+              <span className="font-bold text-primary-700">禾也</span>
             </Link>
             <UserMenu />
           </div>
@@ -81,7 +81,7 @@ export default async function OrdersPage() {
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl">🥟</span>
-            <span className="font-bold text-primary-700">素生活</span>
+            <span className="font-bold text-primary-700">禾也</span>
           </Link>
           <div className="flex items-center gap-4 text-sm text-stone-600">
             <span className="hidden sm:inline">我的订单</span>

@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 
 // 门店自取地址
-const STORE_ADDRESS = "北京昌平路181号院卢卡新天地3号楼底商负107 素生活";
+const STORE_ADDRESS = "北京昌平路181号院卢卡新天地3号楼底商负107 禾也";
 
 /**
  * 购物车 + 结算 合并单页
@@ -277,7 +277,7 @@ export default function CartPage() {
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl">🥟</span>
-            <span className="font-bold text-primary-700">素生活</span>
+            <span className="font-bold text-primary-700">禾也</span>
           </Link>
           <div className="flex items-center gap-4 text-sm">
             <Link href="/products" className="text-stone-600 hover:text-primary-600">

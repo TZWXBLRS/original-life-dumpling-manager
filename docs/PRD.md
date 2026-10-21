@@ -1,8 +1,8 @@
-# Original Life Dumpling Manager 产品需求文档 (PRD)
+# 禾也 HEYE 产品需求文档 (PRD)
 
 ## 1. 项目概述
 
-**项目名称**：Original Life Dumpling Manager（素生活饺子订购管理系统）
+**项目名称**：禾也 HEYE（手作素饺订购管理系统）
 
 **项目目标**：构建一个面向顾客的冷冻饺子订购网站，同时支持后厨库存管理和管理员后台，实现从下单到配送/自取的全流程管理。
 

@@ -1,0 +1,18 @@
+{
+  "info": {
+    "url": "http://localhost:3000/products",
+    "title": "禾也 HEYE - 手作素饺",
+    "innerW": 390,
+    "scrollH": 1898,
+    "scrollW": 390,
+    "bodyScrollW": 390,
+    "overflowX": false,
+    "images": [],
+    "brokenImages": [],
+    "bodyBg": "rgb(253, 251, 246)"
+  },
+  "logs": [
+    "STATUS: 200",
+    "REQFAIL: http://localhost:3000/orders?_rsc=1t2xr :: net::ERR_ABORTED"
+  ]
+}

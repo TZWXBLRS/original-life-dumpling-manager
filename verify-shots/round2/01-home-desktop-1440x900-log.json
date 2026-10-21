@@ -1,0 +1,36 @@
+{
+  "info": {
+    "url": "http://localhost:3000/",
+    "title": "禾也 HEYE - 手作素饺",
+    "innerW": 1440,
+    "scrollH": 4312,
+    "scrollW": 1425,
+    "bodyScrollW": 1425,
+    "overflowX": false,
+    "images": [
+      {
+        "src": "heye-hero.jpg",
+        "w": 507,
+        "h": 544,
+        "loaded": true
+      },
+      {
+        "src": "heye-story.jpg",
+        "w": 563,
+        "h": 432,
+        "loaded": true
+      },
+      {
+        "src": "heye-products.jpg",
+        "w": 551,
+        "h": 392,
+        "loaded": true
+      }
+    ],
+    "brokenImages": [],
+    "bodyBg": "rgb(253, 251, 246)"
+  },
+  "logs": [
+    "STATUS: 200"
+  ]
+}

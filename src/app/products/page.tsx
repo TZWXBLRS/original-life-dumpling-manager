@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ProductsClient } from "./ProductsClient";
-import { CartLink } from "@/components/CartLink";
-import { UserMenu } from "@/components/UserMenu";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 
 // 强制 SSR：构建时没有 Turso 环境变量，Prisma 无法连接
 export const dynamic = "force-dynamic";
@@ -26,41 +25,32 @@ export default async function ProductsPage() {
   });
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-white border-b border-stone-200 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl">🥟</span>
-            <span className="font-bold text-base text-primary-700">素生活</span>
-          </Link>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link href="/" className="text-stone-600 hover:text-primary-600">
-              🏠
-            </Link>
-            <CartLink showLabel={false} />
-            <UserMenu />
-          </nav>
-        </div>
-      </header>
+    <div className="flex min-h-screen flex-col bg-rice-50">
+      <SiteHeader />
 
       {/* 页面头图条 */}
-      <div className="bg-gradient-to-r from-primary-50 to-accent-50 border-b border-stone-100">
-        <div className="max-w-6xl mx-auto px-4 py-5">
-          <h1 className="text-xl font-bold text-stone-800 flex items-center gap-2">
-            全部口味
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-primary-700 bg-white/70 border border-primary-200 rounded-full px-2 py-0.5">
-              ✨ 自动最优优惠
+      <div className="border-b border-rice-300/70 bg-gradient-to-r from-primary-50 via-rice-50 to-wheat-50">
+        <div className="mx-auto max-w-6xl px-4 py-6">
+          <div className="text-[11px] tracking-[0.4em] text-primary-600">
+            OUR DUMPLINGS · 今日现包
+          </div>
+          <h1 className="mt-2 flex flex-wrap items-center gap-2 font-serif-cn text-2xl text-primary-900">
+            八味素饺，一箸之和
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary-200 bg-rice-50/80 px-2.5 py-0.5 text-[11px] font-medium tracking-normal text-primary-700">
+              自动最优优惠
             </span>
           </h1>
-          <p className="text-stone-500 text-xs mt-1">
-            🌱 纯素饺子 · 选好口味加入购物车，系统自动帮您凑单省钱
+          <p className="mt-1 text-stone-500 text-xs">
+            纯素配方 · 选好口味加入购物车，系统自动帮您凑单省钱
           </p>
         </div>
       </div>
 
-      <main className="flex-1 max-w-6xl mx-auto px-3 py-5 w-full">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-3 py-6">
         <ProductsClient products={products} />
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

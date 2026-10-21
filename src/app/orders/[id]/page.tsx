@@ -76,7 +76,7 @@ export default async function OrderDetailPage(props: {
     .findUnique({ where: { key: "PICKUP_ADDRESS" } })
     .catch(() => null);
   const pickupAddress =
-    pickupCfg?.value || "北京昌平路181号院卢卡新天地3号楼底商负107 素生活";
+    pickupCfg?.value || "北京昌平路181号院卢卡新天地3号楼底商负107 禾也";
 
   return (
     <div className="min-h-screen bg-stone-50">

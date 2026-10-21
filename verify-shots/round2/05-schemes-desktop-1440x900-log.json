@@ -1,0 +1,36 @@
+{
+  "info": {
+    "url": "http://localhost:3000/design-schemes.html",
+    "title": "禾也 · 视觉方向比稿",
+    "innerW": 1440,
+    "scrollH": 2640,
+    "scrollW": 1425,
+    "bodyScrollW": 1425,
+    "overflowX": false,
+    "images": [
+      {
+        "src": "heye-hero.jpg",
+        "w": 514,
+        "h": 168,
+        "loaded": true
+      },
+      {
+        "src": "heye-story.jpg",
+        "w": 514,
+        "h": 168,
+        "loaded": true
+      },
+      {
+        "src": "heye-products.jpg",
+        "w": 514,
+        "h": 168,
+        "loaded": true
+      }
+    ],
+    "brokenImages": [],
+    "bodyBg": "rgb(243, 241, 234)"
+  },
+  "logs": [
+    "STATUS: 200"
+  ]
+}
