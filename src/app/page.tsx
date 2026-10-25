@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ChapterHeading } from "@/components/ChapterHeading";
+import { MobileChapterDeck } from "@/components/MobileChapterDeck";
 import { SealStamp, WheatDivider } from "@/components/BrandLogo";
 
 const classicFlavors = [
@@ -169,13 +171,21 @@ export default function HomePage() {
         </div>
       </div>
 
+      <MobileChapterDeck
+        chapters={[
+          { id: "story", no: "壹", label: "品牌" },
+          { id: "warmth", no: "贰", label: "温度" },
+          { id: "voices", no: "叁", label: "食客" },
+          { id: "menu", no: "肆", label: "口味" },
+          { id: "promo", no: "伍", label: "优惠" },
+        ]}
+        chapterIndexes={[0, 1, 2, 3, 4, 4, 4]}
+      >
       {/* 品牌故事 */}
-      <section id="story" className="relative paper-grain py-20 md:py-28">
+      <section id="story" className="relative paper-grain py-12 md:py-28">
         <div className="max-w-6xl mx-auto px-4 grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
           <div className="animate-fade-up">
-            <div className="text-[11px] tracking-[0.4em] text-primary-600">
-              OUR STORY · 品牌故事
-            </div>
+            <ChapterHeading no="壹" en="OUR STORY" zh="品牌故事" />
             <h2 className="mt-4 font-serif-cn text-4xl leading-tight text-primary-900 md:text-5xl">
               口中有禾，
               <br />
@@ -244,7 +254,7 @@ export default function HomePage() {
       {/* 一碗的温度 · 顾客 H 的故事 */}
       <section
         id="warmth"
-        className="relative overflow-hidden border-t border-rice-300/70 bg-rice-100/60 paper-grain py-20 md:py-28"
+        className="relative overflow-hidden border-t border-rice-300/70 bg-rice-100/60 paper-grain py-12 md:py-28"
       >
         <div
           className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-wheat-200/35 blur-3xl"
@@ -257,9 +267,7 @@ export default function HomePage() {
 
         <div className="relative mx-auto grid max-w-6xl gap-12 px-4 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
           <div className="animate-fade-up">
-            <div className="text-[11px] tracking-[0.4em] text-primary-600">
-              A BOWL OF WARMTH · 一碗的温度
-            </div>
+            <ChapterHeading no="贰" en="A BOWL OF WARMTH" zh="一碗的温度" />
             <h2 className="mt-4 font-serif-cn text-4xl leading-tight text-primary-900 md:text-5xl">
               同样的饺子，
               <br />
@@ -341,11 +349,15 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="relative mx-auto mt-16 max-w-6xl px-4 md:mt-20">
-          <div className="flex items-center gap-3 text-[10px] tracking-[0.32em] text-primary-600">
-            <span className="h-px w-8 bg-wheat-400/70" aria-hidden="true" />
-            MORE VOICES · 还有这些话
-          </div>
+      </section>
+
+      {/* 食客的话 · 顾客 F 与 M 的故事 */}
+      <section
+        id="voices"
+        className="border-t border-rice-300/70 bg-rice-50 py-12 md:py-28"
+      >
+        <div className="mx-auto max-w-6xl px-4">
+          <ChapterHeading no="叁" en="MORE VOICES" zh="食客的话" />
 
           <div className="mt-6 grid gap-5 md:grid-cols-2">
             <article className="flex flex-col overflow-hidden rounded-2xl border border-accent-200/70 bg-rice-50 shadow-paper">
@@ -429,11 +441,11 @@ export default function HomePage() {
       </section>
 
       {/* 产品介绍 */}
-      <section id="menu" className="py-20 md:py-28">
+      <section id="menu" className="border-t border-rice-300/70 py-14 md:border-t-0 md:py-28">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center">
-            <div className="text-[11px] tracking-[0.4em] text-primary-600">
-              OUR DUMPLINGS · 产品介绍
+            <div className="flex justify-center">
+              <ChapterHeading no="肆" en="OUR DUMPLINGS" zh="八味素饺" />
             </div>
             <h2 className="mt-4 font-serif-cn text-4xl text-primary-900 md:text-5xl">
               八味素饺，一箸之和
@@ -561,11 +573,11 @@ export default function HomePage() {
       </section>
 
       {/* 优惠活动 */}
-      <section id="promo" className="py-20 md:py-24">
+      <section id="promo" className="py-14 md:py-24">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center">
-            <div className="text-[11px] tracking-[0.4em] text-primary-600">
-              COMBINATIONS · 组合优惠
+            <div className="flex justify-center">
+              <ChapterHeading no="伍" en="COMBINATIONS" zh="组合优惠" />
             </div>
             <h2 className="mt-4 font-serif-cn text-3xl text-primary-900 md:text-4xl">
               多买多省，系统自动算好
@@ -643,7 +655,7 @@ export default function HomePage() {
       </section>
 
       {/* 和浓度贴纸 */}
-      <section className="pb-20">
+      <section className="pb-10 md:pb-20">
         <div className="max-w-6xl mx-auto px-4">
           <div className="paper-grain flex flex-col items-start justify-between gap-6 rounded-[2rem] border border-primary-200 bg-primary-50 px-7 py-8 sm:flex-row sm:items-center">
             <div>
@@ -661,8 +673,32 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </MobileChapterDeck>
+
+      {/* 移动端固定选购入口 */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-rice-300 bg-rice-50/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden">
+        <div className="flex items-center gap-3 px-4 py-2.5">
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] tracking-[0.2em] text-wheat-600">
+              TODAY · 今日现包
+            </div>
+            <div className="mt-0.5 truncate text-xs text-stone-600">
+              8 味素饺 · ¥33 起 · 4 盒 ¥100
+            </div>
+          </div>
+          <Link
+            href="/products"
+            className="btn-primary flex min-h-11 shrink-0 items-center gap-1.5 !px-5 !py-2.5 text-sm"
+          >
+            去选购
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
 
       <SiteFooter />
+      {/* 给固定选购条留出滚动余量 */}
+      <div className="h-20 md:hidden" aria-hidden="true" />
     </div>
   );
 }
