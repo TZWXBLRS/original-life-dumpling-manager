@@ -203,30 +203,34 @@ describe("定价算法 - 泡沫箱费（仅快递）", () => {
     expect(r.foamBoxCount).toBe(0);
   });
 
-  it("快递 5盒以内 = 泡沫箱1个 = 5元", () => {
+  it("快递 4盒以内 = 泡沫箱1个 = 5元", () => {
     const r1 = calculatePrice(makeCart(1, 0), "DELIVERY");
     expect(r1.foamBoxCount).toBe(1);
     expect(yuan(r1.foamBoxAmount)).toBe(5);
 
-    const r5 = calculatePrice(makeCart(3, 2), "DELIVERY"); // 合计5盒
-    expect(r5.foamBoxCount).toBe(1);
-    expect(yuan(r5.foamBoxAmount)).toBe(5);
+    const r4 = calculatePrice(makeCart(4, 0), "DELIVERY"); // 合计4盒
+    expect(r4.foamBoxCount).toBe(1);
+    expect(yuan(r4.foamBoxAmount)).toBe(5);
   });
 
-  it("快递 6-10盒 = 泡沫箱2个 = 10元", () => {
-    const r6 = calculatePrice(makeCart(4, 2), "DELIVERY"); // 6盒
-    expect(r6.foamBoxCount).toBe(2);
-    expect(yuan(r6.foamBoxAmount)).toBe(10);
+  it("快递 5-8盒 = 泡沫箱2个 = 10元", () => {
+    const r5 = calculatePrice(makeCart(3, 2), "DELIVERY"); // 5盒
+    expect(r5.foamBoxCount).toBe(2);
+    expect(yuan(r5.foamBoxAmount)).toBe(10);
 
-    const r10 = calculatePrice(makeCart(6, 4), "DELIVERY"); // 10盒
-    expect(r10.foamBoxCount).toBe(2);
-    expect(yuan(r10.foamBoxAmount)).toBe(10);
+    const r8 = calculatePrice(makeCart(6, 2), "DELIVERY"); // 8盒
+    expect(r8.foamBoxCount).toBe(2);
+    expect(yuan(r8.foamBoxAmount)).toBe(10);
   });
 
-  it("快递 11盒 = 泡沫箱3个 = 15元", () => {
-    const r = calculatePrice(makeCart(11, 0), "DELIVERY");
-    expect(r.foamBoxCount).toBe(3);
-    expect(yuan(r.foamBoxAmount)).toBe(15);
+  it("快递 9-12盒 = 泡沫箱3个 = 15元", () => {
+    const r9 = calculatePrice(makeCart(9, 0), "DELIVERY");
+    expect(r9.foamBoxCount).toBe(3);
+    expect(yuan(r9.foamBoxAmount)).toBe(15);
+
+    const r11 = calculatePrice(makeCart(11, 0), "DELIVERY");
+    expect(r11.foamBoxCount).toBe(3);
+    expect(yuan(r11.foamBoxAmount)).toBe(15);
   });
 
   it("订单总金额 = 商品金额 + 泡沫箱费", () => {

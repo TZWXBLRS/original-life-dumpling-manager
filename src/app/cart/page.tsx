@@ -8,11 +8,16 @@ import { PhoneLoginPanel } from "@/components/PhoneLoginPanel";
 import { UserMenu } from "@/components/UserMenu";
 import { PROVINCE_OPTIONS, PICKUP_SLOTS } from "@/lib/regions";
 import {
-  DELIVERY_WINDOW_START_HOUR,
-  DELIVERY_WINDOW_END_HOUR,
-  isInDeliveryWindow,
-  getNextDeliveryWindow,
-} from "@/lib/delivery-window";
+  DATE_OPTION_COUNT,
+  SHIP_WINDOW_START_HOUR,
+  SHIP_WINDOW_END_HOUR,
+  datePrefix,
+  getPickupDateOptions,
+  getShipDateOptions,
+  getStoreNow,
+  isPickupSlotAvailable,
+  shortDate,
+} from "@/lib/order-dates";
 import type { DeliveryETAResult } from "@/lib/delivery";
 import {
   ShoppingCart,
@@ -33,7 +38,7 @@ import {
 } from "lucide-react";
 
 // 门店自取地址
-const STORE_ADDRESS = "北京昌平路181号院卢卡新天地3号楼底商负107 禾也";
+const STORE_ADDRESS = "北京昌平区立汤路181号卢卡新天地3号楼底商负107 禾也";
 
 /**
  * 购物车 + 结算 合并单页
@@ -50,6 +55,8 @@ export default function CartPage() {
     "PICKUP" | "DELIVERY" | "EXPRESS"
   >("PICKUP");
   const [pickupSlot, setPickupSlot] = useState("");
+  const [pickupDate, setPickupDate] = useState("");
+  const [shipDate, setShipDate] = useState("");
   const [addr, setAddr] = useState({
     province: "",
     city: "",
@@ -71,11 +78,17 @@ export default function CartPage() {
     orderNo: string;
     totalAmount: number;
     pickupCode: string | null;
+    pickupDate: string;
+    pickupSlot: string;
     deliveryType: string;
   } | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    const pickupDates = getPickupDateOptions();
+    const shipDates = getShipDateOptions();
+    setPickupDate(pickupDates[0]);
+    setShipDate(shipDates[0]);
   }, []);
 
   // 检查登录状态；已登录则读取顾客资料预填收货信息
@@ -113,8 +126,14 @@ export default function CartPage() {
   }, []);
 
   const pricing = calculatePrice(items, deliveryType);
-  const inWindow = isInDeliveryWindow(now);
-  const nextWindow = getNextDeliveryWindow(now);
+
+  // 日期选项（按北京时间计算，受 now 驱动，每分钟刷新）
+  const pickupDateOptions = getPickupDateOptions(now);
+  const shipDateOptions = getShipDateOptions(now);
+  const today = getStoreNow(now).date;
+  const availablePickupSlots = PICKUP_SLOTS.filter((s) =>
+    isPickupSlotAvailable(pickupDate, s, now)
+  );
 
   // 选择快递省份后自动查询京东时效
   useEffect(() => {
@@ -124,7 +143,11 @@ export default function CartPage() {
     }
     let active = true;
     setEtaLoading(true);
-    fetch(`/api/delivery/eta?province=${encodeURIComponent(addr.province)}`)
+    fetch(
+      `/api/delivery/eta?province=${encodeURIComponent(addr.province)}${
+        shipDate ? `&date=${shipDate}` : ""
+      }`
+    )
       .then((r) => r.json())
       .then((d) => {
         if (active) setEtaResult(d);
@@ -138,7 +161,7 @@ export default function CartPage() {
     return () => {
       active = false;
     };
-  }, [deliveryType, addr.province]);
+  }, [deliveryType, addr.province, shipDate]);
 
   // 快递是否被阻断（不支持地区 或 超时未确认风险）
   const deliveryBlocked =
@@ -159,11 +182,19 @@ export default function CartPage() {
       return;
     }
     if (deliveryType === "PICKUP") {
+      if (!pickupDate) {
+        setError("请选择自取日期");
+        return;
+      }
       if (!pickupSlot) {
         setError("请选择自取时段");
         return;
       }
     } else {
+      if (deliveryType === "DELIVERY" && !shipDate) {
+        setError("请选择发货日期");
+        return;
+      }
       if (
         !addr.province ||
         !addr.city ||
@@ -209,6 +240,8 @@ export default function CartPage() {
                 }
               : undefined,
           pickupSlot: deliveryType === "PICKUP" ? pickupSlot : undefined,
+          pickupDate: deliveryType === "PICKUP" ? pickupDate : undefined,
+          shipDate: deliveryType === "DELIVERY" ? shipDate : undefined,
           customerAckRisk,
           note: note || undefined,
         }),
@@ -220,6 +253,8 @@ export default function CartPage() {
         orderNo: data.orderNo,
         totalAmount: data.totalAmount,
         pickupCode: data.pickupCode ?? null,
+        pickupDate,
+        pickupSlot,
         deliveryType,
       });
       clearCart();
@@ -247,6 +282,12 @@ export default function CartPage() {
               <div className="text-3xl font-bold tracking-widest text-primary-600">
                 {done.pickupCode}
               </div>
+              {done.pickupDate && (
+                <div className="mt-2 text-sm font-medium text-primary-700">
+                  自取日期：{shortDate(done.pickupDate)} {datePrefix(done.pickupDate, today)}
+                  {done.pickupSlot ? `｜${done.pickupSlot}` : ""}
+                </div>
+              )}
               <div className="mt-1 text-xs text-stone-500">{STORE_ADDRESS}</div>
             </div>
           )}
@@ -376,8 +417,12 @@ export default function CartPage() {
                 <div className="grid gap-3 sm:grid-cols-3">
                   {(
                     [
-                      { key: "PICKUP", name: "自取", desc: "门店自取，免运费" },
-                      { key: "DELIVERY", name: "快递", desc: "泡沫箱+5元/5盒，运费自理" },
+                      { key: "PICKUP", name: "自取", desc: "门店自取，无运费" },
+                      {
+                        key: "DELIVERY",
+                        name: "快递",
+                        desc: "泡沫箱 ¥5/箱（每箱最多装 4 盒）",
+                      },
                       { key: "EXPRESS", name: "闪送", desc: "运费自理，无泡沫箱费" },
                     ] as const
                   ).map((opt) => (
@@ -413,24 +458,62 @@ export default function CartPage() {
                   </div>
                   <div>
                     <label className="mb-2 block text-sm text-stone-600">
-                      <Clock className="mr-1 inline h-4 w-4" /> 选择自取时段（营业时间：9:30-20:30）
+                      <Clock className="mr-1 inline h-4 w-4" /> 选择自取日期（营业时间 10:00-20:00）
                     </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {PICKUP_SLOTS.map((s) => (
+                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
+                      {pickupDateOptions.map((d) => (
                         <button
-                          key={s}
+                          key={d}
                           type="button"
-                          onClick={() => setPickupSlot(s)}
-                          className={`rounded-lg border py-2 text-sm ${
-                            pickupSlot === s
+                          onClick={() => {
+                            setPickupDate(d);
+                            if (pickupSlot && !isPickupSlotAvailable(d, pickupSlot, now)) {
+                              setPickupSlot("");
+                            }
+                          }}
+                          className={`rounded-lg border px-1 py-2 text-center text-xs leading-tight ${
+                            pickupDate === d
                               ? "border-primary-500 bg-primary-50 font-medium text-primary-700"
                               : "border-stone-200 hover:border-stone-300"
                           }`}
                         >
-                          {s}
+                          <div className="font-medium">{datePrefix(d, today)}</div>
+                          <div className="text-stone-500">{shortDate(d)}</div>
                         </button>
                       ))}
                     </div>
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-sm text-stone-600">
+                      <Clock className="mr-1 inline h-4 w-4" /> 选择自取时段
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {PICKUP_SLOTS.map((s) => {
+                        const disabled = !availablePickupSlots.includes(s);
+                        return (
+                          <button
+                            key={s}
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => setPickupSlot(s)}
+                            className={`rounded-lg border py-2 text-sm ${
+                              pickupSlot === s
+                                ? "border-primary-500 bg-primary-50 font-medium text-primary-700"
+                                : disabled
+                                ? "cursor-not-allowed border-stone-100 bg-stone-50 text-stone-300"
+                                : "border-stone-200 hover:border-stone-300"
+                            }`}
+                          >
+                            {s}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {availablePickupSlots.length === 0 && (
+                      <p className="mt-2 text-xs text-amber-600">
+                        今天已无可选自取时段，请选择其他日期
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -523,45 +606,48 @@ export default function CartPage() {
                         <span className="font-semibold">快递发货须知</span>
                       </div>
 
-                      <div
-                        className={`rounded-lg border p-3 text-sm ${
-                          inWindow
-                            ? "border-green-200 bg-green-50"
-                            : "border-amber-200 bg-amber-50"
-                        }`}
-                      >
+                      <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm">
                         <div className="flex items-start gap-2">
-                          <Clock
-                            className={`mt-0.5 h-4 w-4 shrink-0 ${
-                              inWindow ? "text-green-600" : "text-amber-600"
-                            }`}
-                          />
+                          <Clock className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
                           <div>
-                            <div className="font-medium text-stone-800">发货时间窗口</div>
-                            <div className="mt-1 text-stone-700">
-                              快递发货时间为每天{" "}
-                              <b>
-                                {DELIVERY_WINDOW_START_HOUR}:00 -{" "}
-                                {DELIVERY_WINDOW_END_HOUR}:00
-                              </b>
+                            <div className="font-medium text-stone-800">
+                              快递费 ¥5/箱，每箱最多装 4 盒
                             </div>
-                            {inWindow ? (
-                              <div className="mt-1 flex items-center gap-1 text-green-700">
-                                <CheckCircle2 className="h-3.5 w-3.5" /> 当前在发货窗口内，今天即可发货
-                              </div>
-                            ) : (
-                              <div className="mt-1 text-amber-700">
-                                预计发货时间：
-                                {nextWindow.start.toLocaleDateString("zh-CN", {
-                                  month: "long",
-                                  day: "numeric",
-                                })}{" "}
-                                {nextWindow.start.getHours()}:00-
-                                {nextWindow.end.getHours()}:00
-                              </div>
-                            )}
+                            <div className="mt-1 text-stone-700">
+                              每天 <b>18:00-20:00</b> 统一发货，按盒数自动计算泡沫箱数量。
+                            </div>
                           </div>
                         </div>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm text-stone-600">
+                          <Truck className="mr-1 inline h-4 w-4" /> 设置发货日期
+                        </label>
+                        <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
+                          {shipDateOptions.map((d) => (
+                            <button
+                              key={d}
+                              type="button"
+                              onClick={() => setShipDate(d)}
+                              className={`rounded-lg border px-1 py-2 text-center text-xs leading-tight ${
+                                shipDate === d
+                                  ? "border-primary-500 bg-primary-50 font-medium text-primary-700"
+                                  : "border-stone-200 hover:border-stone-300"
+                              }`}
+                            >
+                              <div className="font-medium">{datePrefix(d, today)}</div>
+                              <div className="text-stone-500">{shortDate(d)}</div>
+                            </button>
+                          ))}
+                        </div>
+                        {shipDate && (
+                          <p className="mt-2 text-xs text-stone-500">
+                            预计于 <b>{shortDate(shipDate)}</b> 的{" "}
+                            {SHIP_WINDOW_START_HOUR}:00-{SHIP_WINDOW_END_HOUR}:00 发出
+                            （共 {DATE_OPTION_COUNT} 天内可选）
+                          </p>
+                        )}
                       </div>
 
                       {/* 时效结果 */}

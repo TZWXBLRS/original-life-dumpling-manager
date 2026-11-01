@@ -90,7 +90,7 @@ model Order {
 
   // 配送方式
   deliveryType    String   // PICKUP / DELIVERY / EXPRESS
-  // 自取：时段字符串（例：09:30-11:30）
+  // 自取：时段字符串（例：10:00-12:00）
   pickupSlot      String?
   // 兼容老字段
   pickupTime      DateTime?

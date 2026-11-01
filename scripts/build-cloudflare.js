@@ -115,7 +115,17 @@ function preparePagesOutput() {
   fs.writeFileSync(
     path.join(openNextDir, "_routes.json"),
     JSON.stringify(
-      { version: 1, include: ["/*"], exclude: ["/_next/static/*", "/images/*", "/favicon.ico"] },
+      {
+        version: 1,
+        include: ["/*"],
+        exclude: [
+          "/_next/static/*",
+          "/images/*",
+          "/favicon.ico",
+          // 站点根目录校验文件（腾讯等平台验证用），直接由 Pages 静态资源层返回
+          "/5384eeee84ad2d653a795e02610f83f6.txt",
+        ],
+      },
       null,
       2
     ) + "\n"

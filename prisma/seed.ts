@@ -143,26 +143,25 @@ async function main() {
     });
   }
   console.log(
-    `  ✓ 初始化 ${products.length} 种口味（经典6种×20只/盒 + 特色黑松露12只/盒, 菌菇20只/盒）`
+    `  ✓ 初始化 ${products.length} 种口味（经典6种×20个/盒 + 特色黑松露12个/盒, 菌菇20个/盒）`
   );
 
   // ========= 4. 初始化系统配置 =========
   const pickupAddress =
     process.env.PICKUP_ADDRESS ||
-    "北京昌平路181号院卢卡新天地3号楼底商负107 禾也";
+    "北京昌平区立汤路181号卢卡新天地3号楼底商负107 禾也";
   const businessHours =
     process.env.BUSINESS_HOURS_JSON ||
     JSON.stringify({
-      weekdays: "9:30-20:30",
-      weekend: "9:30-20:30",
-      holidays: "9:30-20:30（节假日正常营业）",
+      weekdays: "10:00-20:00",
+      weekend: "10:00-20:00",
+      holidays: "10:00-20:00（节假日正常营业）",
       pickupSlots: [
-        "09:30-11:30",
-        "11:30-13:30",
-        "13:30-15:30",
-        "15:30-17:30",
-        "17:30-19:30",
-        "19:30-20:30",
+        "10:00-12:00",
+        "12:00-14:00",
+        "14:00-16:00",
+        "16:00-18:00",
+        "18:00-20:00",
       ],
     });
   const dailyLimit = process.env.DAILY_LIMIT || "100";
@@ -178,7 +177,7 @@ async function main() {
     },
     { key: "DAILY_LIMIT", value: dailyLimit, description: "每日销售上限（盒）" },
     { key: "FOAM_BOX_PRICE", value: "500", description: "泡沫箱单价（分）" },
-    { key: "FOAM_BOX_CAPACITY", value: "5", description: "每个泡沫箱可装盒数" },
+    { key: "FOAM_BOX_CAPACITY", value: "4", description: "每个泡沫箱可装盒数" },
     { key: "STORE_PHONE", value: storePhone, description: "门店联系电话" },
     { key: "STORE_NAME", value: storeName, description: "门店名称" },
   ];
@@ -192,7 +191,7 @@ async function main() {
   }
   console.log(`  ✓ 门店信息：${storeName}`);
   console.log(`  ✓ 自取地址：${pickupAddress}`);
-  console.log(`  ✓ 营业时间：9:30-20:30（节假日正常营业）`);
+  console.log(`  ✓ 营业时间：10:00-20:00（节假日正常营业）`);
   console.log(`  ✓ 联系电话：${storePhone}`);
   console.log(`  ✓ 每日限购 ${dailyLimit} 盒`);
 
@@ -278,7 +277,7 @@ async function seedDemoOrders() {
       items: [classic("荠菜饺子"), classic("三鲜饺子"), classic("茴香饺子"), classic("芹菜饺子")],
       deliveryType: "PICKUP",
       status: "COMPLETED",
-      pickupSlot: "09:30-11:30",
+      pickupSlot: "10:00-12:00",
       note: "周末家庭聚餐",
       hoursAgo: 8,
     },
@@ -287,7 +286,7 @@ async function seedDemoOrders() {
       items: [specialty("黑松露饺子"), specialty("黑松露饺子"), specialty("菌菇饺子")],
       deliveryType: "PICKUP",
       status: "PAID",
-      pickupSlot: "17:30-19:30",
+      pickupSlot: "18:00-20:00",
       note: "节日礼物送朋友",
       hoursAgo: 2,
     },

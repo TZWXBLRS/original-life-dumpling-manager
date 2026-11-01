@@ -28,7 +28,7 @@ const classicFlavors = [
 ];
 
 const specialtyFlavors = [
-  { name: "黑松露", note: "珍稀黑松露，高端风味（每盒12只）" },
+  { name: "黑松露", note: "珍稀黑松露，高端风味（每盒12个）" },
   { name: "菌菇", note: "多种野生菌菇混合，鲜美无比" },
 ];
 
@@ -465,10 +465,10 @@ export default function HomePage() {
               />
               <div className="absolute -bottom-5 right-4 border border-rice-300 bg-rice-50 px-4 py-2.5 shadow-paper">
                 <div className="text-[10px] tracking-[0.2em] text-wheat-600">
-                  每盒 20 只
+                  每盒 20 个
                 </div>
                 <div className="mt-0.5 text-xs text-stone-600">
-                  黑松露每盒 12 只
+                  黑松露每盒 12 个
                 </div>
               </div>
 

@@ -24,13 +24,13 @@ export function SiteFooter() {
           </div>
           <p className="mt-3 flex items-start gap-2 leading-relaxed">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary-600" />
-            北京昌平路181号院卢卡新天地
+            北京昌平区立汤路181号卢卡新天地
             <br />
             3号楼底商负107 禾也
           </p>
           <p className="mt-2 flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary-600" />
-            每日 9:30 – 20:30
+            每日 10:00 – 20:00
           </p>
         </div>
 

@@ -13,6 +13,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { formatYuan } from "@/lib/pricing";
+import { formatStoreDate } from "@/lib/order-dates";
 import OrderActionButtons from "@/components/OrderActionButtons";
 
 const STATUS_STEPS = [
@@ -76,7 +77,7 @@ export default async function OrderDetailPage(props: {
     .findUnique({ where: { key: "PICKUP_ADDRESS" } })
     .catch(() => null);
   const pickupAddress =
-    pickupCfg?.value || "北京昌平路181号院卢卡新天地3号楼底商负107 禾也";
+    pickupCfg?.value || "北京昌平区立汤路181号卢卡新天地3号楼底商负107 禾也";
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -227,6 +228,12 @@ export default async function OrderDetailPage(props: {
                 <span className="text-stone-500 w-20 inline-block">自取地址：</span>
                 {pickupAddress}
               </div>
+              {order.pickupTime && (
+                <div>
+                  <span className="text-stone-500 w-20 inline-block">自取日期：</span>
+                  {formatStoreDate(order.pickupTime)}
+                </div>
+              )}
               <div>
                 <span className="text-stone-500 w-20 inline-block">自取时段：</span>
                 {order.pickupSlot || "—"}
@@ -260,9 +267,11 @@ export default async function OrderDetailPage(props: {
                   <div className="flex items-center gap-1 text-blue-700 font-medium">
                     <Package className="w-3.5 h-3.5" /> 快递发货说明
                   </div>
-                  <div className="text-blue-600">
-                    发货窗口：每天 18:00-20:00（快递发货需满8小时冷冻）
-                  </div>
+                  {order.plannedShipDate && (
+                    <div className="text-blue-600">
+                      发货日期：{formatStoreDate(order.plannedShipDate)} 18:00-20:00
+                    </div>
+                  )}
                   {order.deliveryETA && (
                     <div className="text-blue-600">
                       预计送达：{order.deliveryETA.toLocaleDateString("zh-CN")}
