@@ -13,13 +13,13 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { formatYuan } from "@/lib/pricing";
-import { formatBeijingDateTime, formatBeijingDate } from "@/lib/time";
+import { formatStoreDate } from "@/lib/order-dates";
 import OrderActionButtons from "@/components/OrderActionButtons";
 
 const STATUS_STEPS = [
   { key: "PENDING_PAYMENT", label: "待支付", icon: Clock },
   { key: "PAID", label: "已支付" },
-  { key: "PREPARING", label: "备货中" },
+  { key: "PREPARING", label: "备餐中" },
   { key: "READY", label: "待取 / 待发货" },
   { key: "SHIPPED", label: "配送中" },
   { key: "COMPLETED", label: "已完成", icon: CheckCircle2 },
@@ -28,7 +28,7 @@ const STATUS_STEPS = [
 const STATUS_TEXT: Record<string, string> = {
   PENDING_PAYMENT: "等待支付",
   PAID: "已支付",
-  PREPARING: "后厨备货中",
+  PREPARING: "后厨备餐中",
   READY: "已备好，等待取货/发货",
   READY_FOR_PICKUP: "已备好，等待取货",
   SHIPPED: "配送中",
@@ -77,7 +77,7 @@ export default async function OrderDetailPage(props: {
     .findUnique({ where: { key: "PICKUP_ADDRESS" } })
     .catch(() => null);
   const pickupAddress =
-    pickupCfg?.value || "北京昌平路181号院卢卡新天地3号楼底商负107 素生活";
+    pickupCfg?.value || "北京昌平区立汤路181号卢卡新天地3号楼底商负107 禾也";
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -181,32 +181,32 @@ export default async function OrderDetailPage(props: {
           <div className="mt-4 pt-4 border-t border-stone-100 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-stone-500">
             {order.paidAt && (
               <div>
-                支付：{formatBeijingDateTime(order.paidAt)}
+                支付：{order.paidAt.toLocaleString("zh-CN")}
               </div>
             )}
             {order.preparingAt && (
               <div>
-                开始备餐：{formatBeijingDateTime(order.preparingAt)}
+                开始备餐：{order.preparingAt.toLocaleString("zh-CN")}
               </div>
             )}
             {order.readyAt && (
               <div>
-                备好：{formatBeijingDateTime(order.readyAt)}
+                备好：{order.readyAt.toLocaleString("zh-CN")}
               </div>
             )}
             {order.shippedAt && (
               <div>
-                发货：{formatBeijingDateTime(order.shippedAt)}
+                发货：{order.shippedAt.toLocaleString("zh-CN")}
               </div>
             )}
             {order.completedAt && (
               <div>
-                完成：{formatBeijingDateTime(order.completedAt)}
+                完成：{order.completedAt.toLocaleString("zh-CN")}
               </div>
             )}
             {order.cancelledAt && (
               <div>
-                取消：{formatBeijingDateTime(order.cancelledAt)}
+                取消：{order.cancelledAt.toLocaleString("zh-CN")}
               </div>
             )}
           </div>
@@ -231,7 +231,7 @@ export default async function OrderDetailPage(props: {
               {order.pickupTime && (
                 <div>
                   <span className="text-stone-500 w-20 inline-block">自取日期：</span>
-                  {formatBeijingDate(order.pickupTime)}
+                  {formatStoreDate(order.pickupTime)}
                 </div>
               )}
               <div>
@@ -262,25 +262,19 @@ export default async function OrderDetailPage(props: {
                   </div>
                 </div>
               </div>
-              {order.plannedShipDate && (
-                <div className="text-sm">
-                  <span className="text-stone-500 w-20 inline-block">
-                    {order.deliveryType === "DELIVERY" ? "发货日期：" : "配送日期："}
-                  </span>
-                  {formatBeijingDate(order.plannedShipDate)}
-                </div>
-              )}
               {order.deliveryType === "DELIVERY" && (
                 <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs space-y-1">
                   <div className="flex items-center gap-1 text-blue-700 font-medium">
                     <Package className="w-3.5 h-3.5" /> 快递发货说明
                   </div>
-                  <div className="text-blue-600">
-                    发货窗口：每天 18:00-20:00（快递发货需满8小时冷冻）
-                  </div>
+                  {order.plannedShipDate && (
+                    <div className="text-blue-600">
+                      发货日期：{formatStoreDate(order.plannedShipDate)} 18:00-20:00
+                    </div>
+                  )}
                   {order.deliveryETA && (
                     <div className="text-blue-600">
-                      预计送达：{formatBeijingDate(order.deliveryETA)}
+                      预计送达：{order.deliveryETA.toLocaleDateString("zh-CN")}
                     </div>
                   )}
                   {order.customerAckRisk && (
@@ -361,7 +355,7 @@ export default async function OrderDetailPage(props: {
           )}
           <div className="mt-4 text-xs text-stone-400 text-right">
             下单时间：
-            {formatBeijingDateTime(order.createdAt)}
+            {order.createdAt.toLocaleString("zh-CN")}
           </div>
         </div>
       </main>

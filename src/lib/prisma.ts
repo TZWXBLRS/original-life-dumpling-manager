@@ -38,13 +38,10 @@ if (globalForPrisma.prisma) {
       log: ["error"],
     });
   } else {
-    // 本地开发：原生 SQLite，用 @prisma/adapter-libsql 的本地文件模式
-    const localDbUrl = process.env.DATABASE_URL || "file:./prisma/data/dumpling.db";
-    const adapter = new PrismaLibSQL({
-      url: localDbUrl,
-    });
+    // 本地开发：直接使用 Prisma 原生 SQLite 驱动。
+    // libsql adapter 只接受 libsql:/http(s): 协议，传 file: 会抛
+    // URL_SCHEME_NOT_SUPPORTED，导致本地商品页 500。
     prisma = new PrismaClient({
-      adapter,
       log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
     });
   }

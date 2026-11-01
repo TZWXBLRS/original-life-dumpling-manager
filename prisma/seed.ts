@@ -15,13 +15,13 @@ const PRODUCT_CATEGORY = {
 } as const;
 
 async function main() {
-  console.log("🌱 开始初始化数据库（素生活正式配置）...");
+  console.log("🌱 开始初始化数据库（禾也正式配置）...");
 
   // ========= 1. 创建/更新 管理员账号 =========
   // 注意：手机号必须唯一，一个手机号不能同时是两个角色。
   // 管理员：15313659956 / sushenghuo107
   // 后厨：18301576627 / sushenghuo105
-  const adminName = process.env.ADMIN_NAME || "素生活";
+  const adminName = process.env.ADMIN_NAME || "禾也";
   const adminPhone = process.env.ADMIN_PHONE || "15313659956";
   const adminPassword = process.env.ADMIN_PASSWORD || "sushenghuo107";
   const adminHash = await bcrypt.hash(adminPassword, 10);
@@ -44,7 +44,7 @@ async function main() {
   console.log(`  ✓ 管理员账号: ${adminPhone} / ${adminPassword} (${adminName})`);
 
   // ========= 2. 创建/更新 后厨账号 =========
-  const kitchenName = process.env.KITCHEN_NAME || "素生活后厨";
+  const kitchenName = process.env.KITCHEN_NAME || "禾也后厨";
   // 后厨：18301576627 / sushenghuo105（独立于管理员手机号）
   const kitchenPhone = process.env.KITCHEN_PHONE || "18301576627";
   const kitchenPassword = process.env.KITCHEN_PASSWORD || "sushenghuo105";
@@ -143,31 +143,30 @@ async function main() {
     });
   }
   console.log(
-    `  ✓ 初始化 ${products.length} 种口味（经典6种×20只/盒 + 特色黑松露12只/盒, 菌菇20只/盒）`
+    `  ✓ 初始化 ${products.length} 种口味（经典6种×20个/盒 + 特色黑松露12个/盒, 菌菇20个/盒）`
   );
 
   // ========= 4. 初始化系统配置 =========
   const pickupAddress =
     process.env.PICKUP_ADDRESS ||
-    "北京昌平路181号院卢卡新天地3号楼底商负107 素生活";
+    "北京昌平区立汤路181号卢卡新天地3号楼底商负107 禾也";
   const businessHours =
     process.env.BUSINESS_HOURS_JSON ||
     JSON.stringify({
-      weekdays: "9:30-20:30",
-      weekend: "9:30-20:30",
-      holidays: "9:30-20:30（节假日正常营业）",
+      weekdays: "10:00-20:00",
+      weekend: "10:00-20:00",
+      holidays: "10:00-20:00（节假日正常营业）",
       pickupSlots: [
-        "09:30-11:30",
-        "11:30-13:30",
-        "13:30-15:30",
-        "15:30-17:30",
-        "17:30-19:30",
-        "19:30-20:30",
+        "10:00-12:00",
+        "12:00-14:00",
+        "14:00-16:00",
+        "16:00-18:00",
+        "18:00-20:00",
       ],
     });
   const dailyLimit = process.env.DAILY_LIMIT || "100";
   const storePhone = process.env.STORE_PHONE || "18301576627";
-  const storeName = process.env.STORE_NAME || "素生活饺子馆";
+  const storeName = process.env.STORE_NAME || "禾也";
 
   const configs = [
     { key: "PICKUP_ADDRESS", value: pickupAddress, description: "自取地址" },
@@ -178,7 +177,7 @@ async function main() {
     },
     { key: "DAILY_LIMIT", value: dailyLimit, description: "每日销售上限（盒）" },
     { key: "FOAM_BOX_PRICE", value: "500", description: "泡沫箱单价（分）" },
-    { key: "FOAM_BOX_CAPACITY", value: "5", description: "每个泡沫箱可装盒数" },
+    { key: "FOAM_BOX_CAPACITY", value: "4", description: "每个泡沫箱可装盒数" },
     { key: "STORE_PHONE", value: storePhone, description: "门店联系电话" },
     { key: "STORE_NAME", value: storeName, description: "门店名称" },
   ];
@@ -192,7 +191,7 @@ async function main() {
   }
   console.log(`  ✓ 门店信息：${storeName}`);
   console.log(`  ✓ 自取地址：${pickupAddress}`);
-  console.log(`  ✓ 营业时间：9:30-20:30（节假日正常营业）`);
+  console.log(`  ✓ 营业时间：10:00-20:00（节假日正常营业）`);
   console.log(`  ✓ 联系电话：${storePhone}`);
   console.log(`  ✓ 每日限购 ${dailyLimit} 盒`);
 
@@ -200,7 +199,7 @@ async function main() {
   // 演示模式下顾客通过 /api/auth/demo-login 用手机号 upsert 出 CUSTOMER 用户，
   // 这里同步预建一个演示顾客，让后台能立刻看到订单数据用于汇总演示。
   await seedDemoOrders();
-  console.log("\n🎉 数据库初始化完成（素生活正式配置已生效）！");
+  console.log("\n🎉 数据库初始化完成（禾也正式配置已生效）！");
 }
 
 /**
@@ -278,7 +277,7 @@ async function seedDemoOrders() {
       items: [classic("荠菜饺子"), classic("三鲜饺子"), classic("茴香饺子"), classic("芹菜饺子")],
       deliveryType: "PICKUP",
       status: "COMPLETED",
-      pickupSlot: "09:30-11:30",
+      pickupSlot: "10:00-12:00",
       note: "周末家庭聚餐",
       hoursAgo: 8,
     },
@@ -287,7 +286,7 @@ async function seedDemoOrders() {
       items: [specialty("黑松露饺子"), specialty("黑松露饺子"), specialty("菌菇饺子")],
       deliveryType: "PICKUP",
       status: "PAID",
-      pickupSlot: "17:30-19:30",
+      pickupSlot: "18:00-20:00",
       note: "节日礼物送朋友",
       hoursAgo: 2,
     },

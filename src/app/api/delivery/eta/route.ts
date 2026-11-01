@@ -21,7 +21,9 @@ export async function GET(request: NextRequest) {
 
   const province = searchParams.get("province");
   const city = searchParams.get("city") || undefined;
-  const shipDateStr = searchParams.get("shipDate") || undefined;
+  // 兼容两种参数名：date（当前前端）/ shipDate（旧前端）
+  const dateParam =
+    searchParams.get("date") || searchParams.get("shipDate") || "";
 
   if (!province) {
     return NextResponse.json(
@@ -30,9 +32,9 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // 指定发货日期（北京时间当天 18:00 发货窗口）；未指定则用下一个发货窗口
-  const shipDate = shipDateStr
-    ? new Date(`${shipDateStr}T18:00:00+08:00`)
+  // 顾客选择的发货日期（北京时间 18:00 统一发货）；格式非法时回退默认窗口
+  const shipDate = /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
+    ? new Date(`${dateParam}T18:00:00+08:00`)
     : undefined;
 
   const result = queryDeliveryETA({ province, city, shipDate });

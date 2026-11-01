@@ -56,7 +56,7 @@ export function UserMenu() {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="flex items-center gap-1 text-sm text-stone-600 hover:text-primary-600"
+          className="flex min-h-11 min-w-11 items-center justify-center gap-1 p-2 text-sm text-stone-600 hover:text-primary-600 sm:min-h-0 sm:min-w-0"
         >
           {open ? <X className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
           <span className="hidden sm:inline">{open ? "收起" : "登录"}</span>
@@ -65,9 +65,9 @@ export function UserMenu() {
         {open && (
           <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-2xl border border-stone-200 bg-white p-4 shadow-xl animate-fade-up">
             <div className="mb-3 flex items-center gap-2">
-              <span className="text-xl">🥟</span>
-              <div className="text-sm font-bold text-primary-700">
-                手机号一键登录
+              <span className="h-px w-5 bg-wheat-400/70" aria-hidden="true" />
+              <div className="text-sm font-bold tracking-[0.08em] text-primary-700">
+                禾也 · 手机号一键登录
               </div>
             </div>
             <PhoneLoginPanel

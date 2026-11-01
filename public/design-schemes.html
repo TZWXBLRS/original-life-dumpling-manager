@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>禾也 · 视觉方向比稿</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #f3f1ea;
+    color: #2f332e;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    line-height: 1.7;
+    padding: 40px 20px 80px;
+  }
+  .page { max-width: 1180px; margin: 0 auto; }
+  .page-head { text-align: center; margin-bottom: 44px; }
+  .page-head .kicker {
+    font-size: 11px; letter-spacing: .4em; color: #8c7a56; text-transform: uppercase;
+  }
+  .page-head h1 {
+    font-family: "Songti SC", "Noto Serif SC", "SimSun", serif;
+    font-size: 42px; font-weight: 600; letter-spacing: .06em; margin: 12px 0 10px;
+  }
+  .page-head p { color: #6f7269; font-size: 14px; }
+  .current-note {
+    display: inline-block; margin-top: 14px; padding: 6px 14px;
+    border: 1px solid #d8d2c1; border-radius: 999px; background: #fbf9f2;
+    font-size: 12px; color: #6d6a5c;
+  }
+  .scheme {
+    margin-bottom: 46px; border-radius: 22px; overflow: hidden;
+    background: #fff; box-shadow: 0 18px 50px rgba(60,55,40,.10);
+    border: 1px solid rgba(120,110,85,.18);
+  }
+  .scheme-head {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 14px; padding: 22px 28px; border-bottom: 1px solid rgba(120,110,85,.14);
+  }
+  .scheme-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .scheme-title .letter {
+    font-family: "Songti SC", serif; font-size: 15px; letter-spacing: .1em;
+    border: 1px solid currentColor; border-radius: 999px; padding: 2px 10px;
+  }
+  .scheme-title h2 {
+    font-family: "Songti SC", "Noto Serif SC", "SimSun", serif;
+    font-size: 26px; font-weight: 600; letter-spacing: .04em;
+  }
+  .scheme-title .en { font-size: 10px; letter-spacing: .34em; opacity: .55; }
+  .scheme-desc { max-width: 430px; font-size: 13px; color: #6c6f66; }
+  .badge-current {
+    font-size: 11px; letter-spacing: .12em; padding: 4px 10px; border-radius: 999px;
+    background: #eef1e6; color: #5e6b4f; border: 1px solid #d7ddca;
+  }
+  .swatches { display: flex; gap: 8px; }
+  .swatches span {
+    width: 26px; height: 26px; border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
+  }
+
+  /* ---------- 每个方案的迷你站点 ---------- */
+  .stage {
+    padding: 34px; background: var(--paper);
+    position: relative; overflow: hidden;
+  }
+  .stage::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5;
+    background-image: radial-gradient(rgba(90,85,70,.10) .5px, transparent .5px);
+    background-size: 4px 4px;
+  }
+  .mini {
+    position: relative; z-index: 1; border-radius: 14px; overflow: hidden;
+    background: var(--paper); border: 1px solid var(--line);
+    box-shadow: 0 10px 30px rgba(60,55,40,.08);
+  }
+  .mini-top {
+    background: var(--deep); color: var(--paper);
+    font-size: 9px; letter-spacing: .16em; text-align: center; padding: 5px 8px;
+  }
+  .mini-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px; border-bottom: 1px solid var(--line); background: var(--paper);
+  }
+  .mini-logo { display: flex; align-items: center; gap: 8px; }
+  .mini-logo .mark {
+    width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--deep);
+    display: grid; place-items: center; color: var(--deep); font-family: "Songti SC", serif; font-size: 12px;
+  }
+  .mini-logo b {
+    font-family: "Songti SC", "Noto Serif SC", serif; font-size: 15px;
+    font-weight: 600; letter-spacing: .1em; color: var(--deep);
+  }
+  .mini-logo small { font-size: 7px; letter-spacing: .28em; color: var(--muted); display: block; }
+  .mini-links { display: flex; gap: 14px; font-size: 9px; color: var(--muted); }
+  .mini-hero {
+    display: grid; grid-template-columns: 1.02fr .98fr; gap: 20px;
+    padding: 22px 20px 24px;
+  }
+  .mini-hero h3 {
+    font-family: "Songti SC", "Noto Serif SC", serif;
+    font-size: 30px; line-height: 1.12; color: var(--deep); font-weight: 600;
+    letter-spacing: .04em;
+  }
+  .mini-hero h3 em { font-style: normal; color: var(--accent); }
+  .mini-hero .eyebrow {
+    font-size: 8px; letter-spacing: .34em; color: var(--brand); margin-bottom: 8px;
+  }
+  .mini-hero p { font-size: 10px; line-height: 1.9; color: var(--muted); margin-top: 10px; max-width: 220px; }
+  .mini-cta { display: flex; gap: 7px; margin-top: 14px; }
+  .mini-cta .solid {
+    background: var(--brand); color: var(--paper); padding: 7px 13px; border-radius: 999px;
+    font-size: 9px; letter-spacing: .08em;
+  }
+  .mini-cta .ghost {
+    border: 1px solid var(--line); color: var(--deep); padding: 6px 12px; border-radius: 999px;
+    font-size: 9px; letter-spacing: .08em;
+  }
+  .mini-visual { position: relative; }
+  .mini-visual img {
+    width: 100%; height: 168px; object-fit: cover;
+    border-radius: 90px 90px 14px 14px; border: 1px solid var(--line);
+    filter: saturate(.85);
+  }
+  .mini-tag {
+    position: absolute; left: -8px; top: 18px; background: var(--paper);
+    border: 1px solid var(--line); padding: 5px 8px; font-size: 7px;
+    letter-spacing: .12em; color: var(--muted); transform: rotate(-3deg);
+  }
+  .mini-tag b { display: block; color: var(--deep); font-size: 9px; letter-spacing: .04em; }
+  .mini-seal {
+    position: absolute; right: 10px; bottom: 10px; width: 30px; height: 30px;
+    border: 1px solid var(--accent); color: var(--accent); border-radius: 3px;
+    display: grid; place-items: center; font-family: "Songti SC", serif; font-size: 11px;
+    background: rgba(255,255,255,.35);
+  }
+  .mini-slogan {
+    background: var(--deep); color: var(--paper); text-align: center;
+    font-size: 8px; letter-spacing: .3em; padding: 7px;
+  }
+  .mini-products { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 18px 20px 22px; }
+  .mini-card {
+    border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--paper);
+  }
+  .mini-card .thumb {
+    height: 48px; display: grid; place-items: center; font-size: 17px;
+    background: var(--tint);
+  }
+  .mini-card .body { padding: 7px 8px 9px; }
+  .mini-card .name { font-family: "Songti SC", serif; font-size: 10px; color: var(--deep); }
+  .mini-card .price { font-size: 9px; color: var(--brand); margin-top: 2px; }
+  .mini-card .price span { color: var(--muted); font-size: 7px; }
+
+  /* ---------- 方案 A ---------- */
+  .a {
+    --paper: #f8f6ee; --tint: #e9ede1; --deep: #2f3a2e; --brand: #657659;
+    --muted: #74776b; --line: #ded9c8; --accent: #a8473a;
+  }
+  /* ---------- 方案 B ---------- */
+  .b {
+    --paper: #f5f7f4; --tint: #e2eae5; --deep: #293b3a; --brand: #5d7a72;
+    --muted: #77817b; --line: #d5ddd7; --accent: #3f5d63;
+  }
+  /* ---------- 方案 C ---------- */
+  .c {
+    --paper: #fbf5e9; --tint: #f0e3cd; --deep: #38352a; --brand: #7a8456;
+    --muted: #847a66; --line: #e3d7c1; --accent: #9c4a35;
+  }
+
+  .scheme-foot {
+    display: flex; flex-wrap: wrap; gap: 18px; padding: 16px 28px 20px;
+    border-top: 1px solid rgba(120,110,85,.12); background: #fdfcf8;
+    font-size: 12px; color: #6c6f66;
+  }
+  .scheme-foot div { display: flex; align-items: center; gap: 6px; }
+  .scheme-foot b { color: #3c3f37; font-weight: 600; }
+  .type-sample { font-family: "Songti SC", "Noto Serif SC", serif; color: var(--deep); }
+
+  .footer-note {
+    text-align: center; font-size: 12px; color: #8b877a; margin-top: 40px;
+    line-height: 2;
+  }
+  @media (max-width: 760px) {
+    body { padding: 24px 12px 50px; }
+    .page-head h1 { font-size: 24px; letter-spacing: .02em; }
+    .stage { padding: 14px; }
+    .mini-hero { grid-template-columns: 1fr; }
+    .mini-visual img { height: 150px; border-radius: 60px 60px 12px 12px; }
+    .mini-products { grid-template-columns: repeat(2, 1fr); }
+    .mini-links { display: none; }
+    .scheme-head { padding: 18px; }
+    .scheme-desc { max-width: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-head">
+    <div class="kicker">HEYE · VISUAL DIRECTIONS</div>
+    <h1>禾也 · 三套清新自然视觉方向</h1>
+    <p>同一套品牌内容与版式骨架，只更换色彩、材质与气质，方便比较取舍。</p>
+    <div class="current-note">当前网站采用方案 A · 禾绿豆青</div>
+  </div>
+
+  <!-- 方案 A -->
+  <section class="scheme a">
+    <div class="scheme-head">
+      <div class="scheme-title">
+        <span class="letter">A</span>
+        <h2>禾绿豆青</h2>
+        <span class="en">FIELD GREEN</span>
+      </div>
+      <div class="swatches">
+        <span style="background:#f8f6ee"></span>
+        <span style="background:#e9ede1"></span>
+        <span style="background:#657659"></span>
+        <span style="background:#c6a15b"></span>
+        <span style="background:#a8473a"></span>
+      </div>
+      <div class="scheme-desc">灰调豆绿配米白陶底，稻穗金做暖光，朱砂印章点题。最贴近“禾苗、土地、手作”的直觉，也最耐看。</div>
+      <span class="badge-current">当前采用</span>
+    </div>
+    <div class="stage">
+      <div class="mini">
+        <div class="mini-top">原素生活，现名禾也 · 门头已换，味道未变</div>
+        <div class="mini-nav">
+          <div class="mini-logo">
+            <span class="mark">禾</span>
+            <div><b>禾也</b><small>HEYE · DUMPLINGS</small></div>
+          </div>
+          <div class="mini-links"><span>全部口味</span><span>品牌故事</span><span>我的订单</span><span>购物车</span></div>
+        </div>
+        <div class="mini-hero">
+          <div>
+            <div class="eyebrow">HEYE — 禾 · 和 · 何也</div>
+            <h3>禾也<em>？</em><br>和也<em>。</em></h3>
+            <p>素饺为体，清茶为伴，咖啡为醒。<br>好好吃饭，是与自己讲和。</p>
+            <div class="mini-cta"><span class="solid">选一盒素饺</span><span class="ghost">听品牌故事</span></div>
+          </div>
+          <div class="mini-visual">
+            <img src="/images/heye-hero.jpg" alt="禾也素饺" />
+            <div class="mini-tag">原素生活<b>现名禾也</b></div>
+            <div class="mini-seal">和</div>
+          </div>
+        </div>
+        <div class="mini-slogan">素饺为体 · 清茶为伴 · 咖啡为醒 · 禾也，就是和也</div>
+        <div class="mini-products">
+          <div class="mini-card"><div class="thumb">🌿</div><div class="body"><div class="name">荠菜</div><div class="price">¥33<span>/盒</span></div></div></div>
+          <div class="mini-card"><div class="thumb">🥬</div><div class="body"><div class="name">三鲜</div><div class="price">¥33<span>/盒</span></div></div></div>
+          <div class="mini-card"><div class="thumb">🌽</div><div class="body"><div class="name">玉米</div><div class="price">¥33<span>/盒</span></div></div></div>
+          <div class="mini-card"><div class="thumb">🍄</div><div class="body"><div class="name">黑松露</div><div class="price">¥38<span>/盒</span></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="scheme-foot">
+      <div>主色 <b>禾绿 #657659</b></div>
+      <div>点缀 <b>稻穗金 #C6A15B · 朱砂 #A8473A</b></div>
+      <div class="type-sample">标题字：Songti SC 宋体 · 正文：系统黑体</div>
+    </div>
+  </section>
+
+  <!-- 方案 B -->
+  <section class="scheme b">
+    <div class="scheme-head">
+      <div class="scheme-title">
+        <span class="letter">B</span>
+        <h2>晨雾青瓷</h2>
+        <span class="en">CELADON MIST</span>
+      </div>
+      <div class="swatches">
+        <span style="background:#f5f7f4"></span>
+        <span style="background:#e2eae5"></span>
+        <span style="background:#5d7a72"></span>
+        <span style="background:#b9a36b"></span>
+        <span style="background:#3f5d63"></span>
+      </div>
+      <div class="scheme-desc">更冷、更静的青瓷灰绿，配靛青文字与少量黄铜。适合想突出“清茶、慢食、克制”的一面，气质更雅。</div>
+    </div>
+    <div class="stage">
+      <div class="mini">
+        <div class="mini-top">原素生活，现名禾也 · 门头已换，味道未变</div>
+        <div class="mini-nav">
+          <div class="mini-logo">
+            <span class="mark">禾</span>
+            <div><b>禾也</b><small>HEYE · DUMPLINGS</small></div>
+          </div>
+          <div class="mini-links"><span>全部口味</span><span>品牌故事</span><span>我的订单</span><span>购物车</span></div>
+        </div>
+        <div class="mini-hero">
+          <div>
+            <div class="eyebrow">HEYE — 禾 · 和 · 何也</div>
+            <h3>禾也<em>？</em><br>和也<em>。</em></h3>
+            <p>素饺为体，清茶为伴，咖啡为醒。<br>好好吃饭，是与自己讲和。</p>
+            <div class="mini-cta"><span class="solid">选一盒素饺</span><span class="ghost">听品牌故事</span></div>
+          </div>
+          <div class="mini-visual">
+            <img src="/images/heye-story.jpg" alt="禾也手作" />
+            <div class="mini-tag">原素生活<b>现名禾也</b></div>
+            <div class="mini-seal">和</div>
+          </div>
+        </div>
+        <div class="mini-slogan">素饺为体 · 清茶为伴 · 咖啡为醒 · 禾也，就是和也</div>
+        <div class="mini-products">
+          <div class="mini-card"><div class="thumb">🌿</div><div class="body"><div class="name">荠菜</div><div class="price">¥33<span>/盒</span></div></div></div>
+          <div class="mini-card"><div class="thumb">🥬</div><div class="body"><div class="name">三鲜</div><div class="price">¥33<span>/盒</span></div></div></div>
+          <div class="mini-card"><div class="thumb">🌽</div><div class="body"><div class="name">玉米</div><div class="price">¥33<span>/盒</span></div></div></div>
+          <div class="mini-card"><div class="thumb">🍄</div><div class="body"><div class="name">黑松露</div><div class="price">¥38<span>/盒</span></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="scheme-foot">
+      <div>主色 <b>青瓷绿 #5D7A72</b></div>
+      <div>点缀 <b>靛青 #3F5D63 · 黄铜 #B9A36B</b></div>
+      <div class="type-sample">标题字：Songti SC 宋体 · 气质更冷、更静</div>
+    </div>
+  </section>
+
+  <!-- 方案 C -->
+  <section class="scheme c">
+    <div class="scheme-head">
+      <div class="scheme-title">
+        <span class="letter">C</span>
+        <h2>稻香暖砂</h2>
+        <span class="en">WARM HARVEST</span>
+      </div>
+      <div class="swatches">
+        <span style="background:#fbf5e9"></span>
+        <span style="background:#f0e3cd"></span>
+        <span style="background:#7a8456"></span>
+        <span style="background:#c98b4b"></span>
+        <span style="background:#9c4a35"></span>
+      </div>
+      <div class="scheme-desc">燕麦米砂底、苔绿与陶土红，整体更暖、更有灶台烟火气。适合强调“热乎、家常、刚出锅”的安心感。</div>
+    </div>
+    <div class="stage">
+      <div class="mini">
+        <div class="mini-top">原素生活，现名禾也 · 门头已换，味道未变</div>
+        <div class="mini-nav">
+          <div class="mini-logo">
+            <span class="mark">禾</span>
+            <div><b>禾也</b><small>HEYE · DUMPLINGS</small></div>
+          </div>
+          <div class="mini-links"><span>全部口味</span><span>品牌故事</span><span>我的订单</span><span>购物车</span></div>
+        </div>
+        <div class="mini-hero">
+          <div>
+            <div class="eyebrow">HEYE — 禾 · 和 · 何也</div>
+            <h3>禾也<em>？</em><br>和也<em>。</em></h3>
+            <p>素饺为体，清茶为伴，咖啡为醒。<br>好好吃饭，是与自己讲和。</p>
+            <div class="mini-cta"><span class="solid">选一盒素饺</span><span class="ghost">听品牌故事</span></div>
+          </div>
+          <div class="mini-visual">
+            <img src="/images/heye-products.jpg" alt="禾也素饺" />
+            <div class="mini-tag">原素生活<b>现名禾也</b></div>
+            <div class="mini-seal">和</div>
+          </div>
+        </div>
+        <div class="mini-slogan">素饺为体 · 清茶为伴 · 咖啡为醒 · 禾也，就是和也</div>
+        <div class="mini-products">
+          <div class="mini-card"><div class="thumb">🌿</div><div class="body"><div class="name">荠菜</div><div class="price">¥33<span>/盒</span></div></div></div>
+          <div class="mini-card"><div class="thumb">🥬</div><div class="body"><div class="name">三鲜</div><div class="price">¥33<span>/盒</span></div></div></div>
+          <div class="mini-card"><div class="thumb">🌽</div><div class="body"><div class="name">玉米</div><div class="price">¥33<span>/盒</span></div></div></div>
+          <div class="mini-card"><div class="thumb">🍄</div><div class="body"><div class="name">黑松露</div><div class="price">¥38<span>/盒</span></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="scheme-foot">
+      <div>主色 <b>苔绿 #7A8456</b></div>
+      <div>点缀 <b>陶土红 #9C4A35 · 暖砂 #F0E3CD</b></div>
+      <div class="type-sample">标题字：Songti SC 宋体 · 气质更暖、更家常</div>
+    </div>
+  </section>
+
+  <div class="footer-note">
+    三套方案共用同一套版式与内容，可随时整套切换配色。<br>
+    当前线上页面为方案 A；如需改用 B 或 C，只需替换品牌色板。
+  </div>
+</div>
+</body>
+</html>
