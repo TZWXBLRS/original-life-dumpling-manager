@@ -417,13 +417,17 @@ export default function CartPage() {
                 <div className="grid gap-3 sm:grid-cols-3">
                   {(
                     [
-                      { key: "PICKUP", name: "自取", desc: "门店自取，无运费" },
+                      { key: "PICKUP", name: "到店自取", desc: "无运费 · 推荐" },
+                      {
+                        key: "EXPRESS",
+                        name: "同城闪送",
+                        desc: "当日/次日达，运费自理",
+                      },
                       {
                         key: "DELIVERY",
-                        name: "快递",
-                        desc: "泡沫箱 ¥5/箱（每箱最多装 4 盒）",
+                        name: "冷链快递",
+                        desc: "¥5/箱（最多 4 盒）· 仅限次日达地区",
                       },
-                      { key: "EXPRESS", name: "闪送", desc: "运费自理，无泡沫箱费" },
                     ] as const
                   ).map((opt) => (
                     <button
@@ -443,6 +447,10 @@ export default function CartPage() {
                     </button>
                   ))}
                 </div>
+                <p className="mt-3 text-xs leading-relaxed text-stone-500">
+                  本店现制现售，产品需 <b>-18℃ 冷冻保存</b>，建议收货后 7 日内食用。
+                  推荐到店自取或同城闪送；冷链快递仅限次日可达地区，长途运输可能影响品质。
+                </p>
               </div>
 
               {/* 自取：门店地址 + 时段 */}
@@ -603,7 +611,7 @@ export default function CartPage() {
                     <div className="space-y-3 border-t border-stone-100 pt-4">
                       <div className="flex items-center gap-2 text-primary-700">
                         <Truck className="h-5 w-5" />
-                        <span className="font-semibold">快递发货须知</span>
+                        <span className="font-semibold">冷链快递发货须知</span>
                       </div>
 
                       <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm">
@@ -611,13 +619,19 @@ export default function CartPage() {
                           <Clock className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
                           <div>
                             <div className="font-medium text-stone-800">
-                              快递费 ¥5/箱，每箱最多装 4 盒
+                              冷链快递费 ¥5/箱，每箱最多装 4 盒
                             </div>
                             <div className="mt-1 text-stone-700">
                               每天 <b>18:00-20:00</b> 统一发货，按盒数自动计算泡沫箱数量。
                             </div>
                           </div>
                         </div>
+                      </div>
+
+                      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-800">
+                        冷链快递仅建议<b>次日可达地区</b>。饺子为现制现售，需 -18℃ 冷冻保存，
+                        泡沫箱加冰袋在途保鲜约 1 晚，超过后可能解冻影响品质；
+                        距离较远时请优先选择到店自取或同城闪送。
                       </div>
 
                       <div>

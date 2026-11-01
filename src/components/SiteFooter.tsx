@@ -32,6 +32,9 @@ export function SiteFooter() {
             <Clock className="h-4 w-4 text-primary-600" />
             每日 10:00 – 20:00
           </p>
+          <p className="mt-2 text-xs leading-relaxed text-stone-500">
+            现制现售 · 需 -18℃ 冷冻保存
+          </p>
         </div>
 
         <div className="text-sm text-stone-600">

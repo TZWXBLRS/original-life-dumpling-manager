@@ -5,7 +5,7 @@ import { CartProvider } from "@/components/CartProvider";
 export const metadata: Metadata = {
   title: "禾也 HEYE - 手作素饺",
   description:
-    "禾也，取“禾”与“和”之音。手作素饺，八味可选：荠菜、酸菜、三鲜、茴香、芹菜、玉米、黑松露、菌菇。支持自取、快递、闪送。",
+    "禾也，取“禾”与“和”之音。现制现售手作素饺，需 -18℃ 冷冻保存，八味可选：荠菜、酸菜、三鲜、茴香、芹菜、玉米、黑松露、菌菇。支持到店自取与同城闪送。",
 };
 
 export default function RootLayout({

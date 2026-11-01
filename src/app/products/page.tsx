@@ -43,6 +43,9 @@ export default async function ProductsPage() {
           <p className="mt-1 text-stone-500 text-xs">
             纯素配方 · 选好口味加入购物车，系统自动帮您凑单省钱
           </p>
+          <p className="mt-2 text-xs text-primary-700">
+            现制现售 · 需 -18℃ 冷冻保存 · 建议收货后 7 日内食用
+          </p>
         </div>
       </div>
 

@@ -11,6 +11,7 @@ import {
   Star,
   Heart,
   Quote,
+  Snowflake,
 } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -117,7 +118,10 @@ export default function HomePage() {
                 <Leaf className="h-3.5 w-3.5 text-primary-600" /> 纯素配方
               </span>
               <span className="feature-chip">
-                <Truck className="h-3.5 w-3.5 text-primary-600" /> 京东快递
+                <Truck className="h-3.5 w-3.5 text-primary-600" /> 同城闪送
+              </span>
+              <span className="feature-chip">
+                <Snowflake className="h-3.5 w-3.5 text-primary-600" /> 现制现售
               </span>
             </div>
           </div>
@@ -548,6 +552,9 @@ export default function HomePage() {
                   4 盒起自动按最优组合计价
                 </span>
               </div>
+              <p className="mt-4 text-xs leading-relaxed text-stone-500">
+                现制现售 · 需 -18℃ 冷冻保存 · 建议收货后 7 日内食用。配送以到店自取与同城闪送为主。
+              </p>
             </div>
           </div>
         </div>
