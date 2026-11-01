@@ -226,7 +226,9 @@ export default function AdminUsersPageClient() {
                       )}
                     </td>
                     <td className="px-5 py-3 text-xs text-stone-400">
-                      {new Date(u.createdAt).toLocaleDateString("zh-CN")}
+                      {new Date(u.createdAt).toLocaleDateString("zh-CN", {
+                        timeZone: "Asia/Shanghai",
+                      })}
                     </td>
                     <td className="px-5 py-3 text-right whitespace-nowrap">
                       <button

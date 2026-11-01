@@ -4,8 +4,8 @@ import { queryDeliveryETA, getAllProvinceDeliveryInfo } from "@/lib/delivery";
 /**
  * 快递时效查询 API
  *
- * GET /api/delivery/eta?province=北京
- *   → 返回该省份的快递时效和风险等级
+ * GET /api/delivery/eta?province=北京[&shipDate=2026-10-20]
+ *   → 返回该省份的快递时效和风险等级；shipDate 可选，指定发货日期
  *
  * GET /api/delivery/eta?list=all
  *   → 返回所有省份的快递时效列表
@@ -21,7 +21,9 @@ export async function GET(request: NextRequest) {
 
   const province = searchParams.get("province");
   const city = searchParams.get("city") || undefined;
-  const dateParam = searchParams.get("date") || "";
+  // 兼容两种参数名：date（当前前端）/ shipDate（旧前端）
+  const dateParam =
+    searchParams.get("date") || searchParams.get("shipDate") || "";
 
   if (!province) {
     return NextResponse.json(

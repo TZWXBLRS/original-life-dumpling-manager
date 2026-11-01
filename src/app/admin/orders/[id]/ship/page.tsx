@@ -106,6 +106,7 @@ export default function ShipConfirmPage() {
                 <div className="text-sm text-amber-700 mt-1">
                   ⏳ 当前不在发货窗口。下一个窗口：
                   {nextWindow.start.toLocaleString("zh-CN", {
+                    timeZone: "Asia/Shanghai",
                     month: "long",
                     day: "numeric",
                     hour: "2-digit",
@@ -113,6 +114,7 @@ export default function ShipConfirmPage() {
                   })}{" "}
                   -{" "}
                   {nextWindow.end.toLocaleTimeString("zh-CN", {
+                    timeZone: "Asia/Shanghai",
                     hour: "2-digit",
                     minute: "2-digit",
                   })}

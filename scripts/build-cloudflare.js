@@ -85,6 +85,9 @@ const child = spawn(
     stdio: "inherit",
     cwd: path.join(__dirname, ".."),
     shell: process.platform === "win32",
+    // CF_BUILD=1 让 next.config.js 启用 Cloudflare 专属 webpack alias
+    // （本地开发与常规 Node 构建不设置，保证 libSQL 走 file: 支持的 Node 入口）
+    env: { ...process.env, CF_BUILD: "1" },
   }
 );
 

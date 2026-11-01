@@ -1,6 +1,9 @@
-import { AdminShell } from "@/components/AdminShell";
+import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { AdminShell } from "@/components/AdminShell";
+import { formatYuan } from "@/lib/pricing";
+import { formatBeijingDate, beijingDayStart, beijingDayEnd } from "@/lib/time";
 import {
   ShoppingBasket,
   Package,
@@ -9,9 +12,15 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
+/** 库存预警阈值：与「库存管理」页保持一致（低于 10 盒视为预警） */
+const LOW_STOCK_THRESHOLD = 10;
+
 /**
- * 后台管理布局（仪表盘、订单、库存、用户、配置）
+ * 后台管理 - 仪表盘
  * 角色：后厨 / 管理员
+ *
+ * 所有统计值均从数据库实时拉取，「今日」按北京时间自然日计算，
+ * 日限进度读取 SystemConfig.DAILY_LIMIT（不再写死）。
  */
 export default async function AdminDashboardPage() {
   // 权限校验：仅门店账号（管理员 / 后厨）可进后台，与订单、销售、生产页保持一致
@@ -21,24 +30,61 @@ export default async function AdminDashboardPage() {
     redirect("/");
   }
 
-  // TODO: 接入真实数据
-  const todayOrders = 23;
-  const todaySales = 12850; // 分
-  const todayBoxes = 47;
+  // 今日（北京时间）左闭右开区间
+  const todayStart = beijingDayStart();
+  const tomorrowStart = beijingDayEnd();
 
-  const lowStockItems = [
-    { name: "黑松露饺子", stock: 5 },
-    { name: "菌菇饺子", stock: 8 },
-  ];
+  const [agg, dailyLimitCfg, lowStockItems, todayOrderList] = await Promise.all([
+    // 今日订单数 / 销量 / 销售额（取消单不计入）
+    prisma.order.aggregate({
+      where: {
+        createdAt: { gte: todayStart, lt: tomorrowStart },
+        status: { not: "CANCELLED" },
+      },
+      _count: { id: true },
+      _sum: { totalBoxes: true, totalAmount: true },
+    }),
+    prisma.systemConfig.findUnique({ where: { key: "DAILY_LIMIT" } }),
+    prisma.product.findMany({
+      where: { isActive: true, stock: { lt: LOW_STOCK_THRESHOLD } },
+      orderBy: { stock: "asc" },
+      select: { name: true, stock: true },
+    }),
+    // 今日预订明细（用于口味汇总）
+    prisma.order.findMany({
+      where: {
+        createdAt: { gte: todayStart, lt: tomorrowStart },
+        status: { not: "CANCELLED" },
+      },
+      select: { items: { select: { productName: true, quantity: true } } },
+    }),
+  ]);
+
+  const todayOrders = agg._count.id;
+  const todayBoxes = agg._sum.totalBoxes ?? 0;
+  const todaySales = agg._sum.totalAmount ?? 0;
+  const dailyLimit = Number(dailyLimitCfg?.value ?? "700") || 700;
+
+  // 今日预订汇总（按口味）
+  const flavorMap = new Map<string, number>();
+  for (const o of todayOrderList) {
+    for (const it of o.items) {
+      flavorMap.set(it.productName, (flavorMap.get(it.productName) ?? 0) + it.quantity);
+    }
+  }
+  const flavors = [...flavorMap.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+  const maxFlavorCount = Math.max(1, ...flavors.map((f) => f.count));
 
   return (
-    <AdminShell role="ADMIN">
+    <AdminShell role={session.user.role}>
       {/* 主内容区 */}
       <main className="p-4 md:p-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold">仪表盘</h1>
           <p className="text-stone-500 text-sm mt-1">
-            今日营业概览 · {new Date().toLocaleDateString("zh-CN")}
+            今日营业概览 · {formatBeijingDate(new Date())}
           </p>
         </div>
 
@@ -58,13 +104,13 @@ export default async function AdminDashboardPage() {
           />
           <StatCard
             label="今日销售额"
-            value={`¥${(todaySales / 100).toFixed(0)}`}
+            value={`¥${formatYuan(todaySales)}`}
             suffix=""
             icon={<TrendingUp className="w-5 h-5 text-primary-600" />}
           />
           <StatCard
             label="日限进度"
-            value={`${todayBoxes}/100`}
+            value={`${todayBoxes}/${dailyLimit}`}
             suffix="盒"
             icon={<AlertTriangle className="w-5 h-5 text-amber-600" />}
           />
@@ -102,16 +148,22 @@ export default async function AdminDashboardPage() {
             <h3 className="font-bold mb-4 flex items-center gap-2">
               <ChefHat className="w-4 h-4 text-primary-600" /> 今日预订汇总
             </h3>
-            <div className="space-y-2 text-sm">
-              <ProductionRow name="三鲜饺子" count={12} />
-              <ProductionRow name="荠菜饺子" count={8} />
-              <ProductionRow name="玉米饺子" count={6} />
-              <ProductionRow name="黑松露饺子" count={4} />
-              <ProductionRow name="菌菇饺子" count={3} />
-              <ProductionRow name="茴香饺子" count={3} />
-              <ProductionRow name="酸菜饺子" count={0} muted />
-              <ProductionRow name="芹菜饺子" count={0} muted />
-            </div>
+            {flavors.length === 0 ? (
+              <div className="text-sm text-stone-400 py-8 text-center">
+                今日暂无预订
+              </div>
+            ) : (
+              <div className="space-y-2 text-sm">
+                {flavors.map((f) => (
+                  <ProductionRow
+                    key={f.name}
+                    name={f.name}
+                    count={f.count}
+                    max={maxFlavorCount}
+                  />
+                ))}
+              </div>
+            )}
             <div className="mt-4 pt-4 border-t border-stone-100 flex justify-between text-sm font-medium">
               <span>今日合计需备：</span>
               <span className="text-primary-600">{todayBoxes} 盒</span>
@@ -153,13 +205,15 @@ function StatCard({
 function ProductionRow({
   name,
   count,
+  max,
   muted,
 }: {
   name: string;
   count: number;
+  max: number;
   muted?: boolean;
 }) {
-  const pct = Math.min(100, (count / 15) * 100);
+  const pct = Math.min(100, (count / Math.max(1, max)) * 100);
   return (
     <div className={muted ? "opacity-50" : ""}>
       <div className="flex justify-between mb-1">

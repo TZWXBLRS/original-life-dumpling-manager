@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { formatYuan } from "@/lib/pricing";
+import { formatBeijingDateTime, formatBeijingDate, beijingDayStart } from "@/lib/time";
 import { AdminShell } from "@/components/AdminShell";
 import { ExportCSVButton } from "@/components/ExportCSVButton";
 import {
@@ -42,7 +43,7 @@ const DELIVERY_LABEL: Record<string, string> = {
 const STATUS_LABEL: Record<string, string> = {
   PENDING_PAYMENT: "待支付",
   PAID: "已支付",
-  PREPARING: "备餐中",
+  PREPARING: "备货中",
   READY: "待取/发货",
   READY_FOR_PICKUP: "待取",
   SHIPPED: "配送中",
@@ -59,36 +60,27 @@ function beijingDayKey(d: Date): string {
 }
 
 function resolveRange(range: RangeKey, startDate?: string, endDate?: string) {
-  const now = new Date();
-  const todayStart = new Date(now);
-  todayStart.setHours(0, 0, 0, 0);
+  // 「今日」以北京时间自然日为准（Cloudflare 运行时本地时区为 UTC）
+  const todayStart = beijingDayStart();
 
   let from = new Date(todayStart);
-  let to = new Date(now);
+  let to = new Date();
 
   if (range === "today") {
     from = todayStart;
-    to = new Date(now);
+    to = new Date();
   } else if (range === "7d") {
-    from = new Date(todayStart);
-    from.setDate(from.getDate() - 6);
+    from = new Date(todayStart.getTime() - 6 * 24 * 3600 * 1000);
   } else if (range === "30d") {
-    from = new Date(todayStart);
-    from.setDate(from.getDate() - 29);
+    from = new Date(todayStart.getTime() - 29 * 24 * 3600 * 1000);
   } else if (range === "custom") {
     if (startDate) {
-      const s = new Date(startDate);
-      if (!isNaN(s.getTime())) {
-        s.setHours(0, 0, 0, 0);
-        from = s;
-      }
+      const s = new Date(`${startDate}T00:00:00+08:00`);
+      if (!isNaN(s.getTime())) from = s;
     }
     if (endDate) {
-      const e = new Date(endDate);
-      if (!isNaN(e.getTime())) {
-        e.setHours(23, 59, 59, 999);
-        to = e;
-      }
+      const e = new Date(`${endDate}T23:59:59.999+08:00`);
+      if (!isNaN(e.getTime())) to = e;
     }
   }
 
@@ -218,10 +210,15 @@ export default async function AdminSalesPage(props: {
     customerPhone: o.user.phone,
     deliveryType: DELIVERY_LABEL[o.deliveryType] || o.deliveryType,
     items: o.items.map((it) => `${it.productName}×${it.quantity}`).join("; "),
+    itemsDetail: o.items.map((it) => ({
+      name: it.productName,
+      category: it.category,
+      quantity: it.quantity,
+    })),
     totalBoxes: o.totalBoxes,
     totalAmount: o.totalAmount,
     status: STATUS_LABEL[o.status] || o.status,
-    createdAt: o.createdAt.toLocaleString("zh-CN"),
+    createdAt: formatBeijingDateTime(o.createdAt),
     receiverName: o.receiverName || "",
     receiverPhone: o.receiverPhone || "",
     receiverAddress: "",
@@ -575,6 +572,7 @@ export default async function AdminSalesPage(props: {
                       </td>
                       <td className="px-4 py-3 text-xs text-stone-400">
                         {o.createdAt.toLocaleString("zh-CN", {
+                          timeZone: "Asia/Shanghai",
                           month: "2-digit",
                           day: "2-digit",
                           hour: "2-digit",

@@ -49,18 +49,42 @@ export function AdminShell({
   // 客户端二次校验：非门店账号（顾客）不应停留在后台，统一弹回后台登录页。
   // 服务端页面（仪表盘/订单/销售/生产）已有 auth() 校验，这里是给纯客户端
   // 页面（库存/用户/配置）兜底，保证所有后台页面权限行为一致。
+  //
+  // 注意：只有拿到「明确的 200 响应且确有会话、且角色非门店」时才跳转。
+  // 网络异常、边缘 503/超时、非 JSON 响应一律不跳转，避免因后端瞬时抖动
+  // 把已登录的后台用户误踢回登录页。
   useEffect(() => {
     let active = true;
-    fetch("/api/auth/session")
-      .then((r) => r.json())
-      .then((d) => {
-        if (!active) return;
-        const role = d?.user?.role;
-        if (role !== "ADMIN" && role !== "KITCHEN") router.replace("/admin/login");
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+
+    fetch("/api/auth/session", { signal: controller.signal })
+      .then(async (r) => {
+        if (!r.ok) return null; // 503/500 等：不判定，保持当前页
+        const ct = r.headers.get("content-type") || "";
+        if (!ct.includes("application/json")) return null; // 非 JSON：不判定
+        try {
+          return await r.json();
+        } catch {
+          return null;
+        }
       })
-      .catch(() => {});
+      .then((d) => {
+        if (!active || !d) return; // 拿不到可靠会话，保持当前页
+        const role = d?.user?.role;
+        if (role !== "ADMIN" && role !== "KITCHEN") {
+          router.replace("/admin/login");
+        }
+      })
+      .catch(() => {
+        // 网络错误/超时：保持当前页，不误跳
+      })
+      .finally(() => clearTimeout(timer));
+
     return () => {
       active = false;
+      clearTimeout(timer);
+      controller.abort();
     };
   }, [router]);
 
