@@ -147,11 +147,17 @@ describe("定价算法 - 规则C（6盒乐享）", () => {
     expect(yuan(r.goodsAmount)).toBe(188);
   });
 
-  it("6盒全特色 = 198元（规则C，特色=6加¥40）", () => {
+  it("6盒全特色 = 200元（纯特色不适用规则C，2组3盒特色）", () => {
     const r = calculatePrice(makeCart(0, 6));
-    // 规则C(6特=198) vs 规则B+规则B(100+100=200)
-    // 系统应选 198
-    expect(yuan(r.goodsAmount)).toBe(198);
+    // 规则C 仅限经典+特色混拼；纯特色按规则B：3+3 → 100+100=200
+    expect(yuan(r.goodsAmount)).toBe(200);
+  });
+
+  it("9盒全特色 = 300元（3组3盒特色，不受规则C叠加影响）", () => {
+    const r = calculatePrice(makeCart(0, 9));
+    // 修复前会误算为 C(6特=198)+B(3特=100)=298
+    expect(yuan(r.goodsAmount)).toBe(300);
+    expect(r.breakdown.every((b) => b.type === "RULE_B_3")).toBe(true);
   });
 });
 
@@ -233,13 +239,13 @@ describe("定价算法 - 泡沫箱费（仅快递）", () => {
     expect(yuan(r11.foamBoxAmount)).toBe(15);
   });
 
-  it("订单总金额 = 商品金额 + 泡沫箱费", () => {
-    // 4盒经典=100元，快递1个泡沫箱5元，合计105元
+  it("订单总金额不含泡沫箱费（泡沫箱费单独列示）", () => {
+    // 4盒经典=100元，快递1个泡沫箱5元；订单金额仍为100元
     const r = calculatePrice(makeCart(4, 0), "DELIVERY");
-    expect(yuan(r.totalAmount)).toBe(105);
-    expect(yuan(r.totalAmount)).toBe(
-      yuan(r.goodsAmount) + yuan(r.foamBoxAmount)
-    );
+    expect(yuan(r.totalAmount)).toBe(100);
+    expect(yuan(r.goodsAmount)).toBe(100);
+    expect(yuan(r.foamBoxAmount)).toBe(5);
+    expect(yuan(r.totalAmount)).toBe(yuan(r.goodsAmount));
   });
 });
 

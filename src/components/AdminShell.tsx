@@ -10,7 +10,6 @@ import {
   Package,
   Users,
   Settings,
-  ChefHat,
   LogOut,
   Menu,
   X,
@@ -27,7 +26,6 @@ const MAIN_NAV = [
   { icon: ShoppingBasket, label: "订单管理", href: "/admin/orders" },
   { icon: BarChart3, label: "销售汇总", href: "/admin/sales" },
   { icon: Package, label: "库存管理", href: "/admin/inventory" },
-  { icon: ChefHat, label: "生产看板", href: "/admin/production" },
 ];
 
 const ADMIN_NAV = [

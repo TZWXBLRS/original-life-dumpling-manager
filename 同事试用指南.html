@@ -173,13 +173,13 @@ cloudflared tunnel --url http://localhost:3000</pre>
         <div class="role"><span class="tag kitchen">后厨</span>包饺砸师傅</div>
         <div class="kv">手机号：<b>18301576627</b></div>
         <div class="kv">密　码：<b>sushenghuo105</b></div>
-        <div class="kv">可看：<b>生产看板 / 订单 / 库存</b></div>
+        <div class="kv">可看：<b>订单 / 库存</b></div>
       </div>
       <div class="account">
         <div class="role"><span class="tag customer">顾客</span>自己注册一个</div>
         <div class="kv">入口：<b>登录页 → 立即注册</b></div>
         <div class="kv">用任意手机号（11位即可）+ 6位以上密码</div>
-        <div class="kv">可做：<b>选购/下单/取消/查看订单</b></div>
+        <div class="kv">可做：<b>选购 / 下单 / 查看订单</b></div>
       </div>
     </div>
   </div>
@@ -206,9 +206,9 @@ cloudflared tunnel --url http://localhost:3000</pre>
         </tr>
         <tr>
           <td>3</td><td><span class="tag customer">顾客</span></td>
-          <td>提交订单 → 查看订单详情 → 点「取消订单」</td>
+          <td>提交订单 → 查看订单详情（顾客端只读，无支付/备餐操作）</td>
           <td><span class="path">/orders/[id]</span></td>
-          <td>待支付的订单，顾客能自己取消；已支付的取消会提示联系门店（并返还库存）</td>
+          <td>顾客只能查看订单进度和商品库存；支付、备餐、取消等操作均在后台完成</td>
         </tr>
         <tr>
           <td>4</td><td><span class="tag admin">管理员</span></td>
@@ -218,9 +218,9 @@ cloudflared tunnel --url http://localhost:3000</pre>
         </tr>
         <tr>
           <td>5</td><td><span class="tag kitchen">后厨</span></td>
-          <td>后厨登录 → 生产看板</td>
-          <td><span class="path">/admin/production</span></td>
-          <td>✅ 今日总盒数、自取/快递各几单 ✅ <b>按口味备货</b>（三鲜要备几盒、黑松露还差几盒）✅ 三色进度条：待备 / 备餐中 / 备好 ✅ 点订单直接跳详情改状态</td>
+          <td>后厨登录 → 订单管理</td>
+          <td><span class="path">/admin/orders</span></td>
+          <td>✅ 今日订单与口味明细 ✅ <b>按口味备货</b>（三鲜要备几盒、黑松露还差几盒）✅ 点订单直接跳详情改状态（备餐/备好）</td>
         </tr>
         <tr>
           <td>6</td><td><span class="tag kitchen">后厨</span></td>

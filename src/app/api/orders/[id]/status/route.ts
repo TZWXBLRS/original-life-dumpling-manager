@@ -30,12 +30,12 @@ const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 };
 
 export type StatusAction =
-  | "PAY" // 支付（顾客）
+  | "PAY" // 确认支付（管理员）
   | "START_PREPARE" // 开始备餐（后厨/管理员）
   | "MARK_READY" // 标记备好（后厨/管理员）
   | "SHIP" // 发货（管理员）
   | "COMPLETE" // 标记完成（管理员/自取）
-  | "CANCEL"; // 取消订单（顾客待支付时 / 管理员）
+  | "CANCEL"; // 取消订单（管理员）
 
 const ACTION_TO_STATUS: Record<
   StatusAction,
@@ -116,14 +116,14 @@ export async function PATCH(
     const isStaff = isAdmin || isKitchen;
     const isOwner = order.userId === session.user.id;
 
-    // 不同角色允许的操作：Key 为 Action，Value 为允许执行的角色列表
+    // 不同角色允许的操作：所有订单状态操作仅限后台（后厨/管理员）
     const roleActions: Record<StatusAction, string[]> = {
-      PAY: ["CUSTOMER", "ADMIN"], // 顾客或管理员可标记支付
+      PAY: ["ADMIN"],
       START_PREPARE: ["ADMIN", "KITCHEN"],
       MARK_READY: ["ADMIN", "KITCHEN"],
       SHIP: ["ADMIN"],
       COMPLETE: ["ADMIN", "KITCHEN"],
-      CANCEL: ["CUSTOMER", "ADMIN"], // 顾客待支付可取消；管理员随时可取消
+      CANCEL: ["ADMIN"],
     };
 
     const allowedRoles = roleActions[action];
@@ -136,17 +136,9 @@ export async function PATCH(
       return NextResponse.json({ error: "无权限执行此操作" }, { status: 403 });
     }
 
-    // 顾客只能操作自己的订单
+    // 顾客只能查看自己的订单，不能执行任何状态操作
     if (!isStaff && !isOwner) {
       return NextResponse.json({ error: "无权限操作此订单" }, { status: 403 });
-    }
-
-    // 顾客取消订单：仅限待支付状态
-    if (!isStaff && action === "CANCEL" && order.status !== "PENDING_PAYMENT") {
-      return NextResponse.json(
-        { error: "仅待支付订单可自行取消，请联系门店" },
-        { status: 400 }
-      );
     }
 
     // 3. 检查状态流转是否合法

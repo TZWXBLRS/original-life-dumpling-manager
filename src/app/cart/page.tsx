@@ -304,7 +304,7 @@ export default function CartPage() {
           <Link href="/orders?paid=1" className="btn-primary mb-2 block w-full !py-3">
             <CreditCard className="mr-2 inline h-4 w-4" /> 查看订单
           </Link>
-          <Link href="/products" className="btn-secondary block w-full">
+          <Link href="/products" prefetch={false} className="btn-secondary block w-full">
             继续选购
           </Link>
         </div>
@@ -321,7 +321,11 @@ export default function CartPage() {
             <span className="font-bold text-primary-700">禾也</span>
           </Link>
           <div className="flex items-center gap-4 text-sm">
-            <Link href="/products" className="text-stone-600 hover:text-primary-600">
+            <Link
+              href="/products"
+              prefetch={false}
+              className="text-stone-600 hover:text-primary-600"
+            >
               继续选购 →
             </Link>
             <UserMenu />
@@ -426,7 +430,7 @@ export default function CartPage() {
                       {
                         key: "DELIVERY",
                         name: "冷链快递",
-                        desc: "¥5/箱（最多 4 盒）· 仅限次日达地区",
+                        desc: "打包费 ¥5/泡沫箱（最多 4 盒）· 仅限次日达地区",
                       },
                     ] as const
                   ).map((opt) => (
@@ -619,10 +623,11 @@ export default function CartPage() {
                           <Clock className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
                           <div>
                             <div className="font-medium text-stone-800">
-                              冷链快递费 ¥5/箱，每箱最多装 4 盒
+                              冷冻品泡沫箱 ¥5/箱，每箱最多装 4 盒
                             </div>
                             <div className="mt-1 text-stone-700">
-                              每天 <b>18:00-20:00</b> 统一发货，按盒数自动计算泡沫箱数量。
+                              每天 <b>18:00-20:00</b> 统一发货，按盒数自动计算泡沫箱数量；
+                              泡沫箱费不含在订单金额内。
                             </div>
                           </div>
                         </div>
@@ -794,9 +799,12 @@ export default function CartPage() {
                     ))}
                   </div>
                   {pricing.foamBoxCount > 0 && (
-                    <div className="flex justify-between border-t border-stone-100 pt-2">
-                      <span>泡沫箱 × {pricing.foamBoxCount}</span>
-                      <span>¥{formatYuan(pricing.foamBoxAmount)}</span>
+                    <div className="flex justify-between border-t border-stone-100 pt-2 text-stone-500">
+                      <span>冷冻品泡沫箱 × {pricing.foamBoxCount}</span>
+                      <span>
+                        ¥{formatYuan(pricing.foamBoxAmount)}
+                        <span className="ml-1 text-xs">（不含在总额内）</span>
+                      </span>
                     </div>
                   )}
                 </div>

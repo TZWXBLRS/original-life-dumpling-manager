@@ -4,11 +4,12 @@
  * 优惠规则（系统自动计算最优组合）：
  *  规则A·4盒组合: ¥100 + 特色盒数 × ¥10（任意搭配，经典特色任意比例）
  *  规则B·3盒特色: ¥100（三盒特惠）
- *  规则C·6盒乐享: ¥158 + max(0, 特色盒数 − 2) × ¥10
+ *  规则C·6盒乐享: ¥158 + max(0, 特色盒数 − 2) × ¥10（经典+特色混拼，至少含1盒经典）
  *  单盒: 经典 ¥33，特色 ¥38
  *
  * 所有价格均包含打包费。
- * 泡沫箱费（仅快递）：¥5/个，每箱最多装4盒，向上取整
+ * 泡沫箱费（仅快递）：¥5/个，每箱最多装4盒，向上取整；
+ * 泡沫箱费单独列示，不计入订单总金额（totalAmount = goodsAmount）。
  *
  * 本算法使用记忆化搜索，穷举所有可能的组合方式（规则A/B/C可重复使用），
  * 保证返回的总价对顾客是最优的（最低价格）。
@@ -76,7 +77,7 @@ export interface PricingResult {
   foamBoxAmount: number;
   /** 泡沫箱个数 */
   foamBoxCount: number;
-  /** 订单总金额（分）= goodsAmount + foamBoxAmount */
+  /** 订单总金额（分）= goodsAmount（泡沫箱费不计入订单金额） */
   totalAmount: number;
   /** 费用明细 */
   breakdown: PriceBreakdown[];
@@ -159,10 +160,12 @@ function dpSearch(
       }
     }
   }
-  // 选项5：规则C - 6盒乐享
+  // 选项5：规则C - 6盒乐享（经典+特色混拼，至少含1盒经典）
   // 价格 = ¥158 + max(0, 特色盒数 − 2) × ¥10
-  if (cLeft + sLeft >= 6) {
-    for (let sInC = 0; sInC <= 6; sInC++) {
+  // 纯特色不适用规则C（否则 9 盒特色会出现 C(6)+B(3)=¥298，
+  // 偏离「3盒特色¥100」按组计价 ¥300 的规则）。
+  if (cLeft >= 1 && cLeft + sLeft >= 6) {
+    for (let sInC = 0; sInC <= 5; sInC++) {
       const cInC = 6 - sInC;
       if (sInC <= sLeft && cInC <= cLeft) {
         const extra = Math.max(0, sInC - PRICE.RULE_C_SPECIALTY_THRESHOLD);
@@ -354,7 +357,8 @@ export function calculatePrice(
     goodsAmount,
     foamBoxAmount,
     foamBoxCount,
-    totalAmount: goodsAmount + foamBoxAmount,
+    // 泡沫箱费单独列示，不计入订单总金额
+    totalAmount: goodsAmount,
     breakdown,
   };
 }
@@ -386,7 +390,7 @@ export function calcPrice(qty: number, category: ProductCategory): number {
     ]);
     return r.goodsAmount;
   } else {
-    // 规则B(3盒¥100)优先，规则C(6盒¥198)，剩余单盒¥38
+    // 3盒一组¥100，剩余单盒¥38（纯特色不适用规则C）
     const r = calculatePrice([
       { productId: "s", productName: "", category: "SPECIALTY", quantity: qty, unitPrice: PRICE.SPECIALTY_UNIT },
     ]);

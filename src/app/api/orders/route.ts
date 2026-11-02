@@ -255,7 +255,7 @@ export async function POST(req: NextRequest) {
           deliveryType,
           status: "PENDING_PAYMENT", // 待支付
           totalAmount: pricing.totalAmount,
-          goodsAmount: pricing.totalAmount - pricing.foamBoxAmount,
+          goodsAmount: pricing.goodsAmount,
           totalBoxes,
           classicBoxes: pricing.classicBoxes,
           specialtyBoxes: pricing.specialtyBoxes,
