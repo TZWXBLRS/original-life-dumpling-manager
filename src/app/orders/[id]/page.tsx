@@ -48,6 +48,7 @@ export default async function OrderDetailPage(props: {
     include: {
       items: {
         select: {
+          productId: true,
           productName: true,
           category: true,
           quantity: true,
@@ -70,7 +71,16 @@ export default async function OrderDetailPage(props: {
   }
 
   const isOwner = order.userId === session.user.id;
+  const isStaff =
+    session.user.role === "ADMIN" || session.user.role === "KITCHEN";
   const currentIdx = STATUS_STEPS.findIndex((s) => s.key === order.status);
+
+  // 同步各口味当前库存（后台调整库存后，订单详情即时反映）
+  const stockRows = await prisma.product.findMany({
+    where: { id: { in: order.items.map((it) => it.productId) } },
+    select: { id: true, stock: true },
+  });
+  const stockMap = new Map(stockRows.map((p) => [p.id, p.stock]));
 
   // 自取地址从系统配置取（兜底写死）
   const pickupCfg = await prisma.systemConfig
@@ -100,16 +110,18 @@ export default async function OrderDetailPage(props: {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        {/* 操作按钮区（放在最上面，方便操作） */}
-        {order.status !== "COMPLETED" && order.status !== "CANCELLED" && (
-          <OrderActionButtons
-            orderId={order.id}
-            status={order.status}
-            deliveryType={order.deliveryType}
-            userRole={session.user.role}
-            isOwner={isOwner}
-          />
-        )}
+        {/* 操作按钮区：仅后厨/管理员可见，顾客端不提供订单状态操作 */}
+        {isStaff &&
+          order.status !== "COMPLETED" &&
+          order.status !== "CANCELLED" && (
+            <OrderActionButtons
+              orderId={order.id}
+              status={order.status}
+              deliveryType={order.deliveryType}
+              userRole={session.user.role}
+              isOwner={isOwner}
+            />
+          )}
 
         {/* 状态时间线 */}
         <div className="card p-6">
@@ -300,6 +312,7 @@ export default async function OrderDetailPage(props: {
                   <th className="text-left py-2 pr-3">类别</th>
                   <th className="text-right py-2 pr-3">单价</th>
                   <th className="text-right py-2 pr-3">数量</th>
+                  <th className="text-right py-2 pr-3">当前库存</th>
                   <th className="text-right py-2">小计</th>
                 </tr>
               </thead>
@@ -314,6 +327,21 @@ export default async function OrderDetailPage(props: {
                       ¥{formatYuan(it.unitPrice)}
                     </td>
                     <td className="py-2 pr-3 text-right">× {it.quantity}</td>
+                    <td className="py-2 pr-3 text-right">
+                      {stockMap.has(it.productId) ? (
+                        <span
+                          className={
+                            (stockMap.get(it.productId) ?? 0) === 0
+                              ? "text-stone-400"
+                              : "text-primary-600"
+                          }
+                        >
+                          剩余 {stockMap.get(it.productId)} 盒
+                        </span>
+                      ) : (
+                        <span className="text-stone-400">—</span>
+                      )}
+                    </td>
                     <td className="py-2 text-right font-medium">
                       ¥{formatYuan(it.subtotal)}
                     </td>
@@ -331,18 +359,21 @@ export default async function OrderDetailPage(props: {
             <div className="flex justify-between text-stone-600">
               <span>商品合计（{order.totalBoxes}盒）</span>
               <span>
-                ¥{formatYuan(order.totalAmount - order.foamBoxAmount)}
+                ¥{formatYuan(order.goodsAmount)}
               </span>
             </div>
             {order.foamBoxCount > 0 && (
-              <div className="flex justify-between text-stone-600">
-                <span>泡沫箱 × {order.foamBoxCount}</span>
-                <span>¥{formatYuan(order.foamBoxAmount)}</span>
+              <div className="flex justify-between text-stone-500">
+                <span>冷冻品泡沫箱 × {order.foamBoxCount}</span>
+                <span>
+                  ¥{formatYuan(order.foamBoxAmount)}
+                  <span className="ml-1 text-xs">（不含在订单金额内）</span>
+                </span>
               </div>
             )}
             <div className="flex justify-between pt-2 border-t border-stone-200 text-lg font-bold text-primary-600">
-              <span>总计</span>
-              <span>¥{formatYuan(order.totalAmount)}</span>
+              <span>订单金额</span>
+              <span>¥{formatYuan(order.goodsAmount)}</span>
             </div>
           </div>
           {order.note && (

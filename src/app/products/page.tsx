@@ -10,19 +10,36 @@ export const dynamic = "force-dynamic";
  * 顾客端 - 商品列表页
  * Server Component：从数据库读取真实商品数据，传给客户端子组件
  */
+
+// 商品查询最多重试 3 次：边缘节点偶发抖动时避免整页进入错误边界
+async function fetchProducts() {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await prisma.product.findMany({
+        where: { isActive: true },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        select: {
+          id: true,
+          name: true,
+          category: true,
+          unitPrice: true,
+          stock: true,
+          description: true,
+        },
+      });
+    } catch (err) {
+      lastError = err;
+      if (attempt < 2) {
+        await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
+      }
+    }
+  }
+  throw lastError;
+}
+
 export default async function ProductsPage() {
-  const products = await prisma.product.findMany({
-    where: { isActive: true },
-    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-    select: {
-      id: true,
-      name: true,
-      category: true,
-      unitPrice: true,
-      stock: true,
-      description: true,
-    },
-  });
+  const products = await fetchProducts();
 
   return (
     <div className="flex min-h-screen flex-col bg-rice-50">

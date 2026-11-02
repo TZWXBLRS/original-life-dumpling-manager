@@ -1,8 +1,9 @@
 "use client";
 
-import { Plus, Minus, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { Plus, Minus, Sparkles, ShoppingBag } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
-import type { ProductCategory } from "@/lib/pricing";
+import { calculatePrice, type ProductCategory } from "@/lib/pricing";
 
 type ProductFromDB = {
   id: string;
@@ -28,7 +29,10 @@ const emojiMap: Record<string, string> = {
 const MAX_STOCK = 100;
 
 export function ProductsClient({ products }: { products: ProductFromDB[] }) {
-  const { showComboHint, totalBoxes } = useCart();
+  const { showComboHint, totalBoxes, items } = useCart();
+
+  // 已选饺子的费用（不含泡沫箱费，泡沫箱仅在快递结算时单独列示）
+  const pricing = calculatePrice(items, "PICKUP");
 
   // 售罄沉底
   const sortedProducts = [...products].sort((a, b) => {
@@ -51,17 +55,6 @@ export function ProductsClient({ products }: { products: ProductFromDB[] }) {
 
   return (
     <>
-      {totalBoxes > 0 && (
-        <div className="mb-3 flex items-center justify-between gap-2 rounded-lg bg-primary-50 border border-primary-200 px-3 py-2 text-sm text-primary-700">
-          <span className="font-medium">
-            已选 <b>{totalBoxes}</b> 盒，购物车已实时同步
-          </span>
-          <a href="/cart" className="text-xs font-medium underline underline-offset-2">
-            去购物车 →
-          </a>
-        </div>
-      )}
-
       {showComboHint && (
         <div className="mb-4 flex items-center gap-2 rounded-lg border border-wheat-300 bg-wheat-50 px-3 py-2.5 text-xs font-medium text-wheat-700">
           <Sparkles className="w-3.5 h-3.5 shrink-0" />
@@ -100,6 +93,36 @@ export function ProductsClient({ products }: { products: ProductFromDB[] }) {
           ))}
         </div>
       </section>
+
+      {/* 吸底结算条：跟随屏幕，实时显示已选饺子的费用 */}
+      {totalBoxes > 0 && (
+        <>
+          <div className="h-20" aria-hidden="true" />
+          <div className="fixed inset-x-0 bottom-0 z-40 border-t border-primary-200 bg-rice-50/95 shadow-[0_-6px_20px_rgba(38,48,40,0.08)] backdrop-blur-md">
+            <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+              <div className="min-w-0">
+                <div className="text-[11px] text-stone-500">
+                  已选 <b className="text-primary-700">{totalBoxes}</b> 盒（经典
+                  {pricing.classicBoxes} · 特色{pricing.specialtyBoxes}）
+                </div>
+                <div className="text-lg font-bold leading-tight text-primary-700">
+                  ¥{(pricing.goodsAmount / 100).toFixed(0)}
+                  <span className="ml-1 text-[10px] font-normal text-stone-400">
+                    不含泡沫箱费
+                  </span>
+                </div>
+              </div>
+              <Link
+                href="/cart"
+                prefetch={false}
+                className="btn-primary flex shrink-0 items-center gap-1.5 !px-5 !py-2.5"
+              >
+                <ShoppingBag className="h-4 w-4" /> 去结算
+              </Link>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }
